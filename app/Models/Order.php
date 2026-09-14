@@ -3,16 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Order extends Model
 {
     protected $table = 'orders';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'user_id',
         'product_id',
         'product_name',
-        'category_name',
         'price',
         'quantity',
         'subtotal',
@@ -24,8 +26,6 @@ class Order extends Model
         'send_at',
     ];
 
-    public $timestamps = false;
-
     protected $casts = [
         'price' => 'decimal:2',
         'quantity' => 'integer',
@@ -33,4 +33,14 @@ class Order extends Model
         'order_at' => 'datetime',
         'send_at' => 'datetime',
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class, 'product_id');
+    }
 }
