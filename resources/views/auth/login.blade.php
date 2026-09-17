@@ -24,11 +24,11 @@
 
             <div class="top-actions">
                 <a href="/" class="icon-btn" aria-label="Back home">↩</a>
-                <a href="/register" class="btn btn-secondary">Register</a>
+                <a href="/auth/register" class="btn btn-secondary">Register</a>
             </div>
         </header>
 
-        <main class="auth-layout">
+        <main class="auth-layout auth-shell">
             <section class="auth-visual" aria-label="Maybeads promo panel">
                 <div class="hero-product">
                     <div class="product-figure"></div>
@@ -47,17 +47,31 @@
                     <h1>Login</h1>
                     <p class="subtitle">Continue your story with curated essentials and exclusive drops.</p>
 
-                    <form class="auth-form" method="POST" action="#">
+                    <form class="auth-form" method="POST" action="/auth/login">
                         @csrf
 
                         <div class="field-group">
-                            <label for="email">Email</label>
-                            <input id="email" type="email" name="email" placeholder="email@example.com" required>
+                            <label for="identifier">Username or Email</label>
+                            <input id="identifier" type="text" name="identifier" placeholder="username or email@example.com" value="{{ old('identifier') ?: old('email') }}" required>
                         </div>
 
                         <div class="field-group">
                             <label for="password">Password</label>
-                            <input id="password" type="password" name="password" placeholder="Enter your password" required>
+                            <div class="password-field">
+                                <input id="password" type="password" name="password" placeholder="Enter your password" required>
+                                <button type="button" class="password-toggle" aria-label="Show password" aria-pressed="false">
+                                    <svg class="eye-icon eye-open" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path>
+                                        <circle cx="12" cy="12" r="2.5"></circle>
+                                    </svg>
+                                    <svg class="eye-icon eye-closed" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="m3 3 18 18"></path>
+                                        <path d="M10.6 6.2A10.7 10.7 0 0 1 12 6c6.5 0 10 6 10 6a17.2 17.2 0 0 1-3.1 3.7"></path>
+                                        <path d="M6.5 6.8C3.7 8.5 2 12 2 12s3.5 6 10 6a10.7 10.7 0 0 0 3.4-.6"></path>
+                                        <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"></path>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
 
                         <div class="form-row">
@@ -74,7 +88,7 @@
                     <div class="divider">or</div>
 
                     <p class="helper-text">
-                        New here? <a href="/register" class="inline-link">Create an account</a>
+                        New here? <a href="/auth/register" class="inline-link">Create an account</a>
                     </p>
                 </div>
             </section>

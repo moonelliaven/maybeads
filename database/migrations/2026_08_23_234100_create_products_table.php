@@ -17,7 +17,7 @@ return new class extends Migration
                   ->cascadeOnDelete();
 
             $table->string('product_name', 100);
-            $table->string('image', 20)->nullable();
+            $table->string('image')->nullable();
             $table->text('description')->nullable();
 
             $table->decimal('price', 10, 2);

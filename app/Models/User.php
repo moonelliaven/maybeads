@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Model
+class User extends Authenticatable
 {
     protected $table = 'users';
 
@@ -19,6 +19,10 @@ class User extends Model
         'phone_number',
         'address',
         'role',
+    ];
+
+    protected $hidden = [
+        'password',
     ];
 
     public function orders(): HasMany

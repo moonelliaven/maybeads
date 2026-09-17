@@ -17,16 +17,28 @@
 
             <nav class="main-nav" aria-label="Main navigation">
                 <a href="#">Home</a>
-                <a href="#">Products</a>
+                <a href="#" class="nav-link-with-arrow">
+                    <span>Products</span>
+                    <span class="nav-arrow" aria-hidden="true">↗</span>
+                </a>
                 <a href="#">Testimonial</a>
                 <a href="#">Contact</a>
             </nav>
 
             <div class="top-actions">
+                <a href="/auth/login" class="login-link" aria-label="Login">
+                    <span class="login-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M20 21a8 8 0 0 0-16 0" />
+                            <circle cx="12" cy="8" r="4" />
+                        </svg>
+                    </span>
+                    <span>Login</span>
+                </a>
                 <button class="icon-btn" aria-label="Cart">
                     <span>🛒</span>
                 </button>
-                <button class="order-btn">ORDER NOW</button>
+                <button class="order-btn" btn-onclick="">ORDER NOW</button>
             </div>
         </header>
 

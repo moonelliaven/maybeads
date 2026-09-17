@@ -110,10 +110,18 @@ input {
     transform: translateY(-2px);
 }
 
+.auth-shell {
+    background: rgba(255, 255, 255, 0.52);
+    border: 1px solid rgba(18, 18, 18, 0.08);
+    border-radius: 32px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+}
+
 .auth-layout {
     display: grid;
     grid-template-columns: 1.08fr 0.92fr;
-    gap: 28px;
+    gap: 18px;
     align-items: stretch;
 }
 
@@ -125,7 +133,7 @@ input {
     overflow: hidden;
     background: linear-gradient(180deg, rgba(255,255,255,0.76), rgba(245,240,235,0.96));
     border: 1px solid rgba(18,18,18,0.08);
-    box-shadow: var(--shadow);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
 }
 
 .auth-visual::before,
@@ -252,15 +260,15 @@ input {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 18px 14px 18px 4px;
+    padding: 6px 6px 6px 0;
 }
 
 .auth-card {
-    background: rgba(255,255,255,0.78);
+    background: rgba(255,255,255,0.82);
     border: 1px solid rgba(18,18,18,0.08);
     border-radius: 28px;
     padding: 34px 28px 28px;
-    box-shadow: var(--shadow);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
 }
 
 .auth-card h1 {
@@ -305,6 +313,61 @@ input {
     padding: 0 16px;
     color: var(--text);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.password-field {
+    position: relative;
+}
+
+.password-field input {
+    padding-right: 54px;
+}
+
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--muted);
+    transform: translateY(-50%);
+    cursor: pointer;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.password-toggle:hover,
+.password-toggle:focus-visible {
+    background: rgba(14, 80, 255, 0.08);
+    color: var(--primary);
+}
+
+.password-toggle:focus-visible {
+    outline: 2px solid rgba(14, 80, 255, 0.55);
+    outline-offset: 2px;
+}
+
+.eye-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.eye-closed {
+    display: none;
+}
+
+.password-toggle.is-visible .eye-open {
+    display: none;
+}
+
+.password-toggle.is-visible .eye-closed {
+    display: block;
 }
 
 .field-group input:focus {
@@ -404,12 +467,20 @@ input {
         display: none;
     }
 
+    .auth-shell {
+        padding: 12px;
+    }
+
     .auth-layout {
         grid-template-columns: 1fr;
     }
 
     .auth-visual {
         min-height: 420px;
+    }
+
+    .auth-panel {
+        padding: 0;
     }
 }
 
