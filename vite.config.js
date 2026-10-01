@@ -17,6 +17,7 @@ export default defineConfig({
                 'resources/css/admin/sidebar.css',
                 'resources/css/admin/dashboard.css',
                 'resources/js/admin/dashboard.js',
+                'resources/css/lenis.css',
             ],
             refresh: true,
         }),

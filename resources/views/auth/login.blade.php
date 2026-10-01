@@ -10,10 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
 
-  <!-- Lenis CSS -->
-  <link rel="stylesheet" href="{{ asset('vendor/lenis/lenis.css') }}">
-
-  @vite(['resources/css/auth/login.css'])
+  @vite(['resources/css/lenis.css', 'resources/css/auth/login.css'])
 </head>
 <body>
 
