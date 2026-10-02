@@ -1,3 +1,9 @@
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
+
+// Expose SweetAlert globally
+window.Swal = Swal;
+
 /**
  * Admin Dashboard & Sidebar Interactivity - Maybead.s
  * Includes: Lenis Smooth Scroll, Sidebar Toggles, Dropdowns, Tabs, & Metrics
@@ -70,9 +76,67 @@
     });
 
     /* ==========================================================================
-       3. Dropdown Menus (Notifikasi & Profil User)
+       3. Dropdown Menus (Notifikasi, Profil Header & Menu Sidebar)
        ========================================================================== */
     var dropdowns = document.querySelectorAll('[data-dropdown]');
+    var sidebarFooter = document.getElementById('sidebarFooter');
+    var sidebarUserBadge = document.getElementById('sidebarUserBadge');
+    var sidebarUserMenu = document.getElementById('sidebarUserMenu');
+
+    function closeSidebarUserMenu() {
+      if (sidebarUserMenu && sidebarFooter && sidebarUserBadge) {
+        sidebarUserMenu.setAttribute('hidden', '');
+        sidebarFooter.classList.remove('menu-open');
+        sidebarUserBadge.setAttribute('aria-expanded', 'false');
+      }
+    }
+
+    function openSidebarUserMenu() {
+      if (sidebarUserMenu && sidebarFooter && sidebarUserBadge) {
+        // Tutup dropdown header jika ada yang terbuka
+        dropdowns.forEach(function (other) {
+          var otherMenu = other.querySelector('.dropdown-menu');
+          var otherTrigger = other.querySelector('[data-dropdown-trigger]');
+          if (otherMenu) otherMenu.setAttribute('hidden', '');
+          if (otherTrigger) otherTrigger.setAttribute('aria-expanded', 'false');
+        });
+
+        sidebarUserMenu.removeAttribute('hidden');
+        sidebarFooter.classList.add('menu-open');
+        sidebarUserBadge.setAttribute('aria-expanded', 'true');
+      }
+    }
+
+    function toggleSidebarUserMenu() {
+      if (!sidebarUserMenu) return;
+      var isOpen = !sidebarUserMenu.hasAttribute('hidden');
+      if (isOpen) {
+        closeSidebarUserMenu();
+      } else {
+        openSidebarUserMenu();
+      }
+    }
+
+    if (sidebarUserBadge) {
+      sidebarUserBadge.addEventListener('click', function (e) {
+        e.stopPropagation();
+        toggleSidebarUserMenu();
+      });
+
+      sidebarUserBadge.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          e.stopPropagation();
+          toggleSidebarUserMenu();
+        }
+      });
+    }
+
+    if (sidebarUserMenu) {
+      sidebarUserMenu.addEventListener('click', function (e) {
+        e.stopPropagation();
+      });
+    }
 
     dropdowns.forEach(function (drop) {
       var trigger = drop.querySelector('[data-dropdown-trigger]');
@@ -84,7 +148,7 @@
         e.stopPropagation();
         var isOpen = !menu.hasAttribute('hidden');
 
-        // Tutup dropdown lain yang terbuka
+        // Tutup dropdown lain yang terbuka & menu sidebar
         dropdowns.forEach(function (other) {
           if (other !== drop) {
             var otherMenu = other.querySelector('.dropdown-menu');
@@ -93,6 +157,7 @@
             if (otherTrigger) otherTrigger.setAttribute('aria-expanded', 'false');
           }
         });
+        closeSidebarUserMenu();
 
         if (isOpen) {
           menu.setAttribute('hidden', '');
@@ -114,6 +179,25 @@
           if (trigger) trigger.setAttribute('aria-expanded', 'false');
         }
       });
+
+      if (sidebarFooter && !sidebarFooter.contains(e.target)) {
+        closeSidebarUserMenu();
+      }
+    });
+
+    // Tutup dengan tombol Escape
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        dropdowns.forEach(function (drop) {
+          var menu = drop.querySelector('.dropdown-menu');
+          var trigger = drop.querySelector('[data-dropdown-trigger]');
+          if (menu && !menu.hasAttribute('hidden')) {
+            menu.setAttribute('hidden', '');
+            if (trigger) trigger.setAttribute('aria-expanded', 'false');
+          }
+        });
+        closeSidebarUserMenu();
+      }
     });
 
     // Tandai notifikasi dibaca
@@ -243,6 +327,40 @@
         requestAnimationFrame(step);
       });
     }
+
+    /* ==========================================================================
+       8. SweetAlert2: Konfirmasi Logout & Notifikasi Flash
+       ========================================================================== */
+    var logoutForms = document.querySelectorAll('form[action*="logout"], .sidebar-logout-form');
+    logoutForms.forEach(function (form) {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (typeof Swal !== 'undefined') {
+          Swal.fire({
+            title: 'Konfirmasi Logout',
+            text: 'Apakah Anda yakin ingin keluar dari sistem admin?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Ya, Logout',
+            cancelButtonText: 'Kembali',
+            reverseButtons: true,
+            customClass: {
+              popup: 'admin-swal-popup'
+            }
+          }).then(function (result) {
+            if (result.isConfirmed) {
+              form.submit();
+            }
+          });
+        } else {
+          if (confirm('Apakah Anda yakin ingin keluar dari sistem admin? Pilih Batal untuk Kembali.')) {
+            form.submit();
+          }
+        }
+      });
+    });
   }
 
   if (document.readyState === 'loading') {

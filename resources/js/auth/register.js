@@ -1,3 +1,6 @@
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
+
 (function () {
   'use strict';
 
@@ -61,21 +64,136 @@
     });
 
     /* Stiker mengikuti mouse + Lenis RAF */
-    if (reduce) return;
-    var mx = 0, my = 0;
-    var stickers = $$('[data-mouse]');
-    window.addEventListener('pointermove', function (e) {
-      mx = e.clientX / window.innerWidth - .5;
-      my = e.clientY / window.innerHeight - .5;
-    });
-    (function frame(time) {
-      if (lenis) lenis.raf(time);
-      stickers.forEach(function (el) {
-        var m = +el.dataset.mouse;
-        el.style.transform = 'translate3d(' + mx * m + 'px,' + my * m + 'px,0) rotate(' + mx * m * .5 + 'deg)';
+    if (!reduce) {
+      var mx = 0, my = 0;
+      var stickers = $$('[data-mouse]');
+      window.addEventListener('pointermove', function (e) {
+        mx = e.clientX / window.innerWidth - .5;
+        my = e.clientY / window.innerHeight - .5;
       });
-      requestAnimationFrame(frame);
-    })(performance.now());
+      (function frame(time) {
+        if (lenis) lenis.raf(time);
+        stickers.forEach(function (el) {
+          var m = +el.dataset.mouse;
+          el.style.transform = 'translate3d(' + mx * m + 'px,' + my * m + 'px,0) rotate(' + mx * m * .5 + 'deg)';
+        });
+        requestAnimationFrame(frame);
+      })(performance.now());
+    }
+
+    /* Handle Form Register dengan SweetAlert2 */
+    var form = $('#form');
+    var submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+
+    if (form) {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        var pw = $('#password') ? $('#password').value : '';
+        var pwConfirm = $('#password_confirmation') ? $('#password_confirmation').value : '';
+
+        if (pw && pwConfirm && pw !== pwConfirm) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Konfirmasi Sandi Berbeda',
+            text: 'Kata sandi dan konfirmasi kata sandi tidak cocok.',
+            confirmButtonColor: '#1f3bff',
+            customClass: {
+              popup: 'y2k-swal-popup'
+            }
+          });
+          return;
+        }
+
+        var originalBtnText = submitBtn ? submitBtn.textContent : 'Daftar Sekarang';
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Mendaftarkan...';
+        }
+
+        var formData = new FormData(form);
+        var csrfToken = document.querySelector('meta[name="csrf-token"]') 
+          ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') 
+          : '';
+
+        fetch(form.action || '/register', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': csrfToken
+          },
+          body: formData
+        })
+        .then(function (response) {
+          return response.json().then(function (data) {
+            return { ok: response.ok, status: response.status, data: data };
+          });
+        })
+        .then(function (res) {
+          if (res.ok && res.data.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Pendaftaran Berhasil!',
+              text: res.data.message || 'Selamat datang di Maybeads! Mengalihkan...',
+              timer: 1600,
+              timerProgressBar: true,
+              showConfirmButton: false,
+              allowOutsideClick: false,
+              allowEscapeKey: false,
+              customClass: {
+                popup: 'y2k-swal-popup'
+              },
+              willClose: function () {
+                window.location.href = res.data.redirect || '/';
+              }
+            });
+          } else {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = originalBtnText;
+            }
+
+            var errMsg = 'Terjadi kesalahan saat pendaftaran.';
+            if (res.data && res.data.errors) {
+              var firstKey = Object.keys(res.data.errors)[0];
+              if (firstKey && res.data.errors[firstKey].length) {
+                errMsg = res.data.errors[firstKey][0];
+              }
+            } else if (res.data && res.data.message) {
+              errMsg = res.data.message;
+            }
+
+            Swal.fire({
+              icon: 'error',
+              title: 'Gagal Mendaftar',
+              text: errMsg,
+              confirmButtonText: 'Periksa Kembali',
+              confirmButtonColor: '#ef4444',
+              customClass: {
+                popup: 'y2k-swal-popup'
+              }
+            });
+          }
+        })
+        .catch(function (err) {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
+          }
+          console.error('Register error:', err);
+          Swal.fire({
+            icon: 'error',
+            title: 'Terjadi Kesalahan',
+            text: 'Gagal menghubungi server. Silakan coba lagi nanti.',
+            confirmButtonColor: '#ef4444',
+            customClass: {
+              popup: 'y2k-swal-popup'
+            }
+          });
+        });
+      });
+    }
   }
 
   if (document.readyState === 'loading') {

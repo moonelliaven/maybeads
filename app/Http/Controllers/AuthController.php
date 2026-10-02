@@ -16,7 +16,10 @@ class AuthController extends Controller
     public function showLogin()
     {
         if (Auth::check()) {
-            return redirect()->intended('/');
+            if (Auth::user()->isAdmin()) {
+                return redirect()->route('admin.dashboard');
+            }
+            return redirect()->route('home');
         }
 
         return view('auth.login');
@@ -37,7 +40,51 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
 
-            return redirect()->intended('/');
+            $user = Auth::user();
+            // Simpan role ke dalam session
+            $request->session()->put('role', $user->role);
+
+            // Arahkan admin ke dashboard atau halaman admin yang dituju
+            if ($user->isAdmin()) {
+                $intended = $request->session()->pull('url.intended');
+                $redirectUrl = ($intended && str_contains($intended, '/admin')) ? $intended : route('admin.dashboard');
+
+                if ($request->expectsJson() || $request->ajax()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Berhasil masuk! Mengalihkan ke dashboard admin...',
+                        'role' => $user->role,
+                        'redirect' => $redirectUrl,
+                    ]);
+                }
+
+                return redirect($redirectUrl);
+            }
+
+            // User biasa diarahkan ke URL sebelumnya (non-admin) atau ke beranda
+            $intended = $request->session()->pull('url.intended');
+            $redirectUrl = ($intended && !str_contains($intended, '/admin') && !str_contains($intended, '/login')) ? $intended : route('home');
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Berhasil masuk! Selamat datang kembali.',
+                    'role' => $user->role,
+                    'redirect' => $redirectUrl,
+                ]);
+            }
+
+            return redirect($redirectUrl);
+        }
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Email atau kata sandi yang Anda masukkan salah.',
+                'errors' => [
+                    'email' => [trans('auth.failed')],
+                ],
+            ], 422);
         }
 
         throw ValidationException::withMessages([
@@ -51,7 +98,10 @@ class AuthController extends Controller
     public function showRegister()
     {
         if (Auth::check()) {
-            return redirect()->intended('/');
+            if (Auth::user()->isAdmin()) {
+                return redirect()->route('admin.dashboard');
+            }
+            return redirect()->route('home');
         }
 
         return view('auth.register');
@@ -72,13 +122,23 @@ class AuthController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'role' => 'user',
         ]);
 
         Auth::login($user);
 
         $request->session()->regenerate();
+        $request->session()->put('role', $user->role);
 
-        return redirect()->intended('/');
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Pendaftaran akun berhasil! Selamat datang di Maybeads.',
+                'redirect' => route('home'),
+            ]);
+        }
+
+        return redirect()->route('home');
     }
 
     /**
@@ -91,6 +151,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/login');
+        return redirect()->route('login')->with('success', 'Anda telah berhasil keluar.');
     }
 }

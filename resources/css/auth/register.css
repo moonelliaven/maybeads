@@ -91,3 +91,40 @@ form { margin-top: 24px; display: grid; gap: 16px; }
   * { animation: none !important; transition: none !important; }
   .big span { transform: none; }
 }
+
+/* SweetAlert2 Y2K Custom Styling */
+div:where(.swal2-container) .y2k-swal-popup {
+  border-radius: 28px !important;
+  font-family: var(--font, 'Bricolage Grotesque', sans-serif) !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 24px 60px -20px rgba(31, 59, 255, 0.35) !important;
+  padding: 24px 20px 28px !important;
+}
+
+div:where(.swal2-container) .swal2-title {
+  font-family: var(--font, 'Bricolage Grotesque', sans-serif) !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.03em !important;
+  color: #0a0a0f !important;
+}
+
+div:where(.swal2-container) .swal2-html-container {
+  font-family: var(--font, 'Bricolage Grotesque', sans-serif) !important;
+  font-weight: 500 !important;
+  color: #4a4a58 !important;
+  font-size: 1rem !important;
+}
+
+div:where(.swal2-container) .swal2-confirm {
+  border-radius: 999px !important;
+  padding: 12px 28px !important;
+  font-family: var(--font, 'Bricolage Grotesque', sans-serif) !important;
+  font-weight: 600 !important;
+}
+
+div:where(.swal2-container) .swal2-timer-progress-bar {
+  background: linear-gradient(90deg, #1f3bff, #ff9ee0) !important;
+}
