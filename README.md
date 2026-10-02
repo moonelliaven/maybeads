@@ -45,6 +45,7 @@ Aplikasi ini memadukan desain visual berdaya tarik tinggi (*playful*, *vibrant*,
 
 1. Hilyatul Aulia
 2. M. Zaki Isrianto
+3. Yericho
 
 ---
 
