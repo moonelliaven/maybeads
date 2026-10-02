@@ -41,6 +41,13 @@ Aplikasi ini memadukan desain visual berdaya tarik tinggi (*playful*, *vibrant*,
 
 ---
 
+## Kontributor
+
+1. Hilyatul Aulia
+2. M. Zaki Isrianto
+
+---
+
 ## 🚀 Fitur Utama
 
 ### 1. Storefront / Halaman Pengunjung
