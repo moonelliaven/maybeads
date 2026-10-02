@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">✨ Maybead.s — Handcrafted Beaded Jewelry & E-Commerce Platform</h1>
+  <h1 align="center">Maybead.s — Handcrafted Beaded Jewelry & E-Commerce Platform</h1>
   <p align="center">
     <strong>Platform e-commerce modern, estetik, dan interaktif untuk aksesoris manik-manik buatan tangan (handcrafted beaded accessories) yang dilengkapi sistem manajemen dashboard toko terintegrasi.</strong>
   </p>
@@ -45,55 +45,9 @@ Aplikasi ini memadukan desain visual berdaya tarik tinggi (*playful*, *vibrant*,
 
 1. Hilyatul Aulia
 2. M. Zaki Isrianto
-3. Yericho
 
 ---
 
-## 🚀 Fitur Utama
-
-### 1. Storefront / Halaman Pengunjung
-* **Hero Banner Interaktif**: Dilengkapi elemen animasi sticker mengambang (*bobbing stickers*), efek kursor bercahaya (*glowing cursor*), dan tombol magnetis (*magnetic hover effect*).
-* **Navigasi Mulus (*Smooth Scrolling*)**: Integrasi **Lenis** untuk transisi perpindahan halaman dan navigasi section yang lembut.
-* **Katalog Produk & Kategori**: Penelusuran produk berdasarkan kategori (Kalung, Anting, Gelang, Cincin, Aksesoris Rambut).
-* **Keranjang Belanja (*Cart*) & Favorit**: Pengelolaan produk pesanan pengguna.
-
-### 2. Sistem Autentikasi & Role
-* **Role-Based Access Control (RBAC)**: Pemisahan hak akses antara `admin` dan `user` menggunakan `AdminMiddleware`.
-* **Login & Registrasi Responsif**: Dilengkapi validasi form, pengingat sesi (*Remember Me*), dan proteksi CSRF.
-* **Redirect Otomatis Berbasis Peran**:
-  * Pengguna biasa diarahkan kembali ke halaman toko.
-  * Administrator langsung diarahkan ke panel `/admin/dashboard`.
-
-### 3. Dashboard Administrator
-* **Header Interaktif & Dinamis**:
-  * Notifikasi *real-time badge*.
-  * Profil pengguna header dengan menu popover.
-  * Salam dinamis (*Selamat Pagi / Siang / Sore / Malam*) dan jam digital terbarukan secara otomatis.
-* **Statistik Cepat (*Quick Stats*)**:
-  * Visualisasi metrik total pesanan, pesanan selesai, diproses, dan pending dengan animasi *count-up*.
-* **Ringkasan Pendapatan & Kasir**:
-  * Rincian penerimaan melalui QRIS dan E-Wallet.
-  * Fitur *eye toggle* untuk menyembunyikan atau menampilkan nominal saldo secara aman.
-* **Filter Pesanan Terkini**:
-  * Tab filter status interaktif (*Semua, Selesai, Proses, Pending*) tanpa perlu memuat ulang halaman (*zero-reload*).
-* **Sidebar Modern & Fleksibel**:
-  * Mode desktop lebar dan mode ciut (*collapsed sidebar*).
-  * Mode laci geser (*mobile drawer*) dengan backdrop blur untuk layar sentuh / ponsel.
-  * Kartu profil admin di pojok kiri bawah dengan **tombol chevron interaktif** yang berotasi 180°.
-  * Dropup menu profil dengan akses cepat ke **Pengaturan Website**, **Akun**, dan **Logout**.
-  * **Modal Konfirmasi Logout SweetAlert2**: Dialog keamanan dengan opsi **"Kembali"** (*cancel/return*) dan **"Ya, Logout"** sebelum sesi diakhiri.
-
-### 4. Pengaturan Website & Akun
-* Rute terpadu yang dapat diakses melalui `/admin/settings` dan `/admin/account` (keduanya diarahkan ke halaman konfigurasi yang sama).
-* **Tab Pengaturan Website**:
-  * Identitas toko: Nama Toko, Slogan, dan Deskripsi untuk metadata SEO.
-  * Kontak & Jalur Pemesanan: Nomor WhatsApp CS, Email Support, Instagram, dan TikTok.
-  * Saklar Status Operasional Toko (*Online / Libur*).
-* **Tab Akun & Keamanan**:
-  * Profil administrator: Nama lengkap, email, dan *role badge*.
-  * Pembaruan kata sandi (*Password Lama, Password Baru, Konfirmasi Password*).
-
----
 
 ## 🛠 Teknologi yang Digunakan
 
