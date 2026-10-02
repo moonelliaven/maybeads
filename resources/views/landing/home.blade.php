@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>maybeads — aksesoris Y2K</title>
+  <title>Maybeads</title>
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -57,10 +57,28 @@
         <li><a href="#contact">Contact</a></li>
       </ul>
       <div class="nav-actions">
-        <a class="btn-login" href="/login" data-magnet>
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" /><path d="M5 20a7 7 0 0 1 14 0" /></svg>
-          Login
-        </a>
+        @auth
+          @if(Auth::user()->isAdmin())
+            <a class="btn-login" href="{{ route('admin.dashboard') }}" data-magnet>
+              <svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/></svg>
+              Dashboard
+            </a>
+          @else
+            <span style="font-weight: 600; font-size: 0.92rem; color: var(--ink); display: inline-flex; align-items: center; gap: 6px; padding: 0 4px;">
+              <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><circle cx="12" cy="8" r="4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+              {{ Auth::user()->name }}
+            </span>
+          @endif
+          <form method="POST" action="{{ route('logout') }}" style="display:inline; margin:0;">
+            @csrf
+            <button type="submit" class="btn-logout" data-magnet>Keluar</button>
+          </form>
+        @else
+          <a class="btn-login" href="{{ route('login') }}" data-magnet>
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" /><path d="M5 20a7 7 0 0 1 14 0" /></svg>
+            Login
+          </a>
+        @endauth
         <a class="btn" href="/product" data-magnet>Belanja</a>
       </div>
     </div>

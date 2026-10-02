@@ -91,10 +91,10 @@
           <!-- Profil -->
           <div class="dropdown" data-dropdown>
             <button type="button" class="header-user-badge" aria-haspopup="true" aria-expanded="false" data-dropdown-trigger>
-              <div class="header-user-avatar">W</div>
+              <div class="header-user-avatar">{{ strtoupper(substr(Auth::user()->name ?? 'W', 0, 1)) }}</div>
               <div class="header-user-info">
-                <span class="header-user-name">M. Waiz Fadhillah</span>
-                <span class="header-user-role">Admin</span>
+                <span class="header-user-name">{{ Auth::user()->name ?? 'M. Waiz Fadhillah' }}</span>
+                <span class="header-user-role">{{ ucfirst(Auth::user()->role ?? 'Admin') }}</span>
               </div>
               <div class="header-user-chevron">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -119,7 +119,7 @@
           <div>
             <div class="breadcrumb-label">Admin Dashboard</div>
             <h1 class="page-title">Dashboard</h1>
-            <p class="welcome-text"><span data-greeting>Selamat Datang</span>, Waiz.</p>
+            <p class="welcome-text"><span data-greeting>Selamat Datang</span>, {{ Auth::user()->name ? explode(' ', trim(Auth::user()->name))[0] : 'Waiz' }}.</p>
           </div>
           <div class="date-chip" aria-live="off">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
