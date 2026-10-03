@@ -29,12 +29,25 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         return redirect()->route('admin.dashboard');
     });
 
-    // Sub-rute admin product
+    // Sub-rute admin product & produk
     Route::prefix('product')->name('product.')->group(function () {
-        Route::get('/', function () { return view('admin.product.index'); })->name('index');
-        Route::get('/create', function () { return view('admin.product.create'); })->name('create');
-        Route::get('/update', function () { return view('admin.product.update'); })->name('update');
-        Route::get('/delete', function () { return view('admin.product.delete'); })->name('delete');
+        Route::get('/', [\App\Http\Controllers\AdminProductController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\AdminProductController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\AdminProductController::class, 'store'])->name('store');
+        Route::get('/{product}', [\App\Http\Controllers\AdminProductController::class, 'show'])->name('show');
+        Route::get('/{product}/edit', [\App\Http\Controllers\AdminProductController::class, 'edit'])->name('edit');
+        Route::put('/{product}', [\App\Http\Controllers\AdminProductController::class, 'update'])->name('update');
+        Route::delete('/{product}', [\App\Http\Controllers\AdminProductController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('produk')->name('produk.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\AdminProductController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\AdminProductController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\AdminProductController::class, 'store'])->name('store');
+        Route::get('/{product}', [\App\Http\Controllers\AdminProductController::class, 'show'])->name('show');
+        Route::get('/{product}/edit', [\App\Http\Controllers\AdminProductController::class, 'edit'])->name('edit');
+        Route::put('/{product}', [\App\Http\Controllers\AdminProductController::class, 'update'])->name('update');
+        Route::delete('/{product}', [\App\Http\Controllers\AdminProductController::class, 'destroy'])->name('destroy');
     });
 
     // Pengaturan Website & Akun (Diarahkan ke satu halaman yang sama)
