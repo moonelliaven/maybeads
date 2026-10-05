@@ -22,7 +22,18 @@ Route::match(['get', 'post'], '/logout', [AuthController::class, 'logout'])->nam
 
 
 Route::get('/', function () {
-    return view('landing.home');
+    $products = \App\Models\Product::with('category')
+        ->where('status', true)
+        ->latest('id')
+        ->get();
+
+    $categories = \App\Models\Category::withCount(['products' => fn ($q) => $q->where('status', true)])
+        ->get()
+        ->filter(fn ($c) => $c->products_count > 0)
+        ->sortByDesc('products_count')
+        ->values();
+
+    return view('landing.home', compact('products', 'categories'));
 })->name('home');
 
 // Admin Routes (Hanya dapat diakses oleh user dengan session role admin)

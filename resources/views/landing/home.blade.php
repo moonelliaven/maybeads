@@ -1,313 +1,263 @@
+@php
+  $products   = $products   ?? collect();
+  $categories = $categories ?? collect();
+  $fallbacks  = ['prod-hairclip.jpg', 'prod-ring.jpg', 'prod-butterfly.jpg', 'prod-keychain.jpg'];
+  $imgFor = function ($p, $i) use ($fallbacks) {
+      if ($p->image && file_exists(public_path('images/products/' . $p->image))) {
+          return asset('images/products/' . $p->image);
+      }
+      return asset('images/landing/' . $fallbacks[$i % count($fallbacks)]);
+  };
+  $total = $products->count();
+  $marquee = ['Pengiriman ke seluruh Indonesia', 'Gaya Y2K asli', 'Produk terbaru', 'Admin fast respon', 'Stylish dan keren'];
+  $reviews = [
+      ['name' => 'Joseph Manulang',     'mail' => 'joshmnlg@gmail.com',   'text' => 'Skatel nya beautiful banget, detailnya rapi dan kokoh dipakai harian.', 'tag' => 'Sabuk', 'var' => 'Hitam',  'av' => '#3b4f96'],
+      ['name' => 'Ahmed Ghani Mengal',  'mail' => 'ahmedgm@gmail.com',    'text' => 'Kalungnya persis kayak di foto, warnanya cakep dan pengiriman cepat.',   'tag' => 'Kalung', 'var' => 'Biru',  'av' => '#e0524f'],
+      ['name' => 'Daniel Tauber',       'mail' => 'danieltaub@gmail.com', 'text' => 'Admin fast respon, packing aman. Bakal order lagi buat kado pacar.',     'tag' => 'Kalung', 'var' => 'Biru',  'av' => '#8a6b4f'],
+      ['name' => 'Christo Gruz Garcia', 'mail' => 'chrisgruz@gmail.com',  'text' => 'Vibe Y2K-nya dapet banget, dipakai nongkrong langsung ditanyain temen.', 'tag' => 'Kalung', 'var' => 'Biru',  'av' => '#4f8a5b'],
+  ];
+@endphp
 <!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Maybeads</title>
+  <title>Maybeads — Aksesoris Y2K Impianmu</title>
+  <meta name="description" content="Maybeads: aksesoris Y2K berkualitas tinggi — cincin, kalung, gelang, dan aksesori krom. Dikirim ke seluruh Indonesia.">
 
-  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..900&family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
+  <script>document.documentElement.classList.add('js');</script>
   @vite(['resources/css/lenis.css', 'resources/css/landing/home.css'])
 </head>
 <body>
 
-  <!-- SVG Sprite -->
-  <svg width="0" height="0" style="position: absolute;" aria-hidden="true">
-    <defs>
-      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#5b7cff" />
-        <stop offset="1" stop-color="#1f3bff" />
-      </linearGradient>
-    </defs>
-    <symbol id="smile" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="47" fill="#ffe94a" />
-      <circle cx="35" cy="40" r="5" />
-      <circle cx="65" cy="40" r="5" />
-      <path d="M24 58q26 30 52 0" fill="none" stroke="#0a0a0f" stroke-width="4" stroke-linecap="round" />
-    </symbol>
-    <symbol id="flower" viewBox="0 0 100 100">
-      <g fill="#ff9ee0">
-        <circle cx="50" cy="20" r="17" />
-        <circle cx="80" cy="42" r="17" />
-        <circle cx="68" cy="78" r="17" />
-        <circle cx="32" cy="78" r="17" />
-        <circle cx="20" cy="42" r="17" />
-      </g>
-      <circle cx="50" cy="52" r="14" fill="#ffe94a" />
-    </symbol>
-    <symbol id="cursor" viewBox="0 0 24 32">
-      <path d="M2 2h3v3h3v3h3v3h3v3h3v3h-5v3h3v6h-4v-6h-3v3h-3v3H2z" fill="#fff" stroke="#0a0a0f" stroke-width="1.5" />
-    </symbol>
-  </svg>
-
-  <!-- Interactive Cursor Glow -->
-  <div class="glow" id="glow"></div>
-
-  <!-- Navigation Bar -->
-  <nav id="nav">
+  <!-- Navigation -->
+  <nav class="nav" id="nav">
     <div class="nav-in">
-      <a class="logo" href="#home">maybeads*</a>
-      <ul>
-        <li><a href="#home">Home</a></li>
-        <li><a href="#about">About</a></li>
-        <li><a href="/product">Product</a></li>
-        <li><a href="#contact">Contact</a></li>
+      <a class="logo" href="#home">Maybead<span>.</span>s</a>
+
+      <ul class="nav-links">
+        <li><a href="#home">Beranda</a></li>
+        <li><a href="#kontak">Kontak</a></li>
+        <li>
+          <a href="#produk" class="nav-ext">Produk
+            <svg viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/></svg>
+          </a>
+        </li>
       </ul>
+
       <div class="nav-actions">
         @auth
           @if(Auth::user()->isAdmin())
-            <a class="btn-login" href="{{ route('admin.dashboard') }}" data-magnet>
-              <svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/></svg>
+            <a class="btn btn-outline btn-sm" href="{{ route('admin.dashboard') }}">
+              <svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg>
               Dashboard
             </a>
           @else
-            <span style="font-weight: 600; font-size: 0.92rem; color: var(--ink); display: inline-flex; align-items: center; gap: 6px; padding: 0 4px;">
-              <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><circle cx="12" cy="8" r="4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+            <span class="nav-user">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
               {{ Auth::user()->name }}
             </span>
           @endif
-          <form method="POST" action="{{ route('logout') }}" style="display:inline; margin:0;">
+          <form method="POST" action="{{ route('logout') }}" class="inline-form">
             @csrf
-            <button type="submit" class="btn-logout" data-magnet>Keluar</button>
+            <button type="submit" class="btn btn-ghost-red btn-sm">Keluar</button>
           </form>
         @else
-          <a class="btn-login" href="{{ route('login') }}" data-magnet>
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" /><path d="M5 20a7 7 0 0 1 14 0" /></svg>
+          <a class="btn btn-outline btn-sm" href="{{ route('login') }}" id="nav-login">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
             Login
           </a>
         @endauth
-        <a class="btn" href="/product" data-magnet>Belanja</a>
+        <a class="btn btn-primary btn-sm" href="#produk" id="nav-order">Pesan Sekarang</a>
       </div>
     </div>
   </nav>
 
-  <!-- Hero / Banner -->
-  <header class="hero" id="home">
-    <div class="blob b1"></div>
-    <div class="blob b2"></div>
-    <div class="blob b3"></div>
+  <main>
+    <!-- Hero -->
+    <header class="hero" id="home">
+      <div class="hero-copy">
+        <h1 class="hero-title">
+          <span class="line"><span>Tampil beda dengan</span></span>
+          <span class="line"><span>aksesoris Y2K</span></span>
+          <span class="line"><span>impianmu</span></span>
+        </h1>
+        <p class="hero-desc" data-fade>
+          Aksesoris Y2K berkualitas tinggi yang dipilih secara cermat berpadu dengan siluet kontemporer
+          yang presisi. Cincin yang berani, kalung tengkorak, dan aksesori krom lainnya, dan budaya drop
+          yang menjadi ciri khas.
+        </p>
+        <div class="hero-cta" data-fade>
+          <a class="btn btn-primary" href="#produk" id="hero-order">Pesan Sekarang</a>
+          <a class="btn btn-outline" href="#produk" id="hero-new">Produk Terbaru <span class="blink">!!!</span></a>
+        </div>
+      </div>
 
-    <div class="sticker s-blur bob" data-speed="-.25">
-      <svg class="i"><use href="#smile" /></svg>
+      <div class="hero-gallery">
+        <figure class="hg hg-main" data-reveal>
+          <img src="{{ asset('images/landing/hero-main.jpg') }}" alt="Gelang manik bening dengan charm bintang krom" data-parallax="-6">
+        </figure>
+        <figure class="hg hg-top" data-reveal>
+          <img src="{{ asset('images/landing/hero-cross.jpg') }}" alt="Kalung rantai perak dengan liontin salib" data-parallax="-4">
+        </figure>
+        <figure class="hg hg-bot" data-reveal>
+          <img src="{{ asset('images/landing/hero-butterfly.jpg') }}" alt="Gelang manik biru dengan charm kupu-kupu" data-parallax="-4">
+        </figure>
+        <span class="spark sp1" aria-hidden="true">✦</span>
+        <span class="spark sp2" aria-hidden="true">✧</span>
+      </div>
+    </header>
+
+    <!-- Marquee strip -->
+    <div class="strip" aria-hidden="true">
+      <div class="strip-track" id="strip">
+        @for($r = 0; $r < 4; $r++)
+          @foreach($marquee as $m)
+            <span class="strip-item">{{ $m }}</span>
+          @endforeach
+        @endfor
+      </div>
     </div>
-    <div class="sticker s-smile bob" data-speed=".1" data-mouse="30">
-      <svg class="i"><use href="#smile" /></svg>
-    </div>
-    <div class="sticker s-flower bob" data-speed="-.18" data-mouse="-24">
-      <svg class="i"><use href="#flower" /></svg>
-    </div>
-    <div class="sticker s-cursor" data-speed="-.08" data-mouse="46">
-      <svg class="i"><use href="#cursor" /></svg>
-    </div>
 
-    <p class="tag r">
-      semoga kamu lolos<br>dari era yang membosankan.
-    </p>
+    <!-- Best Seller -->
+    <section class="section best" id="produk">
+      <h2 class="sec-title split">
+        <span class="line"><span>Produk</span></span>
+        <span class="line"><span><em class="c-navy">Yang</em> Best <em class="c-coral">Seller</em></span></span>
+      </h2>
 
-    <h1 class="title" id="title" aria-label="maybeads">
-      <span class="ln" data-t="may-"></span>
-      <span class="ln" data-t="bead.s"></span>
-    </h1>
+      <div class="best-bar">
+        <p class="sec-sub" data-fade>Produk kami yang bisa memperkeren penampilan anda dan terlihat lebih stylish dan keren</p>
+        <div class="tabs" role="tablist" id="tabs" data-fade>
+          <span class="tab-pill" id="tab-pill"></span>
+          <button class="tab active" role="tab" data-cat="all" id="tab-all">Semua ({{ $total }})</button>
+          @foreach($categories->take(4) as $cat)
+            <button class="tab" role="tab" data-cat="{{ $cat->id }}" id="tab-{{ $cat->id }}">{{ $cat->category_name }} ({{ $cat->products_count }})</button>
+          @endforeach
+        </div>
+      </div>
 
-    <p class="tag l">
-      aksesoris bertema Y2K<br>untuk kamu yang lahir terlambat.
-    </p>
+      <div class="cards" id="cards">
+        @forelse($products as $i => $p)
+          <article class="card" data-cat="{{ $p->category_id }}">
+            <div class="card-media">
+              <span class="badge">Best Seller</span>
+              <img src="{{ $imgFor($p, $i) }}" alt="{{ $p->product_name }}" loading="lazy">
+            </div>
+            <div class="card-body">
+              <h3>{{ $p->product_name }}</h3>
+              <p>{{ \Illuminate\Support\Str::limit($p->description, 60) }}</p>
+              <strong>Rp {{ $p->price }}</strong>
+            </div>
+          </article>
+        @empty
+          @foreach($fallbacks as $i => $f)
+            <article class="card" data-cat="all">
+              <div class="card-media">
+                <span class="badge">Best Seller</span>
+                <img src="{{ asset('images/landing/' . $f) }}" alt="Produk Maybeads" loading="lazy">
+              </div>
+              <div class="card-body">
+                <h3>Produk Maybeads</h3>
+                <p>Aksesoris Y2K pilihan, segera hadir.</p>
+                <strong>Rp 80.000</strong>
+              </div>
+            </article>
+          @endforeach
+        @endforelse
+      </div>
 
-    <div class="cta-row">
-      <a class="btn" href="/product" data-magnet>Lihat koleksi</a>
-      <a class="btn ghost" href="#about" data-magnet>Tentang kami</a>
-    </div>
-  </header>
+      <div class="center" data-fade>
+        <a class="btn btn-outline btn-arrow" href="/product" id="see-all">
+          Lihat semua produk kami [{{ $total }}]
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+    </section>
 
-  <!-- Marquee Running Text 1 -->
-  <div class="mq" aria-hidden="true">
-    <div id="m1"></div>
-  </div>
-
-  <!-- Product Showcase (Horizontal Scroll) -->
-  <section class="hs" id="product">
-    <div class="hs-sticky">
-      <h2 class="h split" data-split>Koleksi terbaru, geser terus.</h2>
-      <div class="track" id="track">
-        <article class="card">
-          <div class="art" style="background: linear-gradient(135deg, #cfe6ff, #fff);" data-beads="#ff9ee0,#fff,#1f3bff"></div>
-          <h3>Gelang Bubblegum</h3>
-          <p>Manik akrilik pink dan putih, tali elastis.</p>
-          <b>Rp 45.000</b>
-        </article>
-
-        <article class="card">
-          <div class="art" style="background: linear-gradient(135deg, #fff3a6, #fff);" data-beads="#1f3bff,#cfe6ff,#fff"></div>
-          <h3>Kalung Chrome Heart</h3>
-          <p>Liontin hati metalik, rantai manik biru.</p>
-          <b>Rp 79.000</b>
-        </article>
-
-        <article class="card">
-          <div class="art" style="background: linear-gradient(135deg, #ffd0f0, #fff);" data-beads="#ffe94a,#fff,#0a0a0f"></div>
-          <h3>Charm HP Cyber Cherry</h3>
-          <p>Gantungan ponsel manik ceri dan bintang.</p>
-          <b>Rp 35.000</b>
-        </article>
-
-        <article class="card">
-          <div class="art" style="background: linear-gradient(135deg, #5b7cff, #1f3bff);" data-beads="#cfe6ff,#fff,#ff9ee0"></div>
-          <h3>Jepit Kupu-kupu Set</h3>
-          <p>Lima jepit rambut warna pastel.</p>
-          <b>Rp 52.000</b>
-        </article>
-
-        <article class="card">
-          <div class="art" style="background: linear-gradient(135deg, #e9ecf5, #fff);" data-beads="#0a0a0f,#1f3bff,#ffe94a"></div>
-          <h3>Anklet Star Dust</h3>
-          <p>Gelang kaki manik bintang, ukuran bebas.</p>
-          <b>Rp 39.000</b>
-        </article>
-
-        <article class="card" style="display: grid; place-items: center; text-align: center;">
+    <!-- Reviews -->
+    <section class="section reviews" id="ulasan">
+      <div class="rev-head">
+        <div>
+          <h2 class="sec-title split">
+            <span class="line"><span>Ulasan customer</span></span>
+            <span class="line"><span>terhadap <em class="c-navy">Maybeads</em></span></span>
+          </h2>
+          <p class="sec-sub" data-fade>Pendapat-pendapat customer tentang barang barang yang di beli di maybeads</p>
+        </div>
+        <div class="rating" data-fade>
           <div>
-            <h3>Masih banyak lagi</h3>
-            <p style="margin-bottom: 18px;">Lihat semua aksesoris.</p>
-            <a class="btn" href="/product" data-magnet>Buka Product</a>
+            <strong class="rating-num" id="rating" data-to="4.7">0,0</strong>
+            <div class="stars">★★★★★</div>
           </div>
-        </article>
-      </div>
-      <div class="bar">
-        <div id="bar"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Marquee Running Text 2 -->
-  <div class="mq rev" aria-hidden="true" style="margin-top: 40px;">
-    <div id="m2"></div>
-  </div>
-
-  <!-- About Section -->
-  <section class="sec" id="about">
-    <h2 class="h split" data-split>Dibuat kecil, gayanya besar.</h2>
-    <div class="morph" id="morph">
-      <svg class="morph-shape" viewBox="-110 -110 220 220" role="img" aria-label="Bentuk yang berubah dari lingkaran menjadi bintang saat discroll">
-        <polygon id="shape" points="" />
-        <circle cx="-28" cy="-12" r="9" fill="#fff" />
-        <circle cx="28" cy="-12" r="9" fill="#fff" />
-        <path d="M-34 18q34 34 68 0" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" />
-      </svg>
-      <div class="steps">
-        <div class="step rv">
-          <h3>Dirakit tangan</h3>
-          <p>Setiap aksesoris dirangkai satu per satu, jadi tidak ada dua yang benar-benar sama.</p>
-          <div class="stats">
-            <div>
-              <strong data-count="1200">0</strong>
-              <span>pesanan</span>
-            </div>
-            <div>
-              <strong data-count="48">0</strong>
-              <span>desain</span>
-            </div>
-            <div>
-              <strong data-count="5">0</strong>
-              <span>rating</span>
-            </div>
-          </div>
-        </div>
-        <div class="step rv">
-          <h3>Palet yang tenang</h3>
-          <p>Biru, hitam, dan putih sebagai dasar, dengan sedikit pink atau kuning supaya tetap playful.</p>
-        </div>
-        <div class="step rv">
-          <h3>Kirim ke seluruh Indonesia</h3>
-          <p>Dikemas rapi dan dikirim dalam 1–2 hari kerja.</p>
+          <span class="rating-label">Rating Overall</span>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- Contact Section -->
-  <section class="cta rv" id="contact">
-    <div class="sticker bob" style="width: 84px; left: 6vw; top: 34px;">
-      <svg class="i"><use href="#smile" /></svg>
-    </div>
-    <div class="sticker bob" style="width: 76px; right: 8vw; bottom: 34px;">
-      <svg class="i"><use href="#flower" /></svg>
-    </div>
-    <h2>Hubungi kami,<br>atau ikuti drop berikutnya.</h2>
-    <p>Tanya produk lewat hello@maybeads.id atau daftarkan email untuk info koleksi baru.</p>
-    <form id="form">
-      <input type="email" placeholder="email@kamu.com" aria-label="Email" required>
-      <button class="btn" type="submit" data-magnet>Daftar</button>
-    </form>
-    <div class="ok" id="ok" role="status"></div>
-  </section>
+      <div class="rev-grid" id="rev-grid">
+        @foreach($reviews as $rv)
+          <article class="rev">
+            <span class="avatar" style="--av: {{ $rv['av'] }}">{{ strtoupper(substr($rv['name'], 0, 1)) }}</span>
+            <h3>{{ $rv['name'] }}</h3>
+            <small>{{ $rv['mail'] }}</small>
+            <div class="stars">★★★★★</div>
+            <p>{{ $rv['text'] }}</p>
+            <b>{{ $rv['tag'] }}: {{ $rv['var'] }}</b>
+          </article>
+        @endforeach
+      </div>
+    </section>
+
+    <!-- CTA band -->
+    <section class="band" id="cta">
+      <div class="band-bg" id="band-bg"></div>
+      <a href="#produk" class="band-title" id="band-link">
+        <span class="line"><span>Ready to start a new style?</span></span>
+        <span class="line"><span>Order now! <svg viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/></svg></span></span>
+      </a>
+    </section>
+  </main>
 
   <!-- Footer -->
-  <footer>
+  <footer class="footer" id="kontak">
     <div class="f-grid">
-      <div class="f-brand">
-        <a class="logo" href="#home">maybeads*</a>
-        <p>Toko aksesoris bertema Y2K. Dirakit tangan, dikirim ke seluruh Indonesia.</p>
-        <div class="soc">
-          <a href="#" aria-label="Instagram">
-            <svg viewBox="0 0 24 24">
-              <rect x="3" y="3" width="18" height="18" rx="5" />
-              <circle cx="12" cy="12" r="4" />
-              <circle cx="17.3" cy="6.7" r=".6" />
-            </svg>
-          </a>
-          <a href="#" aria-label="TikTok">
-            <svg viewBox="0 0 24 24">
-              <path d="M14 3v11a3.5 3.5 0 1 1-3.5-3.5M14 3c.3 2.4 1.9 4 4.5 4.2" />
-            </svg>
-          </a>
-        </div>
+      <div class="f-brand" data-fade>
+        <h4 class="f-logo">Maybeads</h4>
+        <p>Menyajikan busana nostalgia tahun 2000-an yang otentik dengan sentuhan streetwear modern dan energi futuristik.</p>
+        <a href="#" class="f-soc" aria-label="Instagram">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r=".6"/></svg>
+          Instagram
+        </a>
+        <a href="#" class="f-soc" aria-label="TikTok">
+          <svg viewBox="0 0 24 24"><path d="M14 3v11a3.5 3.5 0 1 1-3.5-3.5M14 3c.3 2.4 1.9 4 4.5 4.2"/></svg>
+          Tiktok
+        </a>
       </div>
-      <div>
-        <h4>Navigasi</h4>
+      <div data-fade>
+        <h4>Tautan</h4>
         <ul>
           <li><a href="#home">Home</a></li>
-          <li><a href="#about">About</a></li>
-          <li><a href="/product">Product</a></li>
-          <li><a href="#contact">Contact</a></li>
+          <li><a href="#produk">Produk</a></li>
+          <li><a href="#kontak">Kontak</a></li>
         </ul>
       </div>
-      <div>
-        <h4>Media sosial</h4>
+      <div data-fade>
+        <h4>Kebijakan</h4>
         <ul>
-          <li><a href="#">Instagram</a></li>
-          <li><a href="#">TikTok</a></li>
-          <li><a href="/privacy-policy">Privacy &amp; Policy</a></li>
+          <li><a href="/privacy-policy">Kebijakan Privasi</a></li>
+          <li><a href="#">Ketentuan Layanan</a></li>
+          <li><a href="#">Pengembalian &amp; Penukaran</a></li>
+          <li><a href="#">Informasi Pengiriman</a></li>
         </ul>
       </div>
-      <div>
-        <h4>Metode pembayaran</h4>
-        <div class="pay">
-          <span class="q">QRIS</span>
-          <span>GoPay</span>
-          <span>OVO</span>
-          <span>DANA</span>
-          <span>ShopeePay</span>
-        </div>
-      </div>
     </div>
-    <div class="f-bot">
-      <span>© 2026 maybeads. Semua hak dilindungi.</span>
-      <span>Dibuat dengan manik-manik &amp; kopi.</span>
-    </div>
+    <p class="f-copy">© {{ date('Y') }} Maybeads. All rights reserved. Built for digital cyber nomads.</p>
   </footer>
 
-  <!-- Lenis Script -->
-  <script src="{{ asset('vendor/lenis/lenis.min.js') }}"></script>
-  <script>
-    if (typeof Lenis === 'undefined') {
-      document.write('<script src="https://unpkg.com/lenis@1.1.20/dist/lenis.min.js"><\/script>');
-    }
-  </script>
-
-  <!-- Page Interactivity & Animations -->
   @vite(['resources/js/landing/home.js'])
 </body>
 </html>
