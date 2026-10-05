@@ -7,8 +7,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
+use App\Mail\VerificationCodeMail;
 
 class AuthController extends Controller
 {
@@ -117,39 +121,185 @@ class AuthController extends Controller
     }
 
     /**
-     * Handle new user registration.
+     * Handle initial registration and send email verification code.
      */
     public function register(Request $request)
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ], [
+            'email.unique' => 'Email ini sudah terdaftar. Silakan gunakan email lain atau masuk ke akun Anda.',
+            'password.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
+            'password.min' => 'Kata sandi minimal terdiri dari 8 karakter.',
         ]);
 
-        $isAdmin = (strtolower($validated['email']) === 'hlccntayuni@gmail.com');
+        $email = strtolower(trim($validated['email']));
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
+        // Generate 6-digit numeric OTP code
+        $otp = (string) random_int(100000, 999999);
+
+        // Simpan data pendaftaran sementara di Cache selama 15 menit
+        $cacheKey = 'register_pending_' . md5($email);
+        $pendingData = [
+            'name' => trim($validated['name']),
+            'email' => $email,
             'password' => Hash::make($validated['password']),
-            'role' => $isAdmin ? 'admin' : 'user',
-        ]);
+            'otp' => $otp,
+            'sent_at' => now()->timestamp,
+        ];
 
-        Auth::login($user);
+        Cache::put($cacheKey, $pendingData, now()->addMinutes(15));
 
-        $request->session()->regenerate();
-        $request->session()->put('role', $user->role);
+        // Kirim email verifikasi
+        try {
+            Mail::to($email)->send(new VerificationCodeMail($otp, $pendingData['name']));
+        } catch (\Throwable $e) {
+            Log::error('Gagal mengirim email verifikasi: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengirimkan email verifikasi. Pastikan konfigurasi email sudah benar atau coba beberapa saat lagi.',
+                'error_detail' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
 
         if ($request->expectsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Pendaftaran akun berhasil! Selamat datang di Maybeads.',
-                'redirect' => $user->isAdmin() ? route('admin.dashboard') : route('home'),
+                'requires_verification' => true,
+                'email' => $email,
+                'message' => 'Kode verifikasi 6 digit telah dikirimkan ke email Anda (' . $email . '). Silakan cek kotak masuk atau folder spam.',
             ]);
         }
 
-        return redirect()->route($user->isAdmin() ? 'admin.dashboard' : 'home');
+        return redirect()->route('register')->with('email_pending', $email);
+    }
+
+    /**
+     * Validate verification code and finally register user into database.
+     */
+    public function verifyRegistration(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => ['required', 'string', 'email'],
+            'code' => ['required', 'string', 'size:6'],
+        ], [
+            'email.required' => 'Email tidak valid.',
+            'code.required' => 'Kode verifikasi wajib diisi.',
+            'code.size' => 'Kode verifikasi harus terdiri dari 6 digit.',
+        ]);
+
+        $email = strtolower(trim($validated['email']));
+        $cacheKey = 'register_pending_' . md5($email);
+        $pendingData = Cache::get($cacheKey);
+
+        if (!$pendingData) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sesi verifikasi telah kedaluwarsa atau tidak ditemukan. Silakan isi form pendaftaran kembali.',
+            ], 422);
+        }
+
+        // Cek kembali apakah email tiba-tiba sudah terdaftar
+        if (User::where('email', $email)->exists()) {
+            Cache::forget($cacheKey);
+            return response()->json([
+                'success' => false,
+                'message' => 'Email ini sudah terdaftar. Silakan masuk ke akun Anda.',
+            ], 422);
+        }
+
+        // Verifikasi kecocokan kode OTP
+        if (trim((string) $pendingData['otp']) !== trim((string) $validated['code'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Kode verifikasi salah. Silakan periksa kembali kode di email Anda.',
+            ], 422);
+        }
+
+        // Kode tervalidasi dengan benar! Daftarkan akun baru ke database
+        $isAdmin = ($email === 'hlccntayuni@gmail.com');
+
+        $user = User::create([
+            'name' => $pendingData['name'],
+            'email' => $email,
+            'password' => $pendingData['password'],
+            'role' => $isAdmin ? 'admin' : 'user',
+            'email_verified_at' => now(),
+        ]);
+
+        // Bersihkan cache pendaftaran
+        Cache::forget($cacheKey);
+
+        // Buat sesi login
+        Auth::login($user);
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+            $request->session()->put('role', $user->role);
+        }
+
+        $redirectUrl = $user->isAdmin() ? route('admin.dashboard') : route('home');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Verifikasi email berhasil! Selamat datang di Maybeads.',
+            'role' => $user->role,
+            'redirect' => $redirectUrl,
+        ]);
+    }
+
+    /**
+     * Resend verification code to the unverified email.
+     */
+    public function resendVerificationCode(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => ['required', 'string', 'email'],
+        ]);
+
+        $email = strtolower(trim($validated['email']));
+        $cacheKey = 'register_pending_' . md5($email);
+        $pendingData = Cache::get($cacheKey);
+
+        if (!$pendingData) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data pendaftaran tidak ditemukan atau sudah kedaluwarsa. Silakan lakukan pendaftaran ulang.',
+            ], 422);
+        }
+
+        // Cooldown 60 detik sebelum kirim ulang
+        if (isset($pendingData['sent_at']) && (now()->timestamp - $pendingData['sent_at'] < 60)) {
+            $remaining = 60 - (now()->timestamp - $pendingData['sent_at']);
+            return response()->json([
+                'success' => false,
+                'message' => "Mohon tunggu {$remaining} detik sebelum meminta kode baru.",
+            ], 429);
+        }
+
+        // Buat kode OTP baru
+        $otp = (string) random_int(100000, 999999);
+        $pendingData['otp'] = $otp;
+        $pendingData['sent_at'] = now()->timestamp;
+        Cache::put($cacheKey, $pendingData, now()->addMinutes(15));
+
+        try {
+            Mail::to($email)->send(new VerificationCodeMail($otp, $pendingData['name']));
+        } catch (\Throwable $e) {
+            Log::error('Gagal mengirim ulang email verifikasi: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengirim ulang email: ' . $e->getMessage(),
+            ], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Kode verifikasi baru berhasil dikirimkan ke email Anda.',
+        ]);
     }
 
     /**
