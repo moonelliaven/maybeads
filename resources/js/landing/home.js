@@ -1,259 +1,188 @@
-(function () {
-  'use strict';
+/* ==========================================================================
+   Maybeads — Landing Page interactions
+   Lenis (smooth scroll) + Motion (animate / scroll / inView)
+   ========================================================================== */
+import Lenis from 'lenis';
+import { animate, scroll, inView, stagger } from 'motion';
 
-  function initHome() {
-      'use strict';
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ease = [0.22, 1, 0.36, 1];
+const $ = (s, c = document) => c.querySelector(s);
+const $$ = (s, c = document) => [...c.querySelectorAll(s)];
 
-      var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-      var $ = function (s) { return document.querySelector(s); };
-      var $$ = function (s) { return [].slice.call(document.querySelectorAll(s)); };
-      var clamp = function (v) { return Math.max(0, Math.min(1, v)); };
+/* ---------------------------------------------------------------------------
+   Lenis smooth scroll
+   --------------------------------------------------------------------------- */
+const lenis = reduce
+  ? null
+  : new Lenis({
+      duration: 1.15,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      touchMultiplier: 1.4,
+      autoRaf: true,
+    });
 
-      /* Inisialisasi Lenis Smooth Scroll */
-      var lenis = null;
-      if (typeof Lenis !== 'undefined' && !reduce) {
-        lenis = new Lenis({
-          duration: 1.2,
-          easing: function (t) {
-            return Math.min(1, 1.001 - Math.pow(2, -10 * t));
-          },
-          orientation: 'vertical',
-          gestureOrientation: 'vertical',
-          smoothWheel: true,
-          wheelMultiplier: 1,
-          touchMultiplier: 1.5,
-        });
-      }
+$$('a[href^="#"]').forEach((a) => {
+  a.addEventListener('click', (e) => {
+    const id = a.getAttribute('href');
+    if (!id || id === '#') return;
+    const target = $(id);
+    if (!target) return;
+    e.preventDefault();
+    if (lenis) lenis.scrollTo(target, { offset: id === '#home' ? -200 : -70 });
+    else target.scrollIntoView({ behavior: 'smooth' });
+  });
+});
 
-      /* Smooth scroll navigasi anchor menggunakan Lenis */
-      $$('a[href^="#"]').forEach(function (anchor) {
-        anchor.addEventListener('click', function (e) {
-          var targetId = this.getAttribute('href');
-          if (targetId && targetId !== '#') {
-            var targetEl = document.querySelector(targetId);
-            if (targetEl) {
-              e.preventDefault();
-              if (lenis) {
-                lenis.scrollTo(targetEl, { offset: 0, duration: 1.2 });
-              } else {
-                targetEl.scrollIntoView({ behavior: 'smooth' });
-              }
-            }
-          }
-        });
+/* ---------------------------------------------------------------------------
+   Navigation: shadow on scroll + hide on scroll down
+   --------------------------------------------------------------------------- */
+const nav = $('#nav');
+let lastY = 0;
+const onScroll = (y) => {
+  nav.classList.toggle('scrolled', y > 20);
+  nav.classList.toggle('hidden', y > 400 && y > lastY + 2);
+  if (y < lastY - 2) nav.classList.remove('hidden');
+  lastY = y;
+};
+if (lenis) lenis.on('scroll', ({ scroll: y }) => onScroll(y));
+else addEventListener('scroll', () => onScroll(scrollY), { passive: true });
+
+/* ---------------------------------------------------------------------------
+   Marquee strip — infinite loop, speeds up with scroll velocity
+   --------------------------------------------------------------------------- */
+const strip = $('#strip');
+if (strip && !reduce) {
+  const loop = animate(strip, { x: ['0%', '-25%'] }, { duration: 28, ease: 'linear', repeat: Infinity });
+  if (lenis) {
+    let speed = 1;
+    lenis.on('scroll', ({ velocity }) => {
+      speed = 1 + Math.min(Math.abs(velocity) * 0.25, 4);
+      loop.speed = velocity < 0 ? -speed : speed;
+    });
+    // ease back to normal speed when idle
+    setInterval(() => {
+      const s = loop.speed;
+      loop.speed = s + ((s < 0 ? -1 : 1) - s) * 0.15;
+    }, 60);
+  }
+}
+
+if (reduce) {
+  // CSS already shows everything; just set final rating text
+  const r = $('#rating');
+  if (r) r.textContent = r.dataset.to.replace('.', ',');
+}
+
+/* ---------------------------------------------------------------------------
+   Reveal helpers
+   --------------------------------------------------------------------------- */
+const revealLines = (root, delay = 0) =>
+  animate($$('.line > span', root), { y: ['110%', '0%'] }, { duration: 0.9, ease, delay: stagger(0.09, { startDelay: delay }) });
+
+const fadeUp = (els, delay = 0) =>
+  animate(els, { opacity: [0, 1], y: [18, 0] }, { duration: 0.8, ease, delay: stagger(0.08, { startDelay: delay }) });
+
+if (!reduce) {
+  /* Hero intro */
+  revealLines($('.hero-title'), 0.15);
+  fadeUp($$('.hero-copy [data-fade]'), 0.55);
+  $$('.hero-gallery [data-reveal]').forEach((fig, i) => {
+    animate(fig, { clipPath: ['inset(100% 0 0 0)', 'inset(0% 0 0 0)'] }, { duration: 1.1, ease, delay: 0.3 + i * 0.15 });
+    animate($('img', fig), { scale: [1.25, 1] }, { duration: 1.6, ease, delay: 0.3 + i * 0.15 });
+  });
+
+  /* Subtle image parallax tied to scroll */
+  $$('.hg img').forEach((img) => {
+    scroll(animate(img, { y: ['0%', '-9%'] }, { ease: 'linear' }), {
+      target: img.parentElement,
+      offset: ['start end', 'end start'],
+    });
+  });
+
+  /* Section titles */
+  $$('.section .split').forEach((t) => inView(t, () => { revealLines(t); }, { amount: 0.4 }));
+
+  /* Generic fades (outside hero) */
+  $$('[data-fade]')
+    .filter((el) => !el.closest('.hero'))
+    .forEach((el) => inView(el, () => { fadeUp(el, 0.15); }, { amount: 0.3 }));
+
+  /* Review cards */
+  inView('#rev-grid', (grid) => { fadeUp($$('.rev', grid)); }, { amount: 0.25 });
+
+  /* Rating counter */
+  const rating = $('#rating');
+  if (rating) {
+    inView(rating, () => {
+      animate(0, parseFloat(rating.dataset.to), {
+        duration: 1.6,
+        ease,
+        onUpdate: (v) => (rating.textContent = v.toFixed(1).replace('.', ',')),
       });
-
-      /* Judul hero: huruf naik satu-satu */
-      var i = 0;
-      $$('#title .ln').forEach(function (ln) {
-        ln.dataset.t.split('').forEach(function (c) {
-          var s = document.createElement('span');
-          s.className = 'ch' + (c === '.' ? ' dot' : '');
-          s.style.setProperty('--i', i++);
-          s.textContent = c;
-          ln.appendChild(s);
-        });
-      });
-
-      /* Split kata untuk heading */
-      $$('[data-split]').forEach(function (h) {
-        var words = h.textContent.trim().split(' ');
-        h.textContent = '';
-        words.forEach(function (w, k) {
-          var o = document.createElement('span');
-          o.className = 'w';
-          var n = document.createElement('span');
-          n.textContent = w;
-          n.style.setProperty('--i', k);
-          o.appendChild(n);
-          h.appendChild(o);
-          h.appendChild(document.createTextNode(' '));
-        });
-      });
-
-      /* Reveal saat masuk viewport + count-up */
-      var io = new IntersectionObserver(function (es) {
-        es.forEach(function (e) {
-          if (!e.isIntersecting) return;
-          e.target.classList.add('in');
-          io.unobserve(e.target);
-
-          $$('[data-count]').forEach(function (c) {
-            if (!e.target.contains(c)) return;
-            var to = +c.dataset.count;
-            var t0 = performance.now();
-            (function tick(t) {
-              var p = clamp((t - t0) / 1400);
-              c.textContent = Math.round(to * (1 - Math.pow(1 - p, 3)));
-              if (p < 1) requestAnimationFrame(tick);
-            })(t0);
-          });
-        });
-      }, { threshold: 0.2 });
-
-      $$('.rv, .split').forEach(function (el, k) {
-        el.style.setProperty('--d', (k % 3) * 90 + 'ms');
-        io.observe(el);
-      });
-
-      /* Manik-manik di kartu */
-      $$('.art').forEach(function (el) {
-        var cols = el.dataset.beads.split(',');
-        for (var k = 0; k < 9; k++) {
-          var b = document.createElement('i');
-          var s = 26 + Math.round(Math.random() * 28);
-          b.style.cssText =
-            'width:' + s + 'px;' +
-            'height:' + s + 'px;' +
-            'background:' + cols[k % cols.length] + ';' +
-            'left:' + (6 + k * 10 + Math.random() * 4) + '%;' +
-            'top:' + (26 + Math.sin(k / 1.4) * 22 + 24) + '%;' +
-            'transition-delay:' + (k * 30) + 'ms';
-          el.appendChild(b);
-        }
-      });
-
-      /* Marquee: kecepatan & arah mengikuti scroll */
-      function fill(id, words) {
-        var el = $(id);
-        var h = '';
-        for (var r = 0; r < 4; r++) {
-          words.forEach(function (w) {
-            h += '<span>' + w + '</span>';
-          });
-        }
-        el.innerHTML = h;
-        return el;
-      }
-      var m1 = fill('#m1', ['manik-manik', 'charm hp', 'kalung chrome', 'jepit kupu-kupu']);
-      var m2 = fill('#m2', ['y2k forever', 'gelang bubblegum', 'drop baru', 'handmade']);
-      var x1 = 0;
-      var x2 = 0;
-
-      /* State */
-      var mx = 0;
-      var my = 0;
-      var gx = innerWidth / 2;
-      var gy = innerHeight / 2;
-      var tx = gx;
-      var ty = gy;
-      var ly = lenis ? lenis.scroll : window.scrollY;
-      var vel = 0;
-
-      var stickers = $$('[data-speed]');
-      var track = $('#track');
-      var hs = $('#product');
-      var bar = $('#bar');
-      var shape = $('#shape');
-      var morph = $('#morph');
-      var nav = $('#nav');
-      var glow = $('#glow');
-      var title = $('#title');
-      var cards = $$('.card');
-
-      addEventListener('pointermove', function (e) {
-        mx = e.clientX / innerWidth - 0.5;
-        my = e.clientY / innerHeight - 0.5;
-        tx = e.clientX;
-        ty = e.clientY;
-      });
-
-      /* Tombol magnetik */
-      $$('[data-magnet]').forEach(function (b) {
-        b.addEventListener('pointermove', function (e) {
-          var r = b.getBoundingClientRect();
-          b.style.transform =
-            'translate(' +
-            (e.clientX - r.left - r.width / 2) * 0.25 + 'px,' +
-            (e.clientY - r.top - r.height / 2) * 0.35 + 'px)';
-        });
-        b.addEventListener('pointerleave', function () {
-          b.style.transform = '';
-        });
-      });
-
-      /* Morph lingkaran -> bintang */
-      function drawShape(p) {
-        var n = 24;
-        var pts = [];
-        for (var k = 0; k < n; k++) {
-          var a = (k / n) * Math.PI * 2 - Math.PI / 2 + p * 3.1;
-          var r = 100 + ((k % 2 ? 50 : 104) - 100) * p;
-          pts.push((Math.cos(a) * r).toFixed(1) + ',' + (Math.sin(a) * r).toFixed(1));
-        }
-        shape.setAttribute('points', pts.join(' '));
-      }
-      drawShape(0);
-
-      /* Animation Frame Loop dengan Lenis integration */
-      function frame(time) {
-        if (lenis) {
-          lenis.raf(time);
-        }
-
-        var y = lenis ? lenis.scroll : window.scrollY;
-        vel += ((y - ly) - vel) * 0.1;
-        ly = y;
-        nav.classList.toggle('scrolled', y > 40);
-
-        if (!reduce) {
-          gx += (tx - gx) * 0.08;
-          gy += (ty - gy) * 0.08;
-          glow.style.transform = 'translate3d(' + gx + 'px,' + gy + 'px,0)';
-
-          stickers.forEach(function (el) {
-            var sp = +el.dataset.speed;
-            var m = +(el.dataset.mouse || 0);
-            el.style.transform =
-              'translate3d(' + mx * m + 'px,' + (y * sp + my * m) + 'px,0) rotate(' + (y * sp * 0.08) + 'deg)';
-          });
-
-          title.style.transform =
-            'translate3d(' + (mx * -14) + 'px,' + (y * -0.12 + my * -10) + 'px,0) scale(' + (1 - clamp(y / 1200) * 0.12) + ')';
-
-          x1 -= 0.6 + Math.abs(vel) * 0.5;
-          x2 += 0.6 + Math.abs(vel) * 0.5;
-          var w1 = m1.scrollWidth / 2;
-          var w2 = m2.scrollWidth / 2;
-          x1 = -((-x1) % w1);
-          x2 = -w2 + (x2 % w2);
-          m1.style.transform = 'translate3d(' + x1 + 'px,0,0) skewX(' + Math.max(-10, Math.min(10, -vel * 0.3)) + 'deg)';
-          m2.style.transform = 'translate3d(' + x2 + 'px,0,0) skewX(' + Math.max(-10, Math.min(10, -vel * 0.3)) + 'deg)';
-        }
-
-        /* Horizontal scroll + efek 3D per kartu */
-        var r = hs.getBoundingClientRect();
-        var p = clamp(-r.top / (hs.offsetHeight - innerHeight));
-        track.style.transform = 'translate3d(' + (-p * (track.scrollWidth - innerWidth + innerWidth * 0.1)) + 'px,0,0)';
-        bar.style.width = p * 100 + '%';
-
-        if (!reduce) {
-          cards.forEach(function (c) {
-            var b = c.getBoundingClientRect();
-            var d = (b.left + b.width / 2 - innerWidth / 2) / innerWidth;
-            c.style.transform =
-              'rotateY(' + (-d * 18) + 'deg) translateY(' + (Math.abs(d) * 30) + 'px) scale(' + (1 - Math.abs(d) * 0.12) + ')';
-          });
-        }
-
-        var v = morph.getBoundingClientRect();
-        drawShape(reduce ? 0 : clamp((innerHeight * 0.8 - v.top) / (v.height + innerHeight * 0.3)));
-
-        requestAnimationFrame(frame);
-      }
-      requestAnimationFrame(frame);
-
-      /* Newsletter submit form */
-      $('#form').addEventListener('submit', function (e) {
-        e.preventDefault();
-        $('#ok').textContent = 'Terdaftar! Info drop berikutnya akan dikirim ke emailmu.';
-        e.target.reset();
-      });
+    }, { amount: 0.6 });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initHome);
-  } else {
-    initHome();
+  /* CTA band: title reveal + gentle drift on scroll */
+  const band = $('#cta');
+  if (band) {
+    inView(band, () => { revealLines($('.band-title', band)); }, { amount: 0.4 });
+    scroll(animate('.band-title', { x: [-30, 20] }, { ease: 'linear' }), { target: band, offset: ['start end', 'end start'] });
   }
-})();
+}
+
+/* ---------------------------------------------------------------------------
+   Best seller: category tabs with sliding pill
+   --------------------------------------------------------------------------- */
+const tabs = $('#tabs');
+const pill = $('#tab-pill');
+const cards = $$('#cards .card');
+const MAX = 4;
+let cardsSeen = false;
+
+const movePill = (btn) => {
+  if (!pill || !btn) return;
+  pill.style.width = `${btn.offsetWidth}px`;
+  pill.style.height = `${btn.offsetHeight}px`;
+  pill.style.top = `${btn.offsetTop}px`;
+  pill.style.transform = `translateX(${btn.offsetLeft - 4}px)`;
+};
+
+const filterCards = (cat, animateIn = true) => {
+  let shown = 0;
+  const visible = [];
+  cards.forEach((c) => {
+    const match = cat === 'all' || c.dataset.cat === cat || c.dataset.cat === 'all';
+    const show = match && shown < MAX;
+    c.hidden = !show;
+    if (show) { shown++; visible.push(c); }
+  });
+  if (animateIn && !reduce) fadeUp(visible);
+  else visible.forEach((c) => (c.style.opacity = 1));
+};
+
+if (tabs) {
+  const active = $('.tab.active', tabs);
+  movePill(active);
+  filterCards('all', false);
+  if (!reduce) cards.forEach((c) => (c.style.opacity = 0));
+
+  tabs.addEventListener('click', (e) => {
+    const btn = e.target.closest('.tab');
+    if (!btn || btn.classList.contains('active')) return;
+    $$('.tab', tabs).forEach((t) => t.classList.toggle('active', t === btn));
+    movePill(btn);
+    filterCards(btn.dataset.cat, cardsSeen);
+  });
+
+  addEventListener('resize', () => movePill($('.tab.active', tabs)));
+  document.fonts?.ready.then(() => movePill($('.tab.active', tabs)));
+}
+
+if (!reduce) {
+  inView('#cards', (grid) => {
+    cardsSeen = true;
+    fadeUp($$('.card:not([hidden])', grid));
+  }, { amount: 0.2 });
+}
