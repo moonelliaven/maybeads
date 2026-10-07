@@ -46,7 +46,6 @@ import 'sweetalert2/dist/sweetalert2.min.css';
       eye.addEventListener('click', function () {
         var show = pw.type === 'password';
         pw.type = show ? 'text' : 'password';
-        eye.textContent = show ? 'Sembunyi' : 'Lihat';
         eye.setAttribute('aria-pressed', show);
         eye.setAttribute('aria-label', show ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
       });
@@ -99,7 +98,7 @@ import 'sweetalert2/dist/sweetalert2.min.css';
             icon: 'warning',
             title: 'Perhatian',
             text: 'Harap isi email dan kata sandi Anda.',
-            confirmButtonColor: '#1f3bff',
+            confirmButtonColor: '#3a4f98',
             customClass: {
               popup: 'y2k-swal-popup'
             }
