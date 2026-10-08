@@ -23,21 +23,32 @@ class LoginController extends Controller
         ]);
 
         if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Email atau kata sandi yang Anda masukkan salah.',
+                    'errors' => ['email' => ['Email atau kata sandi yang Anda masukkan salah.']]
+                ], 422);
+            }
             return back()->withErrors([
-                'email' => 'Email atau password salah.',
+                'email' => 'Email atau kata sandi yang Anda masukkan salah.',
             ])->onlyInput('email');
         }
 
         $request->session()->regenerate();
-
         $user = Auth::user();
-        
-        // login path validate if success depends on user rules
-        if ($user->role === 'admin') {
-            return redirect()->intended('/admin');
-        } else {
-            return redirect()->intended('/');
+        $redirect = $user->role === 'admin' ? '/admin' : '/';
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'role' => $user->role,
+                'redirect' => $redirect,
+                'message' => 'Berhasil masuk!',
+            ]);
         }
+
+        return redirect()->intended($redirect);
     }
 
     // logout request
@@ -47,6 +58,10 @@ class LoginController extends Controller
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'redirect' => '/']);
+        }
 
         return redirect('/');
     }
