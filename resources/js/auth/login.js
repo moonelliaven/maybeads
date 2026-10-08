@@ -127,9 +127,17 @@ import 'sweetalert2/dist/sweetalert2.min.css';
           body: formData
         })
         .then(function (response) {
-          return response.json().then(function (data) {
-            return { ok: response.ok, status: response.status, data: data };
-          });
+          var isJson = (response.headers.get('content-type') || '').includes('application/json');
+          if (isJson) {
+            return response.json().then(function (data) {
+              return { ok: response.ok, status: response.status, data: data };
+            });
+          }
+          return {
+            ok: response.ok,
+            status: response.status,
+            data: { success: response.ok, message: response.ok ? 'Berhasil' : 'Gagal memproses permintaan.' }
+          };
         })
         .then(function (res) {
           if (res.ok && res.data.success) {
