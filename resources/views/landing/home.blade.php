@@ -22,7 +22,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Maybeads — Aksesoris Y2K Impianmu</title>
+  <title>Maybeads</title>
+  <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}">
   <meta name="description" content="Maybeads: aksesoris Y2K berkualitas tinggi — cincin, kalung, gelang, dan aksesori krom. Dikirim ke seluruh Indonesia.">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
