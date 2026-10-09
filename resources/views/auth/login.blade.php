@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>Masuk — Maybeads</title>
+  <title>Maybeads</title>
+  <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}">
   <meta name="description" content="Masuk ke akun Maybeads untuk melanjutkan belanja aksesoris Y2K favoritmu.">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,7 +39,7 @@
 
           <form method="POST" action="{{ route('login') }}" id="form" class="auth-fields" novalidate>
             @csrf
-
+z
             <div class="f">
               <label for="email">Email</label>
               <div class="inp @error('email') err @enderror">

@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>Daftar — Maybeads</title>
+  <title>Maybeads</title>
+  <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}">
   <meta name="description" content="Buat akun Maybeads dan mulai koleksi aksesoris Y2K impianmu.">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
