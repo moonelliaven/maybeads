@@ -39,7 +39,6 @@
 
           <form method="POST" action="{{ route('login') }}" id="form" class="auth-fields" novalidate>
             @csrf
-z
             <div class="f">
               <label for="email">Email</label>
               <div class="inp @error('email') err @enderror">

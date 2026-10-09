@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class LoginController extends Controller
 {
@@ -16,12 +17,13 @@ class LoginController extends Controller
     // login request
     public function login(Request $request)
     {
-        // user validate
+        // user validate input
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
 
+        // memeriksa login     
         if (!Auth::attempt($credentials, $request->boolean('remember'))) {
             if ($request->wantsJson()) {
                 return response()->json([
