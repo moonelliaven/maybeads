@@ -1,10 +1,21 @@
 @php
-  $products   = $products   ?? collect();
-  $categories = $categories ?? collect();
+  use App\Models\Category;
+  use App\Models\Product;
+
+  try {
+      $categories = $categories ?? Category::withCount('products')->get();
+      $products   = $products   ?? Product::with('category')->latest('id')->get();
+  } catch (\Throwable $e) {
+      $categories = $categories ?? collect();
+      $products   = $products   ?? collect();
+  }
   $fallbacks  = ['prod-hairclip.jpg', 'prod-ring.jpg', 'prod-butterfly.jpg', 'prod-keychain.jpg'];
   $imgFor = function ($p, $i) use ($fallbacks) {
       if ($p->image && file_exists(public_path('images/products/' . $p->image))) {
           return asset('images/products/' . $p->image);
+      }
+      if ($p->image && file_exists(public_path('images/landing/' . $p->image))) {
+          return asset('images/landing/' . $p->image);
       }
       return asset('images/landing/' . $fallbacks[$i % count($fallbacks)]);
   };
