@@ -16,6 +16,10 @@ class Category extends Model
         'image',
     ];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+    ];
+
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
