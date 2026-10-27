@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
@@ -35,6 +36,23 @@ class DatabaseSeeder extends Seeder
 
         foreach ($categories as $cat) {
             Category::updateOrCreate(['id' => $cat['id']], $cat);
+        }
+
+        // Pastikan direktori storage/app/public/product ada
+        $productStoragePath = storage_path('app/public/product');
+        if (!File::isDirectory($productStoragePath)) {
+            File::makeDirectory($productStoragePath, 0755, true, true);
+        }
+
+        // Salin file gambar produk ke storage/app/public/product jika ada di public/images/products
+        $sourceImagesPath = public_path('images/products');
+        if (File::isDirectory($sourceImagesPath)) {
+            foreach (File::files($sourceImagesPath) as $file) {
+                $targetFile = $productStoragePath . '/' . $file->getFilename();
+                if (!File::exists($targetFile)) {
+                    File::copy($file->getPathname(), $targetFile);
+                }
+            }
         }
 
         // Products
