@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  @vite(['resources/css/lenis.css', 'resources/css/admin/dashboard.css', 'resources/js/admin/dashboard.js'])
+  @vite(['resources/css/admin/dashboard.css', 'resources/js/admin/dashboard.js'])
 </head>
 <body>
 
@@ -212,7 +212,7 @@
               <button type="button" class="tab" role="tab" aria-selected="false" data-filter="selesai">Selesai</button>
             </div>
 
-            <div class="orders-scroll" id="ordersList" data-lenis-prevent>
+            <div class="orders-scroll" id="ordersList">
               @foreach ($orders as $order)
                 <a href="/admin/orders" class="order-row-item" data-status="{{ $order['status'] }}">
                   <div class="order-user-info">
@@ -304,8 +304,5 @@
     </div>
   </div>
 
-  <!-- Lenis Script -->
-  <script src="{{ asset('vendor/lenis/lenis.min.js') }}"></script>
-  <script>if(typeof Lenis==='undefined'){document.write('<script src="https://unpkg.com/lenis@1.1.20/dist/lenis.min.js"><\/script>');}</script>
 </body>
 </html>

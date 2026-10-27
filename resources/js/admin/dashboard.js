@@ -6,7 +6,7 @@ window.Swal = Swal;
 
 /**
  * Admin Dashboard & Sidebar Interactivity - Maybead.s
- * Includes: Lenis Smooth Scroll, Sidebar Toggles, Dropdowns, Tabs, & Metrics
+ * Includes: Sidebar Toggles, Dropdowns, Tabs, & Metrics
  */
 
 (function () {
@@ -16,33 +16,7 @@ window.Swal = Swal;
     var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     /* ==========================================================================
-       1. Lenis Smooth Scrolling
-       ========================================================================== */
-    var lenis = null;
-    if (typeof Lenis !== 'undefined' && !reduce) {
-      lenis = new Lenis({
-        duration: 1.2,
-        easing: function (t) {
-          return Math.min(1, 1.001 - Math.pow(2, -10 * t));
-        },
-        orientation: 'vertical',
-        gestureOrientation: 'vertical',
-        smoothWheel: true,
-        touchMultiplier: 1.5,
-      });
-
-      function raf(time) {
-        lenis.raf(time);
-        requestAnimationFrame(raf);
-      }
-      requestAnimationFrame(raf);
-
-      // Expose to window if needed
-      window.__adminLenis = lenis;
-    }
-
-    /* ==========================================================================
-       2. Sidebar Toggle (Desktop Collapse & Mobile Drawer)
+       1. Sidebar Toggle (Desktop Collapse & Mobile Drawer)
        ========================================================================== */
     var sidebar = document.getElementById('adminSidebar');
     var toggleBtn = document.getElementById('sidebarToggle');

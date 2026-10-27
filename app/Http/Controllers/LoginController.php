@@ -24,7 +24,7 @@ class LoginController extends Controller
         ]);
 
         // memeriksa login     
-        if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+        if (!Auth::attempt($credentials)) {
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,

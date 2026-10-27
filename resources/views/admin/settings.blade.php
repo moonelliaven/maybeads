@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  @vite(['resources/css/lenis.css', 'resources/css/admin/dashboard.css', 'resources/css/admin/settings.css', 'resources/js/admin/dashboard.js'])
+  @vite(['resources/css/admin/dashboard.css', 'resources/css/admin/settings.css', 'resources/js/admin/dashboard.js'])
 </head>
 <body>
 

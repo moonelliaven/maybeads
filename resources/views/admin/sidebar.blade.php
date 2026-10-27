@@ -7,7 +7,7 @@
     </a>
   </div>
 
-  <div class="sidebar-nav" data-lenis-prevent>
+  <div class="sidebar-nav">
     <!-- MENU UTAMA -->
     <div class="nav-section">
       <div class="nav-header">MENU UTAMA</div>
@@ -23,16 +23,24 @@
             <span class="nav-text">Dashboard</span>
           </a>
         </li>
-        <li>
-          <a href="{{ route('admin.product.index') }}" data-label="Produk" class="nav-item {{ ($active ?? '') === 'product' ? 'active' : '' }}">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-              <line x1="12" y1="22.08" x2="12" y2="12"></line>
+
+    <li>
+        <a href="{{ route('admin.product.index') }}"
+          data-label="Produk"
+          class="nav-item {{ ($active ?? '') === 'product' ? 'active' : '' }}">
+
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
             </svg>
+
             <span class="nav-text">Produk</span>
-          </a>
-        </li>
+        </a>
+    </li>
+
         <li>
           <a href="/admin/orders" data-label="Pesanan" class="nav-item {{ ($active ?? '') === 'pesanan' ? 'active' : '' }}">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">

@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\ProductController;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -19,33 +21,37 @@ Route::get('/', function () {
     return view('landing.home');
 })->name('home');
 
-// Admin Routes (Hanya dapat diakses oleh user dengan session role admin)
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', function () {
-        return view('admin.dashboard');
-    })->name('dashboard');
+// Admin Routes
+Route::middleware(['auth', 'admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
 
-    // route but in group; product
-    // route::middleware('user')-> prefix('product')
-    Route::middleware(['product'])->prefix('product')->name('product.')->group(function () {
-        // index
         Route::get('/', function () {
-            return view('admin.product.index');
-        })->name('index');
+            return view('admin.dashboard');
+        })->name('dashboard');
 
-        // create
-        Route::get('/create', function () {
-            return view('admin.product.create');
-        })->name('create');
+        // Product Routes
+        Route::prefix('product')
+            ->name('product.')
+            ->group(function () {
+                Route::get('/', [ProductController::class, 'index'])
+                    ->name('index');
 
-        // edit
-        Route::get('/{id}/edit', function () {
-            return view('admin.product.edit');
-        })->name('edit');
+                Route::get('/create', [ProductController::class, 'create'])
+                    ->name('create');
 
-        // delete
-        Route::delete('/{id}/delete', function () {
-            return view('admin.product.delete');
-        })->name('delete');
+                Route::post('/', [ProductController::class, 'store'])
+                    ->name('store');
+
+                Route::get('/{product}/edit', [ProductController::class, 'edit'])
+                    ->name('edit');
+
+                Route::put('/{product}', [ProductController::class, 'update'])
+                    ->name('update');
+
+                Route::delete('/{product}', [ProductController::class, 'destroy'])
+                    ->name('destroy');
+            });
     });
-});
+
