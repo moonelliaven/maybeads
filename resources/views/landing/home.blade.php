@@ -11,6 +11,9 @@
   }
   $fallbacks  = ['prod-hairclip.jpg', 'prod-ring.jpg', 'prod-butterfly.jpg', 'prod-keychain.jpg'];
   $imgFor = function ($p, $i) use ($fallbacks) {
+      if ($p->image && file_exists(storage_path('app/public/product/' . $p->image))) {
+          return asset('storage/product/' . $p->image);
+      }
       if ($p->image && file_exists(public_path('images/products/' . $p->image))) {
           return asset('images/products/' . $p->image);
       }
