@@ -194,19 +194,29 @@
               </div>
             </div>
 
-            {{-- Jenis / Varian --}}
+            {{-- Varian Produk (Warna & Ukuran) --}}
             <div class="form-field-group">
-              <label class="form-label">Jenis</label>
-              <div id="variantsContainer" class="variants-list">
-                {{-- JS adds inputs here --}}
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                <div>
+                  <label class="form-label" style="margin-bottom: 2px;">Varian Produk (Warna & Ukuran)</label>
+                  <span style="font-size: 11.5px; color: #64748b;">Atur warna, ukuran, foto varian, dan stok untuk tiap varian.</span>
+                </div>
+                <button type="button" class="btn-add-type" id="btnAddVariant">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  Tambah Varian
+                </button>
               </div>
-              <button type="button" class="btn-add-type" id="btnAddVariant">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                Tambah
-              </button>
+
+              <div id="variantsContainer" class="variants-list">
+                {{-- JS renders variant cards here --}}
+              </div>
+              <div id="variantDuplicateAlert" class="variant-duplicate-alert" role="alert"></div>
+              @error('variants')
+                <div class="form-error-msg">{{ $message }}</div>
+              @enderror
             </div>
 
             {{-- Deskripsi --}}

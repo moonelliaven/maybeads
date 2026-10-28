@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
@@ -18,7 +19,6 @@ class Product extends Model
         'image',
         'secondary_images',
         'description',
-        'variants',
         'price',
         'stock',
         'status',
@@ -27,7 +27,6 @@ class Product extends Model
     protected $casts = [
         'created_at'           => 'datetime',
         'secondary_categories' => 'array',
-        'variants'             => 'array',
         'secondary_images'     => 'array',
         'status'               => 'boolean',
     ];
@@ -35,5 +34,19 @@ class Product extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function variants(): HasMany
+    {
+        return $this->hasMany(ProductVariant::class, 'product_id');
+    }
+
+    public function getVariantsAttribute()
+    {
+        if (! $this->relationLoaded('variants')) {
+            $this->setRelation('variants', $this->variants()->get());
+        }
+
+        return $this->getRelation('variants');
     }
 }

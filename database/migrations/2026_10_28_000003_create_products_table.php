@@ -14,11 +14,15 @@ return new class extends Migration
                 ->constrained('categories')
                 ->restrictOnDelete()
                 ->cascadeOnUpdate();
+            $table->json('secondary_categories')->nullable();
             $table->string('product_name', 100)->unique();
-            $table->string('image', 20)->nullable();
+            $table->string('image', 255)->nullable();
+            $table->json('secondary_images')->nullable();
             $table->text('description')->nullable();
+            $table->json('variants')->nullable();
             $table->string('price', 100);
             $table->integer('stock')->default(0);
+            $table->boolean('status')->default(true);
             $table->timestamp('created_at')->useCurrent();
         });
     }
