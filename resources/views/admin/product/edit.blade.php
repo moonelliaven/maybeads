@@ -28,10 +28,34 @@
   }
 
   $secCategories = $product->secondary_categories ?? [];
-  $productVariants = $product->variants ?? [];
+  $productVariants = $product->variants ?? collect();
+  $existingVariantsJson = $product->variants->map(function ($v) {
+      $imgUrl = '';
+      if (!empty($v->image)) {
+          if (file_exists(storage_path('app/public/product/' . $v->image))) {
+              $imgUrl = asset('storage/product/' . $v->image);
+          } elseif (file_exists(public_path('product/' . $v->image))) {
+              $imgUrl = asset('product/' . $v->image);
+          } else {
+              $imgUrl = asset('storage/product/' . $v->image);
+          }
+      }
+      return [
+          'id'            => $v->id,
+          'color'         => $v->color,
+          'size'          => $v->size,
+          'stock'         => $v->stock,
+          'imageFilename' => $v->image,
+          'imageUrl'      => $imgUrl,
+      ];
+  })->values();
   $secImages = $product->secondary_images ?? [];
   $statusVal = old('status', $product->status ?? 1);
 @endphp
+
+<script>
+  window.__existingVariants = {!! json_encode($existingVariantsJson) !!};
+</script>
 
 <div class="admin-layout">
   @include('admin.sidebar', ['active' => 'product'])
@@ -258,26 +282,29 @@
               </div>
             </div>
 
-            {{-- Jenis / Varian --}}
+            {{-- Varian Produk (Warna & Ukuran) --}}
             <div class="form-field-group">
-              <label class="form-label">Jenis</label>
-              <div id="variantsContainer" class="variants-list">
-                @if (!empty($productVariants) && is_array($productVariants))
-                  @foreach ($productVariants as $varVal)
-                    <div class="variant-row">
-                      <input type="text" name="variants[]" class="form-control-input" placeholder="Contoh: Merah / XL / Varian A" value="{{ $varVal }}">
-                      <button type="button" class="btn-remove-variant" onclick="this.closest('.variant-row').remove();">&times;</button>
-                    </div>
-                  @endforeach
-                @endif
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                <div>
+                  <label class="form-label" style="margin-bottom: 2px;">Varian Produk (Warna & Ukuran)</label>
+                  <span style="font-size: 11.5px; color: #64748b;">Atur warna, ukuran, foto varian, dan stok untuk tiap varian.</span>
+                </div>
+                <button type="button" class="btn-add-type" id="btnAddVariant">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  Tambah Varian
+                </button>
               </div>
-              <button type="button" class="btn-add-type" id="btnAddVariant">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                Tambah
-              </button>
+
+              <div id="variantsContainer" class="variants-list">
+                {{-- JS renders existing and new variant cards here --}}
+              </div>
+              <div id="variantDuplicateAlert" class="variant-duplicate-alert" role="alert"></div>
+              @error('variants')
+                <div class="form-error-msg">{{ $message }}</div>
+              @enderror
             </div>
 
             {{-- Deskripsi Produk --}}

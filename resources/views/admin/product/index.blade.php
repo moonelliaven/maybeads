@@ -204,13 +204,14 @@
               <th>Kategori</th>
               <th>Foto</th>
               <th>Stok</th>
+              <th>Status</th>
               <th>Aksi</th>
             </tr>
           </thead>
           <tbody id="productTableBody">
             {{-- Dirender oleh JS --}}
             <tr>
-              <td colspan="7" style="text-align:center;padding:40px;color:#94a3b8;font-size:13px">
+              <td colspan="8" style="text-align:center;padding:40px;color:#94a3b8;font-size:13px">
                 Memuat data…
               </td>
             </tr>

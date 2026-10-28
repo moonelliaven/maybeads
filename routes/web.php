@@ -71,6 +71,9 @@ Route::middleware(['auth', 'admin'])
                 Route::post('/', [CategoryController::class, 'store'])
                     ->name('store');
 
+                Route::get('/{category}', [CategoryController::class, 'show'])
+                    ->name('show');
+
                 Route::get('/{category}/edit', [CategoryController::class, 'edit'])
                     ->name('edit');
 

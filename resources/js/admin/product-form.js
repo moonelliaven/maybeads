@@ -464,42 +464,230 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* =====================================================================
-     7. JENIS / VARIANTS (Dapat Ditambahkan Bebas)
+     7. VARIAN PRODUK (Warna, Ukuran, Stok & Foto Varian)
   ===================================================================== */
-  const btnAddVariant    = document.getElementById('btnAddVariant');
-  const variantsContainer = document.getElementById('variantsContainer');
+  const btnAddVariant      = document.getElementById('btnAddVariant');
+  const variantsContainer  = document.getElementById('variantsContainer');
+  const duplicateAlert     = document.getElementById('variantDuplicateAlert');
+  let variantIndexCounter  = 0;
 
-  function createVariantRow(value = '') {
-    if (!variantsContainer) return;
-    const row = document.createElement('div');
-    row.className = 'variant-row';
+  function updateTotalStockSum() {
+    const stockInputs = document.querySelectorAll('.variant-stock-input');
+    const mainStockInput = document.getElementById('stockInput');
+    if (!mainStockInput) return;
 
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.name = 'variants[]';
-    input.className = 'form-control-input';
-    input.placeholder = 'Contoh: Merah / XL / Varian A';
-    input.value = value;
+    if (stockInputs.length > 0) {
+      let sum = 0;
+      stockInputs.forEach(input => {
+        sum += parseInt(input.value, 10) || 0;
+      });
+      mainStockInput.value = sum;
+    }
+  }
 
-    const removeBtn = document.createElement('button');
-    removeBtn.type = 'button';
-    removeBtn.className = 'btn-remove-variant';
-    removeBtn.innerHTML = '&times;';
-    removeBtn.title = 'Hapus jenis';
-    removeBtn.addEventListener('click', () => {
-      row.remove();
+  function checkDuplicateVariants() {
+    const cards = document.querySelectorAll('.variant-item-card');
+    const seen = new Map();
+    let hasDuplicate = false;
+
+    cards.forEach(card => {
+      const colorInput = card.querySelector('.variant-color-input');
+      const sizeInput  = card.querySelector('.variant-size-input');
+      if (!colorInput || !sizeInput) return;
+
+      const colorVal = colorInput.value.trim().toLowerCase();
+      const sizeVal  = sizeInput.value.trim().toLowerCase();
+
+      // Only check if at least one field has value
+      if (colorVal || sizeVal) {
+        const comboKey = colorVal + '___' + sizeVal;
+        if (seen.has(comboKey)) {
+          hasDuplicate = true;
+          colorInput.style.borderColor = '#ef4444';
+          sizeInput.style.borderColor = '#ef4444';
+          const prevCard = seen.get(comboKey);
+          prevCard.querySelector('.variant-color-input').style.borderColor = '#ef4444';
+          prevCard.querySelector('.variant-size-input').style.borderColor = '#ef4444';
+        } else {
+          seen.set(comboKey, card);
+          colorInput.style.borderColor = '';
+          sizeInput.style.borderColor = '';
+        }
+      } else {
+        colorInput.style.borderColor = '';
+        sizeInput.style.borderColor = '';
+      }
     });
 
-    row.appendChild(input);
-    row.appendChild(removeBtn);
-    variantsContainer.appendChild(row);
-    input.focus();
+    if (duplicateAlert) {
+      duplicateAlert.style.display = hasDuplicate ? 'block' : 'none';
+      if (hasDuplicate) {
+        duplicateAlert.textContent = 'Perhatian: Terdapat kombinasi warna dan ukuran varian yang duplikat!';
+      }
+    }
+
+    return hasDuplicate;
+  }
+
+  function createVariantCard(data = {}) {
+    if (!variantsContainer) return;
+    const idx = variantIndexCounter++;
+
+    const card = document.createElement('div');
+    card.className = 'variant-item-card';
+    card.dataset.index = idx;
+
+    // Existing ID & Image values (for Edit mode)
+    const existingId = data.id || '';
+    const existingImage = data.imageFilename || '';
+    const existingImageUrl = data.imageUrl || '';
+    const colorVal = data.color || '';
+    const sizeVal = data.size || '';
+    const stockVal = data.stock !== undefined ? data.stock : 0;
+
+    card.innerHTML = `
+      ${existingId ? `<input type="hidden" name="variants[${idx}][id]" value="${existingId}">` : ''}
+      <input type="hidden" name="variants[${idx}][existing_image]" class="variant-existing-image-input" value="${existingImage}">
+      <input type="file" name="variant_images[${idx}]" class="variant-file-input" accept="image/png,image/jpeg,image/webp" style="display:none;">
+
+      <div class="variant-img-uploader" title="Klik untuk unggah foto varian (warna ini)">
+        <div class="variant-img-placeholder" style="${existingImageUrl ? 'display:none;' : ''}">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+            <circle cx="12" cy="13" r="4"></circle>
+          </svg>
+          <span>Foto</span>
+        </div>
+        <img class="variant-img-preview" src="${existingImageUrl || ''}" alt="Foto Varian" style="${existingImageUrl ? 'display:block;' : 'display:none;'}">
+        <button type="button" class="btn-clear-variant-img" title="Hapus foto varian" style="${existingImageUrl ? 'display:flex;' : 'display:none;'}">&times;</button>
+      </div>
+
+      <div class="variant-inputs-row">
+        <div class="variant-field">
+          <label class="variant-mini-label">Warna</label>
+          <input type="text" name="variants[${idx}][color]" class="form-control-input variant-color-input"
+                 placeholder="Cth: Pink, Ungu, Hitam" value="${escHtml(colorVal)}" required>
+        </div>
+
+        <div class="variant-field">
+          <label class="variant-mini-label">Ukuran</label>
+          <input type="text" name="variants[${idx}][size]" class="form-control-input variant-size-input"
+                 placeholder="Cth: All Size, 16cm, M" value="${escHtml(sizeVal)}" required>
+        </div>
+
+        <div class="variant-field variant-field-stock">
+          <label class="variant-mini-label">Stok</label>
+          <input type="number" name="variants[${idx}][stock]" class="form-control-input variant-stock-input"
+                 placeholder="0" min="0" value="${stockVal}" required>
+        </div>
+      </div>
+
+      <button type="button" class="btn-remove-variant-row" title="Hapus varian ini">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6l-1 14H6L5 6"></path>
+          <path d="M10 11v6"></path>
+          <path d="M14 11v6"></path>
+          <path d="M9 6V4h6v2"></path>
+        </svg>
+      </button>
+    `;
+
+    // Elements & event listeners inside card
+    const uploaderBox    = card.querySelector('.variant-img-uploader');
+    const fileInputElem  = card.querySelector('.variant-file-input');
+    const previewImgElem = card.querySelector('.variant-img-preview');
+    const placeholderElem= card.querySelector('.variant-img-placeholder');
+    const clearImgBtn    = card.querySelector('.btn-clear-variant-img');
+    const existingInput  = card.querySelector('.variant-existing-image-input');
+    const colorInputElem = card.querySelector('.variant-color-input');
+    const sizeInputElem  = card.querySelector('.variant-size-input');
+    const stockInputElem = card.querySelector('.variant-stock-input');
+    const removeRowBtn   = card.querySelector('.btn-remove-variant-row');
+
+    // Trigger file chooser
+    uploaderBox.addEventListener('click', (e) => {
+      if (e.target === clearImgBtn) return;
+      fileInputElem.click();
+    });
+
+    // Preview uploaded file
+    fileInputElem.addEventListener('change', () => {
+      const file = fileInputElem.files?.[0];
+      if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          previewImgElem.src = ev.target.result;
+          previewImgElem.style.display = 'block';
+          placeholderElem.style.display = 'none';
+          clearImgBtn.style.display = 'flex';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Clear photo
+    clearImgBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fileInputElem.value = '';
+      if (existingInput) existingInput.value = '';
+      previewImgElem.src = '';
+      previewImgElem.style.display = 'none';
+      placeholderElem.style.display = 'flex';
+      clearImgBtn.style.display = 'none';
+    });
+
+    // Duplicate check on input
+    colorInputElem.addEventListener('input', checkDuplicateVariants);
+    sizeInputElem.addEventListener('input', checkDuplicateVariants);
+
+    // Stock update on input
+    stockInputElem.addEventListener('input', updateTotalStockSum);
+
+    // Remove row
+    removeRowBtn.addEventListener('click', () => {
+      card.remove();
+      checkDuplicateVariants();
+      updateTotalStockSum();
+    });
+
+    variantsContainer.appendChild(card);
+    checkDuplicateVariants();
+    updateTotalStockSum();
+  }
+
+  // Helper escHtml
+  function escHtml(str) {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
   if (btnAddVariant) {
     btnAddVariant.addEventListener('click', (e) => {
       e.preventDefault();
-      createVariantRow();
+      createVariantCard();
+      const lastCard = variantsContainer.lastElementChild;
+      lastCard?.querySelector('.variant-color-input')?.focus();
+    });
+  }
+
+  // Load existing variants if window.__existingVariants exists
+  if (window.__existingVariants && Array.isArray(window.__existingVariants)) {
+    window.__existingVariants.forEach(v => {
+      createVariantCard(v);
+    });
+  }
+
+  // Prevent form submit if duplicate variants exist
+  if (formElement) {
+    formElement.addEventListener('submit', (e) => {
+      if (checkDuplicateVariants()) {
+        e.preventDefault();
+        alert('Terdapat kombinasi varian warna dan ukuran yang duplikat. Silakan ubah sebelum menyimpan.');
+      }
     });
   }
 

@@ -272,14 +272,18 @@ document.addEventListener('DOMContentLoaded', () => {
   ===================================================================== */
   function renderTableRows(products) {
     if (!products.length) return renderEmpty();
-    return products.map((p, i) => `
+    return products.map((p, i) => {
+      const isActive = p.status !== false && p.status !== 0 && p.status !== '0';
+      const statusText = isActive ? 'Aktif' : 'Nonaktif';
+      return `
       <tr data-id="${p.id}">
-        <td class="cb-col"><input type="checkbox" class="tbl-check" aria-label="Pilih ${p.product_name}"></td>
+        <td class="cb-col"><input type="checkbox" class="tbl-check" aria-label="Pilih ${escHtml(p.product_name)}"></td>
         <td class="col-id">${p.id}</td>
         <td class="col-name">${escHtml(p.product_name)}</td>
         <td class="col-category"><span class="cat-badge">${escHtml(p.category_name || 'Tanpa Kategori')}</span></td>
         <td class="col-photo">${thumbHtml(p.image)}</td>
         <td class="col-stock">${stockBadge(p.stock)}</td>
+        <td class="col-status ${isActive ? 'status-active' : 'status-inactive'}">${statusText}</td>
         <td class="col-action">
           <div class="action-btns">
             <a href="/admin/product/${p.id}" class="btn-detail">Detail</a>
@@ -293,7 +297,8 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </td>
       </tr>
-    `).join('');
+    `;
+    }).join('');
   }
 
   /* =====================================================================
@@ -312,11 +317,14 @@ document.addEventListener('DOMContentLoaded', () => {
             </svg>
            </div>`;
       const desc = escHtml(p.description || '');
+      const isActive = p.status !== false && p.status !== 0 && p.status !== '0';
+      const statusText = isActive ? 'Aktif' : 'Nonaktif';
 
       return `
         <div class="product-card" data-id="${p.id}">
           <div class="product-card-img">
             <span class="product-card-id-badge">${idPadded}</span>
+            <span class="product-card-status-badge ${isActive ? 'active' : 'inactive'}">${statusText}</span>
             ${imgHtml}
           </div>
           <div class="product-card-body">
@@ -432,7 +440,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (gridWrap)  gridWrap.hidden  = true;
       if (tableBody) {
         if (paginated.length === 0) {
-          tableBody.innerHTML = `<tr><td colspan="7">${renderEmpty()}</td></tr>`;
+          tableBody.innerHTML = `<tr><td colspan="8">${renderEmpty()}</td></tr>`;
         } else {
           tableBody.innerHTML = renderTableRows(paginated);
         }
