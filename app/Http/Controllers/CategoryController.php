@@ -9,8 +9,33 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::withCount('products')->get();
+        $categories = Category::withCount('products')
+            ->withSum('products', 'stock')
+            ->orderBy('id', 'asc')
+            ->get()
+            ->map(function ($c) {
+                return [
+                    'id'             => $c->id,
+                    'category_name'  => $c->category_name,
+                    'products_count' => (int) ($c->products_count ?? 0),
+                    'products_stock' => (int) ($c->products_sum_stock ?? 0),
+                    'created_at'     => $c->created_at ? $c->created_at->format('d M Y') : '-',
+                ];
+            });
+
         return view('admin.category.index', compact('categories'));
+    }
+
+    public function show($id)
+    {
+        $category = Category::withCount('products')
+            ->withSum('products', 'stock')
+            ->with(['products' => function ($q) {
+                $q->orderBy('id', 'desc');
+            }])
+            ->findOrFail($id);
+
+        return view('admin.category.show', compact('category'));
     }
 
     public function create()
@@ -22,7 +47,6 @@ class CategoryController extends Controller
     {
         $validated = $request->validate([
             'category_name' => 'required|string|max:100',
-            'image'         => 'nullable|string|max:50',
         ]);
 
         Category::create($validated);
@@ -52,6 +76,14 @@ class CategoryController extends Controller
 
     public function destroy(Category $category)
     {
+        if ($category->products()->exists()) {
+            return back()->with(
+                'error',
+                'Kategori tidak bisa dihapus karena masih digunakan oleh produk.'
+            );
+        }
+
+        
         $category->delete();
 
         return redirect()->route('admin.category.index')

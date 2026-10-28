@@ -9,21 +9,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('orders', function (Blueprint $table) {
-            $table->id('order_id');
+            $table->id();
             $table->foreignId('user_id')
                 ->constrained('users')
-                ->restrictOnDelete()
-                ->cascadeOnUpdate();
+                ->cascadeOnDelete();
             $table->foreignId('product_id')
                 ->constrained('products')
-                ->restrictOnDelete()
-                ->cascadeOnUpdate();
+                ->cascadeOnDelete();
             $table->integer('quantity');
             $table->decimal('subtotal', 10, 2);
             $table->string('order_status', 20);
             $table->string('payment_status', 20);
             $table->text('address');
-            $table->string('phone_number')->nullable();
             $table->timestamp('order_at')->useCurrent();
             $table->timestamp('send_at')->nullable();
         });

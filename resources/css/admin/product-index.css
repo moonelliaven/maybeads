@@ -581,6 +581,17 @@ button { font-family: inherit; }
 .col-stock { font-variant-numeric: tabular-nums; }
 .stock-low { color: #dc2626; font-weight: 600; }
 
+/* Status */
+.col-status {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.col-status.status-inactive {
+  color: #dc2626;
+}
+
 /* Action buttons */
 .col-action { width: 160px; }
 .action-btns {
@@ -688,6 +699,35 @@ button { font-family: inherit; }
   border-radius: 6px;
   line-height: 1.4;
   z-index: 2;
+}
+
+/* Status badge — top-right corner of image */
+.product-card-status-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 3px 9px;
+  border-radius: 6px;
+  line-height: 1.4;
+  z-index: 2;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+.product-card-status-badge.active {
+  background: rgba(255, 255, 255, 0.94);
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.product-card-status-badge.inactive {
+  background: rgba(255, 255, 255, 0.94);
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 /* Card body */

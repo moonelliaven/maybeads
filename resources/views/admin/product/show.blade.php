@@ -182,16 +182,71 @@
 
           {{-- Jenis / Varian --}}
           <div class="form-field-group">
-            <label class="form-label">Jenis / Varian</label>
-            <div class="form-control-static" style="display: flex; flex-wrap: wrap; gap: 4px; min-height: 42px;">
-              @if (!empty($productVariants) && count($productVariants) > 0)
-                @foreach ($productVariants as $v)
-                  <span class="variant-badge-pill">{{ $v }}</span>
-                @endforeach
-              @else
-                <span style="color: #64748b;">Standar (Tanpa Varian)</span>
+            <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+              <span>Varian Produk (Warna & Ukuran)</span>
+              @if($product->variants && $product->variants->isNotEmpty())
+                <span style="font-size: 12px; font-weight: 600; color: #23477d; background: #eef3fb; padding: 2px 8px; border-radius: 6px;">
+                  Total: {{ $product->variants->count() }} Kombinasi
+                </span>
               @endif
-            </div>
+            </label>
+
+            @if($product->variants && $product->variants->isNotEmpty())
+              <div style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: #ffffff;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+                  <thead style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                    <tr>
+                      <th style="padding: 10px 12px; font-weight: 600; color: #475569; width: 56px;">Foto</th>
+                      <th style="padding: 10px 12px; font-weight: 600; color: #475569;">Warna</th>
+                      <th style="padding: 10px 12px; font-weight: 600; color: #475569;">Ukuran</th>
+                      <th style="padding: 10px 12px; font-weight: 600; color: #475569; text-align: right;">Stok</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @foreach($product->variants as $variant)
+                      @php
+                        $varImg = null;
+                        if (!empty($variant->image)) {
+                            if (file_exists(storage_path('app/public/product/' . $variant->image))) {
+                                $varImg = asset('storage/product/' . $variant->image);
+                            } elseif (file_exists(public_path('images/products/' . $variant->image))) {
+                                $varImg = asset('images/products/' . $variant->image);
+                            } else {
+                                $varImg = asset('storage/product/' . $variant->image);
+                            }
+                        }
+                      @endphp
+                      <tr style="border-bottom: 1px solid #f1f5f9;">
+                        <td style="padding: 8px 12px;">
+                          @if($varImg)
+                            <img src="{{ $varImg }}" alt="{{ $variant->color }}" style="width: 36px; height: 36px; object-fit: cover; border-radius: 6px; border: 1px solid #e2e8f0; display: block;">
+                          @else
+                            <div style="width: 36px; height: 36px; border-radius: 6px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 11px;">
+                              -
+                            </div>
+                          @endif
+                        </td>
+                        <td style="padding: 8px 12px; font-weight: 600; color: #1e293b;">
+                          {{ $variant->color }}
+                        </td>
+                        <td style="padding: 8px 12px; color: #475569;">
+                          <span style="display: inline-block; padding: 2px 8px; background: #f1f5f9; border-radius: 4px; font-weight: 500;">
+                            {{ $variant->size }}
+                          </span>
+                        </td>
+                        <td style="padding: 8px 12px; font-weight: 600; color: #0f172a; text-align: right;">
+                          {{ $variant->stock }} Unit
+                        </td>
+                      </tr>
+                    @endforeach
+                  </tbody>
+                </table>
+              </div>
+            @else
+              <div class="form-control-static" style="color: #64748b;">
+                Standar (Tanpa Varian)
+              </div>
+            @endif
           </div>
 
           {{-- Deskripsi Produk --}}
