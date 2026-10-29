@@ -16,45 +16,27 @@
 <body>
 
 @php
-  $existingImage = null;
-  if (!empty($product->image)) {
-      if (file_exists(storage_path('app/public/product/' . $product->image))) {
-          $existingImage = asset('storage/product/' . $product->image);
-      } elseif (file_exists(public_path('images/products/' . $product->image))) {
-          $existingImage = asset('images/products/' . $product->image);
-      } else {
-          $existingImage = asset('storage/product/' . $product->image);
-      }
-  }
+  $existingImage = $product->image
+      ? (Str::startsWith($product->image, ['http://', 'https://', '/']) ? $product->image : asset('storage/product/' . $product->image))
+      : null;
 
+  $existingVariantsJson = $product->variants->map(fn($v) => [
+      'id'            => $v->id,
+      'color'         => $v->color,
+      'size'          => $v->size,
+      'stock'         => $v->stock,
+      'imageFilename' => $v->image,
+      'imageUrl'      => $v->image ? asset('storage/product/' . $v->image) : '',
+  ]);
+
+  $statusVal = old('status', $product->status) !== 'tidak aktif' && old('status', $product->status) !== 0 && old('status', $product->status) !== '0';
   $secCategories = $product->secondary_categories ?? [];
-  $productVariants = $product->variants ?? collect();
-  $existingVariantsJson = $product->variants->map(function ($v) {
-      $imgUrl = '';
-      if (!empty($v->image)) {
-          if (file_exists(storage_path('app/public/product/' . $v->image))) {
-              $imgUrl = asset('storage/product/' . $v->image);
-          } elseif (file_exists(public_path('product/' . $v->image))) {
-              $imgUrl = asset('product/' . $v->image);
-          } else {
-              $imgUrl = asset('storage/product/' . $v->image);
-          }
-      }
-      return [
-          'id'            => $v->id,
-          'color'         => $v->color,
-          'size'          => $v->size,
-          'stock'         => $v->stock,
-          'imageFilename' => $v->image,
-          'imageUrl'      => $imgUrl,
-      ];
-  })->values();
   $secImages = $product->secondary_images ?? [];
-  $statusVal = old('status', $product->status ?? 1);
 @endphp
 
 <script>
-  window.__existingVariants = {!! json_encode($existingVariantsJson) !!};
+  window.__existingVariants = @json($existingVariantsJson);
+  window.__categoriesJson   = @json($categories);
 </script>
 
 <div class="admin-layout">
@@ -119,7 +101,7 @@
             <div class="upload-dropzone" id="uploadDropzone">
               <input type="file" id="productImageInput" name="image" accept="image/png,image/jpeg,image/webp" style="display:none">
 
-              {{-- Default Prompt (jika belum ada gambar) --}}
+              {{-- Default Prompt --}}
               <div id="dropzoneDefaultPrompt" {{ $existingImage ? 'hidden' : '' }}>
                 <div class="dropzone-icon-wrap">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
@@ -152,20 +134,17 @@
 
             <hr class="form-card-divider">
 
-            {{-- Foto Tambahan (Opsional, Maks 5) --}}
+            {{-- Foto Tambahan (Opsional) --}}
             <div class="form-section-title">Foto Produk Tambahan (Opsional)</div>
             <div id="secondaryPhotosArea" class="secondary-photos-grid">
               @if (!empty($secImages) && is_array($secImages))
                 @foreach ($secImages as $idx => $sImg)
                   @php
-                    $sUrl = file_exists(storage_path('app/public/product/' . $sImg))
-                            ? asset('storage/product/' . $sImg)
-                            : (file_exists(public_path('product/' . $sImg)) ? asset('product/' . $sImg) : asset('storage/product/' . $sImg));
+                    $sUrl = Str::startsWith($sImg, ['http://', 'https://', '/']) ? $sImg : asset('storage/product/' . $sImg);
                   @endphp
                   <div class="sec-photo-thumb" id="existingSecThumb{{ $idx }}">
                     <img src="{{ $sUrl }}" alt="Foto Tambahan {{ $idx + 1 }}">
-                    <button type="button" class="sec-photo-remove" title="Hapus foto ini" onclick="document.getElementById('existingSecThumb{{ $idx }}').remove(); document.getElementById('removeSecInput{{ $idx }}').value='{{ $idx }}';">&times;</button>
-                    <input type="hidden" name="remove_secondary_images[]" id="removeSecInput{{ $idx }}" value="">
+                    <button type="button" class="sec-photo-remove" title="Hapus foto ini" onclick="document.getElementById('existingSecThumb{{ $idx }}').remove();">&times;</button>
                   </div>
                 @endforeach
               @endif
@@ -180,11 +159,10 @@
                 Tambah Foto
               </button>
               <div class="secondary-photo-text">
-                Tambahkan beberapa foto produk untuk menampilkan detail lebih lengkap
+                Tambahkan foto produk untuk menampilkan detail lebih lengkap (Maks 5)
               </div>
             </div>
             <input type="file" id="secondaryImageInput" accept="image/png,image/jpeg,image/webp" multiple style="display:none">
-            <div class="secondary-photo-limit">Maksimal 5 Foto</div>
           </div>
 
           {{-- Kolom Kanan: Informasi Produk --}}
@@ -201,7 +179,7 @@
               @enderror
             </div>
 
-            {{-- Kategori Utama & Custom --}}
+            {{-- Kategori --}}
             <div class="form-field-group">
               <label for="category_id" class="form-label">Kategori</label>
               <div class="category-select-row">
@@ -212,7 +190,7 @@
                       <option value="{{ $cat->id }}" {{ old('category_id', $product->category_id) == $cat->id ? 'selected' : '' }}>
                         {{ $cat->category_name }}
                       </option>
-                    @endforeach
+                    @endforeach 
                     <option value="custom" {{ old('category_id') === 'custom' ? 'selected' : '' }}>✏️ Custom (tulis sendiri)</option>
                   </select>
                   <input type="text" id="customCategoryInput" name="custom_category_name"
@@ -230,7 +208,7 @@
                 <div class="form-error-msg">{{ $message }}</div>
               @enderror
 
-              {{-- Secondary categories container (max 3) --}}
+              {{-- Secondary categories container --}}
               <div id="secondaryCategoriesContainer" class="secondary-categories-list">
                 @if (!empty($secCategories) && is_array($secCategories))
                   @foreach ($secCategories as $scId)
@@ -256,11 +234,12 @@
             <div class="form-field-group">
               <div class="form-row-2col">
                 <div>
-                  <label for="price" class="form-label">Harga</label>
-                  <input type="text" id="price" name="price"
+                  <label for="price" class="form-label">Harga (Rp)</label>
+                  <input type="number" id="price" name="price"
                          class="form-control-input"
-                         placeholder="Rp 000,00"
-                         value="{{ old('price', $product->price) }}" required>
+                         placeholder="0"
+                         step="any"
+                         value="{{ old('price', (int)$product->price == $product->price ? (int)$product->price : $product->price) }}" required>
                   @error('price')
                     <div class="form-error-msg">{{ $message }}</div>
                   @enderror
@@ -287,7 +266,7 @@
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
                 <div>
                   <label class="form-label" style="margin-bottom: 2px;">Varian Produk (Warna & Ukuran)</label>
-                  <span style="font-size: 11.5px; color: #64748b;">Atur warna, ukuran, foto varian, dan stok untuk tiap varian.</span>
+                  <span style="font-size: 11.5px; color: #64748b;">Atur warna, ukuran, dan stok untuk tiap varian.</span>
                 </div>
                 <button type="button" class="btn-add-type" id="btnAddVariant">
                   <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
@@ -349,10 +328,6 @@
     </main>
   </div>
 </div>
-
-<script>
-  window.__categoriesJson = @json($categories);
-</script>
 
 </body>
 </html>

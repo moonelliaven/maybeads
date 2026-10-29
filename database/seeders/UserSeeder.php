@@ -18,5 +18,14 @@ class UserSeeder extends Seeder
                 'role' => 'admin',
             ]
         );
+
+        User::firstOrCreate(
+            ['email' => 'hlccntauni@gmail.com'],
+            [
+                'name' => 'Hilya',
+                'password' => Hash::make('Hilya12345'),
+                'role' => 'user',
+            ]
+        );
     }
 }

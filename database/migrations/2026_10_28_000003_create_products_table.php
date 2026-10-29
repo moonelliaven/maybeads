@@ -6,29 +6,33 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(): void
-    {
+    public function up(): void {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('category_id')
-                ->constrained('categories')
-                ->restrictOnDelete()
-                ->cascadeOnUpdate();
-            $table->json('secondary_categories')->nullable();
+            $table->foreignId('category_id')->constrained('categories');
             $table->string('product_name', 100)->unique();
-            $table->string('image', 255)->nullable();
-            $table->json('secondary_images')->nullable();
+            $table->string('image')->nullable();
             $table->text('description')->nullable();
-            $table->json('variants')->nullable();
-            $table->string('price', 100);
+            $table->decimal('price', 12, 2);
             $table->integer('stock')->default(0);
-            $table->boolean('status')->default(true);
+            $table->enum('status', ['aktif', 'tidak aktif'])->default('aktif');
             $table->timestamp('created_at')->useCurrent();
+        });
+
+        Schema::create('product_variants', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('product_id')
+                ->constrained('products')
+                ->cascadeOnDelete();
+            $table->string('color', 50)->nullable();
+            $table->string('size', 50)->nullable();
+            $table->integer('stock')->default(0);
+            $table->string('image')->nullable();
         });
     }
 
-    public function down(): void
-    {
+    public function down(): void {
+        Schema::dropIfExists('product_variants');
         Schema::dropIfExists('products');
     }
 };

@@ -11,7 +11,7 @@
       <li><a href="{{ $navBase }}#home">Beranda</a></li>
       <li><a href="{{ $navBase }}#kontak">Kontak</a></li>
       <li>
-        <a href="{{ $navBase }}#produk" class="nav-ext">Produk
+        <a href="{{ route('main.dashboard') }}#produk" class="nav-ext">Produk
           <svg viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/></svg>
         </a>
       </li>
