@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ProductVariant extends Model
 {
     protected $table = 'product_variants';
+    public $timestamps = false;
 
     protected $fillable = [
         'product_id',
