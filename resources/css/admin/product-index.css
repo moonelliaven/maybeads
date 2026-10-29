@@ -583,13 +583,37 @@ button { font-family: inherit; }
 
 /* Status */
 .col-status {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--ink);
   white-space: nowrap;
 }
-.col-status.status-inactive {
-  color: #dc2626;
+
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+.status-indicator .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.status-indicator.active .status-dot {
+  background-color: #00e676;
+}
+
+.status-indicator.inactive .status-dot {
+  background-color: #94a3b8;
+}
+
+.status-indicator.inactive {
+  color: #334155;
 }
 
 /* Action buttons */
@@ -706,28 +730,41 @@ button { font-family: inherit; }
   position: absolute;
   top: 10px;
   right: 10px;
-  font-size: 10.5px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.02em;
-  padding: 3px 9px;
+  padding: 4px 10px;
   border-radius: 6px;
   line-height: 1.4;
   z-index: 2;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.product-card-status-badge .status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
 }
 .product-card-status-badge.active {
-  background: rgba(255, 255, 255, 0.94);
-  color: #166534;
-  border: 1px solid #bbf7d0;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+}
+.product-card-status-badge.active .status-dot {
+  background-color: #00e676;
 }
 .product-card-status-badge.inactive {
-  background: rgba(255, 255, 255, 0.94);
-  color: #dc2626;
-  border: 1px solid #fecaca;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+.product-card-status-badge.inactive .status-dot {
+  background-color: #94a3b8;
 }
 
 /* Card body */

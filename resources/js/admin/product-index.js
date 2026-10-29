@@ -178,8 +178,10 @@ document.addEventListener('DOMContentLoaded', () => {
   let allCategories  = [];
 
   try {
-    allProducts   = JSON.parse(productsRaw);
-    allCategories = JSON.parse(categoriesRaw);
+    const parsedProducts = JSON.parse(productsRaw);
+    allProducts = Array.isArray(parsedProducts) ? parsedProducts : Object.values(parsedProducts || {});
+    const parsedCategories = JSON.parse(categoriesRaw);
+    allCategories = Array.isArray(parsedCategories) ? parsedCategories : Object.values(parsedCategories || {});
   } catch(e) { console.warn('Product data parse error', e); }
 
   /* =====================================================================
@@ -256,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Filter pencarian (nama produk atau nama kategori)
       if (!q) return true;
       const nameMatch = (p.product_name || '').toLowerCase().includes(q);
-      const catName   = (p.category_name || '').toLowerCase();
+      const catName   = (p.category_name || p.category?.category_name || '').toLowerCase();
       const catNameMatch = catName.includes(q);
       return nameMatch || catNameMatch;
     });
@@ -273,17 +275,23 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderTableRows(products) {
     if (!products.length) return renderEmpty();
     return products.map((p, i) => {
-      const isActive = p.status !== false && p.status !== 0 && p.status !== '0';
-      const statusText = isActive ? 'Aktif' : 'Nonaktif';
+      const isActive = p.status !== false && p.status !== 0 && p.status !== '0' && p.status !== 'tidak aktif';
+      const statusText = isActive ? 'Aktif' : 'Tidak Aktif';
+      const catName = p.category_name || p.category?.category_name || 'Tanpa Kategori';
       return `
       <tr data-id="${p.id}">
         <td class="cb-col"><input type="checkbox" class="tbl-check" aria-label="Pilih ${escHtml(p.product_name)}"></td>
         <td class="col-id">${p.id}</td>
         <td class="col-name">${escHtml(p.product_name)}</td>
-        <td class="col-category"><span class="cat-badge">${escHtml(p.category_name || 'Tanpa Kategori')}</span></td>
+        <td class="col-category"><span class="cat-badge">${escHtml(catName)}</span></td>
         <td class="col-photo">${thumbHtml(p.image)}</td>
         <td class="col-stock">${stockBadge(p.stock)}</td>
-        <td class="col-status ${isActive ? 'status-active' : 'status-inactive'}">${statusText}</td>
+        <td class="col-status">
+          <span class="status-indicator ${isActive ? 'active' : 'inactive'}">
+            <span class="status-dot"></span>
+            <span>${statusText}</span>
+          </span>
+        </td>
         <td class="col-action">
           <div class="action-btns">
             <a href="/admin/product/${p.id}" class="btn-detail">Detail</a>
@@ -317,18 +325,22 @@ document.addEventListener('DOMContentLoaded', () => {
             </svg>
            </div>`;
       const desc = escHtml(p.description || '');
-      const isActive = p.status !== false && p.status !== 0 && p.status !== '0';
-      const statusText = isActive ? 'Aktif' : 'Nonaktif';
+      const isActive = p.status !== false && p.status !== 0 && p.status !== '0' && p.status !== 'tidak aktif';
+      const statusText = isActive ? 'Aktif' : 'Tidak Aktif';
+      const catName = p.category_name || p.category?.category_name || 'Tanpa Kategori';
 
       return `
         <div class="product-card" data-id="${p.id}">
           <div class="product-card-img">
             <span class="product-card-id-badge">${idPadded}</span>
-            <span class="product-card-status-badge ${isActive ? 'active' : 'inactive'}">${statusText}</span>
+            <span class="product-card-status-badge ${isActive ? 'active' : 'inactive'}">
+              <span class="status-dot"></span>
+              <span>${statusText}</span>
+            </span>
             ${imgHtml}
           </div>
           <div class="product-card-body">
-            <div class="product-card-cat-label">${escHtml(p.category_name || 'Tanpa Kategori')}</div>
+            <div class="product-card-cat-label">${escHtml(catName)}</div>
             <div class="product-card-name">${escHtml(p.product_name)}</div>
             <div class="product-card-desc">${desc || '<span style="color:#c4cdd8;font-style:italic">Tidak ada deskripsi</span>'}</div>
             <div class="product-card-actions">

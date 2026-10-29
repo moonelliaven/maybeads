@@ -12,6 +12,13 @@ class Product extends Model
 
     public $timestamps = false;
 
+    protected $appends = ['category_name'];
+
+    public function getCategoryNameAttribute(): string
+    {
+        return $this->category?->category_name ?? 'Tanpa Kategori';
+    }
+
     protected $fillable = [
         'category_id',
         'secondary_categories',
@@ -28,7 +35,6 @@ class Product extends Model
         'created_at'           => 'datetime',
         'secondary_categories' => 'array',
         'secondary_images'     => 'array',
-        'status'               => 'boolean',
     ];
 
     public function category(): BelongsTo
