@@ -9,23 +9,21 @@ use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
-    // -------------------show data---------------
     public function index()
     {
-        $products = Product::with('category')->latest('id')->get();
+        $products   = Product::with('category')->latest('id')->get();
         $categories = Category::all(['id', 'category_name']);
 
         return view('admin.product.index', compact('products', 'categories'));
     }
 
-    // -------------------create data page---------------
     public function create()
     {
         $categories = Category::all();
+
         return view('admin.product.create', compact('categories'));
     }
 
-    // -------------------store data----------------
     public function store(Request $request)
     {
         if ($request->category_id === 'custom' && $request->filled('custom_category_name')) {
@@ -50,9 +48,9 @@ class ProductController extends Controller
         $data['price']  = (float) preg_replace('/[^0-9]/', '', (string) $request->price);
 
         if ($request->hasFile('image')) {
-            $filename = time() . '_' . $request->file('image')->getClientOriginalName();
+            $filename       = time() . '_' . $request->file('image')->getClientOriginalName();
             $request->file('image')->storeAs('product', $filename, 'public');
-            $data['image'] = $filename;
+            $data['image']  = $filename;
         }
 
         DB::transaction(function () use ($data) {
@@ -61,7 +59,7 @@ class ProductController extends Controller
                 if (!empty($v['color']) || !empty($v['size'])) {
                     $product->variants()->create([
                         'color' => $v['color'] ?? null,
-                        'size'  => $v['size'] ?? null,
+                        'size'  => $v['size']  ?? null,
                         'stock' => (int) ($v['stock'] ?? 0),
                     ]);
                 }
@@ -72,7 +70,6 @@ class ProductController extends Controller
             ->with('success', 'Produk berhasil ditambahkan.');
     }
 
-    // --------------------detail data----------------
     public function show(Product $product)
     {
         $product->load(['category', 'variants']);
@@ -80,7 +77,6 @@ class ProductController extends Controller
         return view('admin.product.show', compact('product'));
     }
 
-    // --------------edit page-----------------
     public function edit(Product $product)
     {
         $categories = Category::all(['id', 'category_name']);
@@ -89,7 +85,6 @@ class ProductController extends Controller
         return view('admin.product.edit', compact('product', 'categories'));
     }
 
-    // ------------------edit progress-----------------
     public function update(Request $request, Product $product)
     {
         if ($request->category_id === 'custom' && $request->filled('custom_category_name')) {
@@ -114,9 +109,9 @@ class ProductController extends Controller
         $data['price']  = (float) preg_replace('/[^0-9]/', '', (string) $request->price);
 
         if ($request->hasFile('image')) {
-            $filename = time() . '_' . $request->file('image')->getClientOriginalName();
+            $filename       = time() . '_' . $request->file('image')->getClientOriginalName();
             $request->file('image')->storeAs('product', $filename, 'public');
-            $data['image'] = $filename;
+            $data['image']  = $filename;
         } else {
             unset($data['image']);
         }
@@ -129,7 +124,7 @@ class ProductController extends Controller
                     if (!empty($v['color']) || !empty($v['size'])) {
                         $product->variants()->create([
                             'color' => $v['color'] ?? null,
-                            'size'  => $v['size'] ?? null,
+                            'size'  => $v['size']  ?? null,
                             'stock' => (int) ($v['stock'] ?? 0),
                         ]);
                     }
@@ -141,7 +136,6 @@ class ProductController extends Controller
             ->with('success', 'Produk berhasil diperbarui.');
     }
 
-    // --------------------delete data----------------
     public function destroy(Product $product)
     {
         $product->delete();
