@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Category;
+use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
@@ -83,10 +83,10 @@ class CategoryController extends Controller
             );
         }
 
-        
         $category->delete();
 
         return redirect()->route('admin.category.index')
             ->with('success', 'Kategori berhasil dihapus.');
     }
 }
+

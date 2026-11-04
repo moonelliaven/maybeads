@@ -2,59 +2,50 @@
 
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\LoginController;
-use App\Http\Controllers\RegisterController;
-use App\Http\Controllers\ProductController;
 use App\Http\Controllers\MainController;
+use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
-// Authentication Routes
+// ─── Authentication ───────────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
-    Route::get('/login', [LoginController::class, 'showLogin'])->name('login');
+    Route::get('/login',  [LoginController::class, 'showLogin'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
-
-    Route::get('/register', [RegisterController::class, 'showRegister'])->name('register');
-    Route::post('/register', [RegisterController::class, 'register']);
 });
 
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-// Landing Page
-Route::get('/', function () {
-    return view('landing.home');
-})->name('home');
+// ─── Landing Page ─────────────────────────────────────────────────────────────
+Route::get('/', fn () => view('landing.home'))->name('home');
 
-//-------------- User & Public Catalog Routes -----------------
+// ─── Public / User Catalog ────────────────────────────────────────────────────
 Route::prefix('main')->name('main.')->group(function () {
     Route::get('/dashboard', [MainController::class, 'dashboard'])->name('dashboard');
 });
 
-// ---------------Admin Routes-----------------
+// ─── Admin ────────────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
 
-    // Admin Dashboard
-    Route::get('/', function () {
-        return view('admin.dashboard');
-    })->name('dashboard');
+    Route::get('/', fn () => view('admin.dashboard'))->name('dashboard');
 
-    // Product Routes
+    // Products
     Route::prefix('product')->name('product.')->controller(ProductController::class)->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::get('/create', 'create')->name('create');
-        Route::post('/', 'store')->name('store');
+        Route::get('/',             'index')->name('index');
+        Route::get('/create',       'create')->name('create');
+        Route::post('/',            'store')->name('store');
+        Route::get('/{product}',    'show')->name('show');
         Route::get('/{product}/edit', 'edit')->name('edit');
-        Route::get('/{product}', 'show')->name('show');
-        Route::put('/{product}', 'update')->name('update');
+        Route::put('/{product}',    'update')->name('update');
         Route::delete('/{product}', 'destroy')->name('destroy');
     });
 
-    // Category Routes
+    // Categories
     Route::prefix('category')->name('category.')->controller(CategoryController::class)->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::get('/create', 'create')->name('create');
-        Route::post('/', 'store')->name('store');
-        Route::get('/{category}/edit', 'edit')->name('edit');
-        Route::get('/{category}', 'show')->name('show');
-        Route::put('/{category}', 'update')->name('update');
-        Route::delete('/{category}', 'destroy')->name('destroy');
+        Route::get('/',               'index')->name('index');
+        Route::get('/create',         'create')->name('create');
+        Route::post('/',              'store')->name('store');
+        Route::get('/{category}',     'show')->name('show');
+        Route::get('/{category}/edit','edit')->name('edit');
+        Route::put('/{category}',     'update')->name('update');
+        Route::delete('/{category}',  'destroy')->name('destroy');
     });
 });
