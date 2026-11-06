@@ -13,7 +13,7 @@ class MainController extends Controller
 {
     public function dashboard(Request $request)
     {
-        $perPage = 20; // 5 columns x 4 rows max as requested (5x4)
+        $perPage = 12; // 4 columns x 3 rows = 12 products per page
 
         $query = Product::with(['category', 'variants'])
             ->where('status', 'aktif');
@@ -50,7 +50,25 @@ class MainController extends Controller
         // Filter by color (through variants)
         if ($color = $request->input('color')) {
             $query->whereHas('variants', function ($q) use ($color) {
-                $q->where('color', $color);
+                $cLower = strtolower($color);
+                if ($cLower === 'monokrom') {
+                    $q->where(function ($sub) {
+                        $sub->where('color', 'like', '%hitam%')
+                            ->orWhere('color', 'like', '%black%')
+                            ->orWhere('color', 'like', '%silver%')
+                            ->orWhere('color', 'like', '%chrome%')
+                            ->orWhere('color', 'like', '%putih%')
+                            ->orWhere('color', 'like', '%white%');
+                    });
+                } elseif ($cLower === 'merah') {
+                    $q->where(function ($sub) {
+                        $sub->where('color', 'like', '%merah%')
+                            ->orWhere('color', 'like', '%red%')
+                            ->orWhere('color', 'like', '%pink%');
+                    });
+                } else {
+                    $q->where('color', 'like', "%{$color}%");
+                }
             });
         }
 
@@ -124,5 +142,17 @@ class MainController extends Controller
             'search',
             'cartCount'
         ));
+    }
+
+    public function cart(Request $request)
+    {
+        $cartCount = 0;
+        if (Auth::check()) {
+            $cartCount = Cart::where('user_id', Auth::id())->sum('quantity');
+        } else {
+            $cartCount = count(session()->get('cart', []));
+        }
+
+        return view('main.cart', compact('cartCount'));
     }
 }

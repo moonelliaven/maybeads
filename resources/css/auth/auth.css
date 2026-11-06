@@ -182,11 +182,7 @@ svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; 
   border-radius: 14px;
   overflow: hidden;
   box-shadow: 0 30px 60px -40px rgba(20, 20, 24, 0.35);
-  animation: cardIn 0.9s var(--ease) both;
-}
-@keyframes cardIn {
-  from { opacity: 0; transform: translateY(24px) scale(0.985); }
-  to   { opacity: 1; transform: none; }
+  opacity: 0; /* motion library handles entrance animation */
 }
 
 /* Kolom form */
@@ -197,17 +193,7 @@ svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; 
   padding: 40px clamp(24px, 5vw, 58px);
 }
 .auth-inner { width: 100%; max-width: 310px; text-align: center; }
-.auth-inner > * { animation: fadeUp 0.8s var(--ease) both; }
-.auth-inner > *:nth-child(1) { animation-delay: 0.10s; }
-.auth-inner > *:nth-child(2) { animation-delay: 0.16s; }
-.auth-inner > *:nth-child(3) { animation-delay: 0.22s; }
-.auth-inner > *:nth-child(4) { animation-delay: 0.28s; }
-.auth-inner > *:nth-child(5) { animation-delay: 0.34s; }
-.auth-inner > *:nth-child(6) { animation-delay: 0.40s; }
-.auth-inner > *:nth-child(7) { animation-delay: 0.46s; }
-.auth-inner > *:nth-child(8) { animation-delay: 0.52s; }
-.auth-inner > *:nth-child(9) { animation-delay: 0.58s; }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+/* motion library handles staggered entrance animations */
 
 .auth-brand {
   display: inline-block;
@@ -385,11 +371,9 @@ svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; 
   height: 100%;
   object-fit: cover;
   transform: scale(1.09);
-  animation: artIn 1.6s var(--ease) both;
   transition: transform 1.2s var(--ease);
 }
 .auth-card:hover .auth-art img { transform: scale(1.13); }
-@keyframes artIn { from { transform: scale(1.22); filter: saturate(0.4); } to { transform: scale(1.09); filter: none; } }
 
 /* Register: field lebih banyak, ruang dirapatkan */
 .auth-card.is-register .auth-fields { gap: 10px; }
@@ -439,3 +423,133 @@ div:where(.swal2-container) .swal2-confirm {
   font-weight: 500 !important;
 }
 div:where(.swal2-container) .swal2-timer-progress-bar { background: var(--navy) !important; }
+
+/* --------------------------------------------------------------------------
+   Motion Graph Animations — Auth Floating Particles
+   -------------------------------------------------------------------------- */
+.auth-page {
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.auth-particle {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background: var(--navy);
+  opacity: 0.06;
+  animation: authParticleFloat var(--duration) ease-in-out var(--delay) infinite alternate;
+}
+
+@keyframes authParticleFloat {
+  0% { transform: translate(0, 0) scale(1); opacity: 0.03; }
+  50% { opacity: 0.09; }
+  100% { transform: translate(25px, -35px) scale(1.2); opacity: 0.03; }
+}
+
+.auth-card {
+  position: relative;
+  z-index: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Motion Graph Animations — Password Strength Indicator
+   -------------------------------------------------------------------------- */
+.pw-strength {
+  margin-top: 6px;
+  height: 3px;
+  background: rgba(20, 20, 24, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.pw-strength-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 3px;
+  background: #ef4444;
+  transition: width 0.4s var(--ease), background-color 0.4s;
+}
+
+/* --------------------------------------------------------------------------
+   Motion Graph Animations — Enhanced Input Transitions
+   -------------------------------------------------------------------------- */
+.inp {
+  transition: border-color 0.25s, box-shadow 0.35s var(--ease), transform 0.3s var(--ease);
+}
+
+.inp:focus-within {
+  transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
+   Motion Graph Animations — Submit Button Glow
+   -------------------------------------------------------------------------- */
+.submit {
+  transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease), background 0.3s, opacity 0.3s;
+}
+
+.submit:not(:disabled):hover {
+  box-shadow: 0 12px 28px -10px rgba(20, 20, 24, 0.7), 0 0 20px -5px rgba(58, 79, 152, 0.3);
+}
+
+/* --------------------------------------------------------------------------
+   Motion Graph Animations — Google Button Shimmer
+   -------------------------------------------------------------------------- */
+.google {
+  position: relative;
+  overflow: hidden;
+}
+
+.google::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(53, 83, 137, 0.06), transparent);
+  transition: left 0.6s var(--ease);
+}
+
+.google:hover::after {
+  left: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   Motion Graph Animations — Link Hover Effects
+   -------------------------------------------------------------------------- */
+.alt a {
+  position: relative;
+  transition: color 0.25s;
+}
+
+.alt a::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 1.5px;
+  background: var(--navy);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.35s var(--ease);
+}
+
+.alt a:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+

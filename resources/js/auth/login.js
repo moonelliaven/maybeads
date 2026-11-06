@@ -1,5 +1,6 @@
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
+import { animate, stagger, inView } from 'motion';
 
 (function () {
   'use strict';
@@ -20,16 +21,131 @@ import 'sweetalert2/dist/sweetalert2.min.css';
       });
     }
 
-    /* Judul: huruf naik satu-satu */
-    var big = $('#big');
-    if (big && big.dataset && big.dataset.t) {
-      big.innerHTML = '';
-      big.dataset.t.split('').forEach(function (c, i) {
-        var sp = document.createElement('span');
-        sp.style.setProperty('--i', i);
-        sp.textContent = c;
-        big.appendChild(sp);
+    /* ========================================================================
+       Motion Graph Animations
+       ======================================================================== */
+    var easeOut = [0.16, 1, 0.3, 1];
+    var easeBounce = [0.34, 1.56, 0.64, 1];
+
+    if (!reduce) {
+      /* Auth card entrance — scale + fade from bottom */
+      var authCard = $('.auth-card');
+      if (authCard) {
+        animate(authCard, 
+          { opacity: [0, 1], y: [40, 0], scale: [0.96, 1] },
+          { duration: 0.9, ease: easeOut, delay: 0.1 }
+        );
+      }
+
+      /* Form elements staggered entrance */
+      var authInner = $('.auth-inner');
+      if (authInner) {
+        var innerChildren = $$(
+          '.auth-brand, .auth-title, .auth-sub, .alert, .auth-fields, .or, .google, .alt, .auth-foot'
+        ).filter(function(el) { return authInner.contains(el); });
+        
+        if (innerChildren.length) {
+          // Set initial hidden state
+          innerChildren.forEach(function(el) { 
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(16px)';
+          });
+          
+          animate(innerChildren, 
+            { opacity: [0, 1], y: [16, 0] },
+            { duration: 0.7, ease: easeOut, delay: stagger(0.07, { startDelay: 0.3 }) }
+          );
+        }
+      }
+
+      /* Form fields individual entrance with slide */
+      var formFields = $$('.auth-fields .f');
+      if (formFields.length) {
+        formFields.forEach(function(field) { 
+          field.style.opacity = '0';
+          field.style.transform = 'translateX(-12px)';
+        });
+        
+        animate(formFields, 
+          { opacity: [0, 1], x: [-12, 0] },
+          { duration: 0.6, ease: easeOut, delay: stagger(0.08, { startDelay: 0.5 }) }
+        );
+      }
+
+      /* Submit button bounce entrance */
+      var submitBtn = $('.submit');
+      if (submitBtn) {
+        submitBtn.style.opacity = '0';
+        submitBtn.style.transform = 'scale(0.9)';
+        animate(submitBtn, 
+          { opacity: [0, 1], scale: [0.9, 1] },
+          { duration: 0.6, ease: easeBounce, delay: 0.85 }
+        );
+      }
+
+      /* Auth art image zoom and fade */
+      var authArt = $('.auth-art img');
+      if (authArt) {
+        animate(authArt, 
+          { scale: [1.2, 1.09], filter: ['saturate(0.3) brightness(0.8)', 'saturate(1) brightness(1)'] },
+          { duration: 1.6, ease: easeOut, delay: 0.2 }
+        );
+      }
+
+      /* Input focus glow animation */
+      $$('.inp').forEach(function(inp) {
+        var input = inp.querySelector('input');
+        if (input) {
+          input.addEventListener('focus', function() {
+            animate(inp, 
+              { boxShadow: ['0 0 0 0px rgba(53,83,137,0)', '0 0 0 4px rgba(53,83,137,0.12)'] },
+              { duration: 0.3, ease: easeOut }
+            );
+          });
+          input.addEventListener('blur', function() {
+            animate(inp, 
+              { boxShadow: '0 0 0 0px rgba(53,83,137,0)' },
+              { duration: 0.3, ease: easeOut }
+            );
+          });
+        }
       });
+
+      /* Google button hover ripple */
+      var googleBtn = $('.google');
+      if (googleBtn) {
+        googleBtn.addEventListener('mouseenter', function() {
+          animate(googleBtn, 
+            { scale: [1, 1.02], boxShadow: ['0 0 0 0px rgba(53,83,137,0)', '0 8px 24px -8px rgba(53,83,137,0.15)'] },
+            { duration: 0.3, ease: easeOut }
+          );
+        });
+        googleBtn.addEventListener('mouseleave', function() {
+          animate(googleBtn, 
+            { scale: [1.02, 1], boxShadow: '0 0 0 0px rgba(53,83,137,0)' },
+            { duration: 0.3, ease: easeOut }
+          );
+        });
+      }
+
+      /* Floating particles on auth page */
+      var authPage = $('.auth-page');
+      if (authPage) {
+        var particleContainer = document.createElement('div');
+        particleContainer.className = 'auth-particles';
+        authPage.appendChild(particleContainer);
+
+        for (var i = 0; i < 8; i++) {
+          var particle = document.createElement('span');
+          particle.className = 'auth-particle';
+          particle.style.setProperty('--x', (Math.random() * 100) + '%');
+          particle.style.setProperty('--y', (Math.random() * 100) + '%');
+          particle.style.setProperty('--size', (3 + Math.random() * 4) + 'px');
+          particle.style.setProperty('--duration', (8 + Math.random() * 10) + 's');
+          particle.style.setProperty('--delay', (Math.random() * 5) + 's');
+          particleContainer.appendChild(particle);
+        }
+      }
     }
 
     /* Navbar: pill saat scroll */
@@ -48,6 +164,11 @@ import 'sweetalert2/dist/sweetalert2.min.css';
         pw.type = show ? 'text' : 'password';
         eye.setAttribute('aria-pressed', show);
         eye.setAttribute('aria-label', show ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
+        
+        /* Animate eye toggle */
+        if (!reduce) {
+          animate(eye, { scale: [0.8, 1.1, 1] }, { duration: 0.35, ease: easeOut });
+        }
       });
     }
 
@@ -80,7 +201,7 @@ import 'sweetalert2/dist/sweetalert2.min.css';
 
     /* Handle Form Login dengan SweetAlert2 */
     var form = $('#form');
-    var submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+    var submitButton = form ? form.querySelector('button[type="submit"]') : null;
 
     if (form) {
       form.addEventListener('submit', function (e) {
@@ -106,10 +227,14 @@ import 'sweetalert2/dist/sweetalert2.min.css';
           return;
         }
 
-        var originalBtnText = submitBtn ? submitBtn.textContent : 'Masuk';
-        if (submitBtn) {
-          submitBtn.disabled = true;
-          submitBtn.textContent = 'Memproses...';
+        var originalBtnText = submitButton ? submitButton.textContent : 'Masuk';
+        if (submitButton) {
+          submitButton.disabled = true;
+          submitButton.textContent = 'Memproses...';
+          /* Animate button loading state */
+          if (!reduce) {
+            animate(submitButton, { opacity: [1, 0.7] }, { duration: 0.8, ease: 'linear', repeat: Infinity, direction: 'alternate' });
+          }
         }
 
         var formData = new FormData(form);
@@ -142,6 +267,15 @@ import 'sweetalert2/dist/sweetalert2.min.css';
         .then(function (res) {
           if (res.ok && res.data.success) {
             var isAdmin = res.data.role === 'admin';
+            
+            /* Success animation on card */
+            if (!reduce) {
+              var card = $('.auth-card');
+              if (card) {
+                animate(card, { scale: [1, 0.98, 1.01, 1], borderColor: ['rgba(20,20,24,0.55)', '#34a853'] }, { duration: 0.5, ease: easeOut });
+              }
+            }
+
             Swal.fire({
               icon: 'success',
               title: 'Berhasil Masuk!',
@@ -161,9 +295,18 @@ import 'sweetalert2/dist/sweetalert2.min.css';
               }
             });
           } else {
-            if (submitBtn) {
-              submitBtn.disabled = false;
-              submitBtn.textContent = originalBtnText;
+            if (submitButton) {
+              submitButton.disabled = false;
+              submitButton.textContent = originalBtnText;
+              submitButton.style.opacity = '1';
+            }
+
+            /* Error shake animation on card */
+            if (!reduce) {
+              var card = $('.auth-card');
+              if (card) {
+                animate(card, { x: [0, -8, 8, -6, 6, -3, 3, 0] }, { duration: 0.5, ease: easeOut });
+              }
             }
 
             var errMsg = (res.data && res.data.message) ? res.data.message : 'Email atau kata sandi yang Anda masukkan salah.';
@@ -184,9 +327,10 @@ import 'sweetalert2/dist/sweetalert2.min.css';
           }
         })
         .catch(function (err) {
-          if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalBtnText;
+          if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = originalBtnText;
+            submitButton.style.opacity = '1';
           }
           console.error('Login error:', err);
           Swal.fire({
