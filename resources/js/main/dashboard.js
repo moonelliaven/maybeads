@@ -1,574 +1,391 @@
 /* ==========================================================================
-   Main Product Catalog Interactive Script - Maybead.s
-   Matches Admin theme standards & interactive capabilities
+   Main Product Catalog Interactive Script - Maybeads
+   Handles Filter Toggle, Sorting, Modal, Cart Drawer, and Popover
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
 
   /* ==========================================================================
-     1. SORTIR SIDEBAR TOGGLE ("Tampilkan Sortir" dari Kiri ke Kanan)
+     1. SIDEBAR FILTER TOGGLE ("Filter <" Button)
      ========================================================================== */
-  const sidebar       = document.getElementById('sortirSidebar');
-  const toggleBtn     = document.getElementById('sortirToggleBtn');
-  const toggleText    = document.getElementById('toggleSortirText');
-  const closeBtn      = document.getElementById('sidebarCloseBtn');
-  const backdrop      = document.getElementById('filterBackdrop');
+  const filterToggleBtn = document.getElementById('filterToggleBtn');
+  const sidebarPanel    = document.getElementById('sidebarFilterPanel');
 
-  // Check saved desktop state from localStorage (default: open)
-  const isDesktop = () => window.innerWidth > 900;
-  const savedState = localStorage.getItem('maybeads_sortir_collapsed');
-
-  if (isDesktop() && savedState === 'true' && sidebar) {
-    sidebar.classList.add('collapsed');
-    if (toggleBtn) {
-      toggleBtn.classList.remove('active');
-      toggleBtn.setAttribute('aria-expanded', 'false');
+  if (filterToggleBtn && sidebarPanel) {
+    // Read state from localStorage
+    const isCollapsedSaved = localStorage.getItem('maybeads_filter_collapsed') === 'true';
+    if (isCollapsedSaved && window.innerWidth > 900) {
+      sidebarPanel.classList.add('is-collapsed');
+      filterToggleBtn.classList.add('collapsed');
     }
-    if (toggleText) toggleText.textContent = 'Tampilkan Sortir';
-  } else if (toggleText && isDesktop()) {
-    toggleText.textContent = 'Sembunyikan Sortir';
+
+    filterToggleBtn.addEventListener('click', () => {
+      const isNowCollapsed = sidebarPanel.classList.toggle('is-collapsed');
+      filterToggleBtn.classList.toggle('collapsed', isNowCollapsed);
+      localStorage.setItem('maybeads_filter_collapsed', isNowCollapsed ? 'true' : 'false');
+    });
   }
-
-  function toggleSidebar() {
-    if (!sidebar) return;
-
-    if (isDesktop()) {
-      const isNowCollapsed = sidebar.classList.toggle('collapsed');
-      localStorage.setItem('maybeads_sortir_collapsed', isNowCollapsed ? 'true' : 'false');
-
-      if (toggleBtn) {
-        toggleBtn.classList.toggle('active', !isNowCollapsed);
-        toggleBtn.setAttribute('aria-expanded', !isNowCollapsed);
-      }
-
-      if (toggleText) {
-        toggleText.textContent = isNowCollapsed ? 'Tampilkan Sortir' : 'Sembunyikan Sortir';
-      }
-    } else {
-      // Mobile slide-out drawer
-      const isOpen = sidebar.classList.toggle('open-mobile');
-      if (backdrop) backdrop.classList.toggle('active', isOpen);
-      document.body.style.overflow = isOpen ? 'hidden' : '';
-    }
-  }
-
-  function closeMobileSidebar() {
-    if (!sidebar) return;
-    sidebar.classList.remove('open-mobile');
-    if (backdrop) backdrop.classList.remove('active');
-    document.body.style.overflow = '';
-  }
-
-  if (toggleBtn) toggleBtn.addEventListener('click', toggleSidebar);
-  if (closeBtn) closeBtn.addEventListener('click', () => {
-    if (isDesktop()) {
-      sidebar.classList.add('collapsed');
-      localStorage.setItem('maybeads_sortir_collapsed', 'true');
-      if (toggleBtn) {
-        toggleBtn.classList.remove('active');
-        toggleBtn.setAttribute('aria-expanded', 'false');
-      }
-      if (toggleText) toggleText.textContent = 'Tampilkan Sortir';
-    } else {
-      closeMobileSidebar();
-    }
-  });
-
-  if (backdrop) backdrop.addEventListener('click', closeMobileSidebar);
-
-  // Resize listener
-  window.addEventListener('resize', () => {
-    if (isDesktop() && sidebar && sidebar.classList.contains('open-mobile')) {
-      closeMobileSidebar();
-    }
-  });
 
 
   /* ==========================================================================
-     2. FILTER & SORTIR FORM ACTIONS
+     2. FILTER & SORT ACTIONS (Form Submissions)
      ========================================================================== */
-  const filterForm = document.getElementById('filterForm');
+  const filterForm    = document.getElementById('filterForm');
+  const inputSort     = document.getElementById('inputSort');
+  const inputCategory = document.getElementById('inputCategory');
+  const inputColor    = document.getElementById('inputColor');
 
-  if (filterForm) {
-    // 1. Sort Options
-    filterForm.querySelectorAll('[data-sort]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const input = document.getElementById('formInputSort');
-        if (input) input.value = btn.dataset.sort;
-        filterForm.submit();
-      });
-    });
-
-    // 2. Category Filter (Sidebar)
-    filterForm.querySelectorAll('[data-category]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const input = document.getElementById('formInputCategory');
-        if (input) input.value = btn.dataset.category;
-        filterForm.submit();
-      });
-    });
-
-    // 3. Color Filter
-    filterForm.querySelectorAll('[data-color]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const input = document.getElementById('formInputColor');
-        if (input) {
-          // Toggle if already selected
-          input.value = (input.value === btn.dataset.color) ? '' : btn.dataset.color;
-        }
-        filterForm.submit();
-      });
-    });
-
-    // 4. Size Filter
-    filterForm.querySelectorAll('[data-size]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const input = document.getElementById('formInputSize');
-        if (input) {
-          // Toggle if already selected
-          input.value = (input.value === btn.dataset.size) ? '' : btn.dataset.size;
-        }
-        filterForm.submit();
-      });
-    });
-
-    // 5. Reset Filter Button
-    const resetBtn = document.getElementById('filterResetBtn');
-    if (resetBtn) {
-      resetBtn.addEventListener('click', () => {
-        window.location.href = window.location.pathname;
-      });
-    }
-  }
-
-  // 6. Quick Category Pills (Above Products)
-  document.querySelectorAll('.quick-pill[data-cat]').forEach(pill => {
-    pill.addEventListener('click', () => {
-      const url = new URL(window.location.href);
-      const catVal = pill.dataset.cat;
-      if (catVal) {
-        url.searchParams.set('category', catVal);
-      } else {
-        url.searchParams.delete('category');
-      }
-      url.searchParams.delete('page');
-      window.location.href = url.toString();
-    });
-  });
-
-  // 7. Remove Active Chip Buttons
-  document.querySelectorAll('.btn-remove-chip[data-remove]').forEach(btn => {
+  // Sort Radio Options
+  document.querySelectorAll('.sort-radio-option[data-sort]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const paramToRemove = btn.dataset.remove;
-      const url = new URL(window.location.href);
-      url.searchParams.delete(paramToRemove);
-      url.searchParams.delete('page');
-      window.location.href = url.toString();
+      if (inputSort && filterForm) {
+        inputSort.value = btn.dataset.sort;
+        filterForm.submit();
+      }
     });
   });
 
-  // 8. Search Clear Button
-  const searchClearBtn = document.getElementById('searchClearBtn');
-  if (searchClearBtn) {
-    searchClearBtn.addEventListener('click', () => {
-      const url = new URL(window.location.href);
-      url.searchParams.delete('search');
-      url.searchParams.delete('page');
-      window.location.href = url.toString();
+  // Category Options
+  document.querySelectorAll('.category-option-item[data-category]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (inputCategory && filterForm) {
+        inputCategory.value = btn.dataset.category;
+        filterForm.submit();
+      }
+    });
+  });
+
+  // Color Pills
+  document.querySelectorAll('.color-pill-btn[data-color]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (inputColor && filterForm) {
+        // Toggle if already selected
+        inputColor.value = (inputColor.value.toLowerCase() === btn.dataset.color.toLowerCase()) ? '' : btn.dataset.color;
+        filterForm.submit();
+      }
+    });
+  });
+
+  // Expand Categories Toggle
+  const btnToggleCategories  = document.getElementById('btnToggleCategories');
+  const textExpandCategories = document.getElementById('textExpandCategories');
+  if (btnToggleCategories) {
+    btnToggleCategories.addEventListener('click', () => {
+      const extraItems = document.querySelectorAll('.cat-extra-item');
+      const isExpanded = btnToggleCategories.classList.toggle('expanded');
+      extraItems.forEach(item => item.classList.toggle('is-hidden', !isExpanded));
+      if (textExpandCategories) {
+        textExpandCategories.textContent = isExpanded ? 'Tutup' : 'Lihat lebih';
+      }
+    });
+  }
+
+  // Expand Colors Toggle
+  const btnToggleColors  = document.getElementById('btnToggleColors');
+  const extraColorsWrap  = document.getElementById('extraColorsWrap');
+  const textExpandColors = document.getElementById('textExpandColors');
+  if (btnToggleColors && extraColorsWrap) {
+    btnToggleColors.addEventListener('click', () => {
+      const isExpanded = btnToggleColors.classList.toggle('expanded');
+      extraColorsWrap.classList.toggle('is-hidden', !isExpanded);
+      if (textExpandColors) {
+        textExpandColors.textContent = isExpanded ? 'Tutup' : 'Lainnya';
+      }
     });
   }
 
 
   /* ==========================================================================
-     3. TOP HEADER LANGUAGE SELECTOR
+     3. DETAIL / QUICK VIEW MODAL
      ========================================================================== */
-  const langToggleBtn = document.getElementById('langToggleBtn');
-  const langMenu      = document.getElementById('langMenu');
-  const currentLang   = document.getElementById('currentLangText');
+  const detailModalBackdrop = document.getElementById('detailModalBackdrop');
+  const btnDetailClose      = document.getElementById('btnDetailClose');
+  const modalProductImage   = document.getElementById('modalProductImage');
+  const modalCategoryTag    = document.getElementById('modalCategoryTag');
+  const modalCodeTag        = document.getElementById('modalCodeTag');
+  const modalProductName    = document.getElementById('modalProductName');
+  const modalProductPrice   = document.getElementById('modalProductPrice');
+  const modalProductDesc    = document.getElementById('modalProductDesc');
+  const modalAddToCartBtn   = document.getElementById('modalAddToCartBtn');
 
-  if (langToggleBtn && langMenu) {
-    langToggleBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isShow = langMenu.classList.toggle('show');
-      langToggleBtn.setAttribute('aria-expanded', isShow);
-    });
+  let currentDetailProduct = null;
 
-    langMenu.querySelectorAll('.lang-item').forEach(item => {
-      item.addEventListener('click', () => {
-        const lang = item.dataset.lang;
-        if (currentLang) currentLang.textContent = lang;
-        langMenu.querySelectorAll('.lang-item').forEach(i => i.classList.remove('active'));
-        item.classList.add('active');
-        langMenu.classList.remove('show');
-        showToast('Bahasa Diubah', `Bahasa berhasil disetel ke ${lang === 'ID' ? 'Bahasa Indonesia' : 'English'}.`);
+  document.querySelectorAll('.product-card-item').forEach(card => {
+    const detailBtn = card.querySelector('[data-action="detail"]');
+    if (detailBtn) {
+      detailBtn.addEventListener('click', () => {
+        const data = card.dataset;
+        currentDetailProduct = data;
+
+        if (modalProductImage) modalProductImage.src = data.image || '';
+        if (modalCategoryTag) modalCategoryTag.textContent = data.category || 'Aksesoris';
+        if (modalCodeTag) modalCodeTag.textContent = '#' + (data.code || '0001');
+        if (modalProductName) modalProductName.textContent = data.name || '';
+        if (modalProductPrice) modalProductPrice.textContent = data.price || 'Rp 0';
+        if (modalProductDesc) modalProductDesc.textContent = data.desc || '';
+
+        if (detailModalBackdrop) {
+          detailModalBackdrop.classList.add('show');
+          document.body.style.overflow = 'hidden';
+        }
       });
-    });
+    }
+  });
 
-    document.addEventListener('click', (e) => {
-      if (!langToggleBtn.contains(e.target) && !langMenu.contains(e.target)) {
-        langMenu.classList.remove('show');
-        langToggleBtn.setAttribute('aria-expanded', 'false');
-      }
+  function closeDetailModal() {
+    if (detailModalBackdrop) {
+      detailModalBackdrop.classList.remove('show');
+      document.body.style.overflow = '';
+    }
+  }
+
+  if (btnDetailClose) btnDetailClose.addEventListener('click', closeDetailModal);
+  if (detailModalBackdrop) {
+    detailModalBackdrop.addEventListener('click', (e) => {
+      if (e.target === detailModalBackdrop) closeDetailModal();
     });
   }
 
 
   /* ==========================================================================
-     4. NAVBAR USER MENU DROPDOWN
+     4. DELETE PRODUCT ACTION (Admin confirmation)
      ========================================================================== */
-  const userMenuBtn = document.getElementById('userMenuBtn');
-  const userMenu    = document.getElementById('userMenu');
+  const deleteProductForm = document.getElementById('deleteProductForm');
 
-  if (userMenuBtn && userMenu) {
-    userMenuBtn.addEventListener('click', (e) => {
+  document.querySelectorAll('.btn-delete-product').forEach(btn => {
+    btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const isShow = userMenu.classList.toggle('show');
-      userMenuBtn.setAttribute('aria-expanded', isShow);
-    });
+      const deleteUrl = btn.dataset.deleteUrl;
+      const productName = btn.dataset.name || 'produk ini';
 
-    document.addEventListener('click', (e) => {
-      if (!userMenuBtn.contains(e.target) && !userMenu.contains(e.target)) {
-        userMenu.classList.remove('show');
-        userMenuBtn.setAttribute('aria-expanded', 'false');
+      if (!deleteUrl || !deleteProductForm) return;
+
+      const confirmDelete = window.confirm(`Apakah Anda yakin ingin menghapus "${productName}"? Tindakan ini tidak dapat dibatalkan.`);
+      if (confirmDelete) {
+        deleteProductForm.action = deleteUrl;
+        deleteProductForm.submit();
       }
     });
-  }
+  });
 
 
   /* ==========================================================================
-     5. CART SYSTEM & DRAWER (Keranjang Belanja)
+     5. CART POP-UP CARD (No Blur, Clean Pop-Up, Max 5 Recent Items)
      ========================================================================== */
-  const cartOpenBtn    = document.getElementById('cartOpenBtn');
-  const cartCloseBtn   = document.getElementById('cartCloseBtn');
-  const cartDrawer     = document.getElementById('cartDrawer');
-  const cartOverlay    = document.getElementById('cartOverlay');
-  const cartItemsList  = document.getElementById('cartItemsList');
-  const cartCountBadge = document.getElementById('cartCountBadge');
-  const cartSubtotal   = document.getElementById('cartSubtotalText');
-  const btnCheckout    = document.getElementById('btnCheckout');
+  const cartOpenBtn          = document.getElementById('cartOpenBtn');
+  const cartDropdownWrapper  = document.getElementById('cartDropdownWrapper');
+  const cartPopupCard        = document.getElementById('cartPopupCard');
+  const btnCloseCartPopup    = document.getElementById('btnCloseCartPopup');
+  const cartPopupItemsList   = document.getElementById('cartPopupItemsList');
+  const cartPopupNote        = document.getElementById('cartPopupNote');
+  const cartCountBadge       = document.getElementById('cartCountBadge');
 
-  // Simple In-Memory / LocalStorage Cart
-  let cart = JSON.parse(localStorage.getItem('maybeads_cart_items') || '[]');
+  // Default sample items matching mockup if empty
+  const defaultSampleCart = [
+    {
+      id: 991,
+      name: 'Nama Produk',
+      color: 'Biru, Kuning',
+      qty: 3,
+      price: 'Rp 92.000',
+      rawPrice: 92000,
+      image: '/images/landing/prod-hairclip.jpg',
+      addedAt: Date.now() - 4000
+    },
+    {
+      id: 992,
+      name: 'Nama Produk',
+      color: 'Biru, Kuning',
+      qty: 3,
+      price: 'Rp 92.000',
+      rawPrice: 92000,
+      image: '/images/landing/prod-ring.jpg',
+      addedAt: Date.now() - 3000
+    },
+    {
+      id: 993,
+      name: 'Nama Produk',
+      color: 'Biru, Kuning',
+      qty: 3,
+      price: 'Rp 92.000',
+      rawPrice: 92000,
+      image: '/images/landing/prod-butterfly.jpg',
+      addedAt: Date.now() - 2000
+    },
+    {
+      id: 994,
+      name: 'Nama Produk',
+      color: 'Biru, Kuning',
+      qty: 3,
+      price: 'Rp 92.000',
+      rawPrice: 92000,
+      image: '/images/landing/prod-keychain.jpg',
+      addedAt: Date.now() - 1000
+    }
+  ];
 
-  function saveCart() {
-    localStorage.setItem('maybeads_cart_items', JSON.stringify(cart));
-    updateCartUI();
+  let rawCart = localStorage.getItem('maybeads_cart');
+  let localCart = rawCart !== null ? JSON.parse(rawCart) : defaultSampleCart;
+  if (rawCart === null) {
+    localStorage.setItem('maybeads_cart', JSON.stringify(localCart));
   }
 
   function updateCartUI() {
-    const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
-    if (cartCountBadge) cartCountBadge.textContent = totalQty;
+    const totalItems = localCart.reduce((sum, item) => sum + (item.qty || 1), 0);
 
-    if (!cartItemsList) return;
-
-    if (cart.length === 0) {
-      cartItemsList.innerHTML = `
-        <div class="cart-empty-message">
-          <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-          <h4>Keranjang Anda Kosong</h4>
-          <p>Jelajahi produk di atas dan tambahkan aksesoris Y2K favorit Anda.</p>
-        </div>
-      `;
-      if (cartSubtotal) cartSubtotal.textContent = 'Rp 0';
-      return;
+    if (cartCountBadge) {
+      cartCountBadge.textContent = totalItems;
+      cartCountBadge.classList.toggle('visible', totalItems > 0);
     }
 
-    let subtotal = 0;
-    cartItemsList.innerHTML = cart.map((item, idx) => {
-      subtotal += item.price * item.qty;
-      const formattedItemPrice = 'Rp ' + Number(item.price).toLocaleString('id-ID');
-      return `
-        <div class="cart-item-card" data-idx="${idx}">
-          <img src="${item.img}" alt="${item.name}" class="cart-item-img">
-          <div class="cart-item-info">
-            <span class="cart-item-name">${item.name}</span>
-            <span class="cart-item-price">${formattedItemPrice}</span>
-            <div class="cart-item-qty-row">
-              <span class="cart-item-qty">Jumlah: <strong>${item.qty}</strong></span>
-              <button type="button" class="cart-item-remove" data-remove-idx="${idx}">Hapus</button>
+    if (cartPopupItemsList) {
+      if (localCart.length === 0) {
+        cartPopupItemsList.innerHTML = `
+          <div class="cart-popup-empty">
+            <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+            <p>Keranjang belanja masih kosong.</p>
+          </div>
+        `;
+        if (cartPopupNote) cartPopupNote.textContent = 'Keranjang Belanja Kosong';
+      } else {
+        // Show max 5 most recently added products
+        const recentItems = [...localCart]
+          .sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0))
+          .slice(0, 5);
+
+        cartPopupItemsList.innerHTML = recentItems.map((item) => `
+          <div class="cart-popup-item">
+            <img src="${item.image || '/images/landing/prod-hairclip.jpg'}" alt="${item.name}" class="cart-popup-thumb">
+            <div class="cart-popup-info">
+              <h4 class="cart-popup-name">${item.name}</h4>
+              <div class="cart-popup-meta">Warna: ${item.color || 'Biru, Kuning'}</div>
+              <div class="cart-popup-meta">Jumlah: ${item.qty || 1}</div>
+              <div class="cart-popup-price">${item.price || ('Rp ' + (item.rawPrice || 0).toLocaleString('id-ID'))}</div>
             </div>
           </div>
-        </div>
-      `;
-    }).join('');
+        `).join('');
 
-    if (cartSubtotal) {
-      cartSubtotal.textContent = 'Rp ' + Number(subtotal).toLocaleString('id-ID');
-    }
-
-    // Attach remove listeners
-    cartItemsList.querySelectorAll('[data-remove-idx]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const idx = parseInt(btn.dataset.removeIdx);
-        cart.splice(idx, 1);
-        saveCart();
-        showToast('Produk Dihapus', 'Item telah dihapus dari keranjang.');
-      });
-    });
-  }
-
-  function openCart() {
-    if (cartDrawer) cartDrawer.classList.add('open');
-    if (cartOverlay) cartOverlay.classList.add('show');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeCart() {
-    if (cartDrawer) cartDrawer.classList.remove('open');
-    if (cartOverlay) cartOverlay.classList.remove('show');
-    document.body.style.overflow = '';
-  }
-
-  if (cartOpenBtn) cartOpenBtn.addEventListener('click', openCart);
-  if (cartCloseBtn) cartCloseBtn.addEventListener('click', closeCart);
-  if (cartOverlay) cartOverlay.addEventListener('click', closeCart);
-
-  if (btnCheckout) {
-    btnCheckout.addEventListener('click', () => {
-      if (cart.length === 0) {
-        showToast('Keranjang Kosong', 'Pilih produk terlebih dahulu sebelum checkout.');
-        return;
+        if (cartPopupNote) {
+          cartPopupNote.textContent = recentItems.length >= 5
+            ? 'Menampilkan 5 Produk Terakhir Ditambahkan'
+            : `Menampilkan ${recentItems.length} Produk Terakhir Ditambahkan`;
+        }
       }
-      showToast('Menuju Checkout', 'Fitur checkout payment gateway terintegrasi siap memproses pesanan.');
-    });
+    }
   }
 
-  // Initial cart UI
   updateCartUI();
 
-  // Add to cart from Product Cards
-  document.querySelectorAll('.product-card').forEach(card => {
-    const addBtn = card.querySelector('.btn-add-cart');
-    if (addBtn) {
-      addBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const id    = card.dataset.id;
-        const name  = card.dataset.name;
-        const img   = card.dataset.image;
-        const price = parseInt(card.dataset.price.replace(/[^0-9]/g, '')) || 0;
+  function openCartPopup() {
+    if (cartPopupCard) {
+      updateCartUI();
+      cartPopupCard.classList.add('show');
+      if (cartOpenBtn) cartOpenBtn.setAttribute('aria-expanded', 'true');
+    }
+  }
 
-        const existing = cart.find(i => i.id === id);
-        if (existing) {
-          existing.qty += 1;
-        } else {
-          cart.push({ id, name, img, price, qty: 1 });
-        }
+  function closeCartPopup() {
+    if (cartPopupCard) {
+      cartPopupCard.classList.remove('show');
+      if (cartOpenBtn) cartOpenBtn.setAttribute('aria-expanded', 'false');
+    }
+  }
 
-        saveCart();
-        showToast('Berhasil Ditambahkan! ✦', `${name} masuk ke keranjang belanja.`);
-      });
+  function toggleCartPopup() {
+    if (cartPopupCard) {
+      const isShowing = cartPopupCard.classList.contains('show');
+      if (isShowing) {
+        closeCartPopup();
+      } else {
+        openCartPopup();
+      }
+    }
+  }
+
+  if (cartOpenBtn) {
+    cartOpenBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleCartPopup();
+    });
+  }
+
+  if (btnCloseCartPopup) {
+    btnCloseCartPopup.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeCartPopup();
+    });
+  }
+
+  // Click outside to dismiss pop-up (No background blur)
+  document.addEventListener('click', (e) => {
+    if (cartPopupCard && cartPopupCard.classList.contains('show')) {
+      if (cartDropdownWrapper && !cartDropdownWrapper.contains(e.target)) {
+        closeCartPopup();
+      }
     }
   });
+
+  // Add to cart from modal
+  if (modalAddToCartBtn) {
+    modalAddToCartBtn.addEventListener('click', () => {
+      if (currentDetailProduct) {
+        const rawNum = parseInt((currentDetailProduct.price || '').replace(/[^0-9]/g, ''), 10) || 50000;
+        const existing = localCart.find(it => it.id === currentDetailProduct.id);
+        if (existing) {
+          existing.qty = (existing.qty || 1) + 1;
+          existing.addedAt = Date.now();
+        } else {
+          localCart.unshift({
+            id: currentDetailProduct.id,
+            name: currentDetailProduct.name,
+            price: currentDetailProduct.price,
+            rawPrice: rawNum,
+            image: currentDetailProduct.image,
+            color: currentDetailProduct.color || 'Biru, Kuning',
+            qty: 1,
+            addedAt: Date.now()
+          });
+        }
+        localStorage.setItem('maybeads_cart', JSON.stringify(localCart));
+        updateCartUI();
+        closeDetailModal();
+        openCartPopup();
+      }
+    });
+  }
 
 
   /* ==========================================================================
-     6. QUICK VIEW MODAL
+     6. USER ACCOUNT MENU DROPDOWN POPOVER
      ========================================================================== */
-  const quickModal    = document.getElementById('quickViewModal');
-  const quickBackdrop = document.getElementById('quickViewBackdrop');
-  const modalCloseBtn = document.getElementById('modalCloseBtn');
+  const accountDropdownBtn = document.getElementById('accountDropdownBtn');
+  const accountMenuPopover = document.getElementById('accountMenuPopover');
 
-  const mImg       = document.getElementById('modalImg');
-  const mCat       = document.getElementById('modalCategory');
-  const mId        = document.getElementById('modalId');
-  const mTitle     = document.getElementById('modalTitle');
-  const mPrice     = document.getElementById('modalPrice');
-  const mStock     = document.getElementById('modalStock');
-  const mDesc      = document.getElementById('modalDesc');
-  const mColorList = document.getElementById('modalColorList');
-  const mSizeList  = document.getElementById('modalSizeList');
-  const mColorRow  = document.getElementById('modalColorRow');
-  const mSizeRow   = document.getElementById('modalSizeRow');
-  const mQtyInput  = document.getElementById('modalQtyInput');
-  const mQtyMinus  = document.getElementById('modalQtyMinus');
-  const mQtyPlus   = document.getElementById('modalQtyPlus');
-  const mAddToCart = document.getElementById('modalAddToCartBtn');
+  if (accountDropdownBtn && accountMenuPopover) {
+    accountDropdownBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = accountMenuPopover.classList.toggle('show');
+      accountDropdownBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
 
-  let currentModalProduct = null;
-
-  function openQuickView(card) {
-    currentModalProduct = {
-      id: card.dataset.id,
-      name: card.dataset.name,
-      price: card.dataset.price,
-      numPrice: parseInt(card.dataset.price.replace(/[^0-9]/g, '')) || 0,
-      image: card.dataset.image,
-      category: card.dataset.category,
-      stock: parseInt(card.dataset.stock) || 0,
-      desc: card.dataset.desc,
-      colors: card.dataset.colors ? card.dataset.colors.split(',').map(s => s.trim()).filter(Boolean) : [],
-      sizes: card.dataset.sizes ? card.dataset.sizes.split(',').map(s => s.trim()).filter(Boolean) : [],
-    };
-
-    if (mImg) mImg.src = currentModalProduct.image;
-    if (mCat) mCat.textContent = currentModalProduct.category;
-    if (mId) mId.textContent = '#' + String(currentModalProduct.id).padStart(4, '0');
-    if (mTitle) mTitle.textContent = currentModalProduct.name;
-    if (mPrice) mPrice.textContent = currentModalProduct.price;
-    if (mDesc) mDesc.textContent = currentModalProduct.desc;
-
-    if (mStock) {
-      if (currentModalProduct.stock > 5) {
-        mStock.textContent = `Stok Tersedia (${currentModalProduct.stock})`;
-        mStock.className = 'modal-stock-badge in';
-      } else if (currentModalProduct.stock > 0) {
-        mStock.textContent = `Sisa Terbatas (${currentModalProduct.stock})`;
-        mStock.className = 'modal-stock-badge low';
-      } else {
-        mStock.textContent = 'Stok Habis';
-        mStock.className = 'modal-stock-badge out';
+    document.addEventListener('click', (e) => {
+      if (!accountMenuPopover.contains(e.target) && !accountDropdownBtn.contains(e.target)) {
+        accountMenuPopover.classList.remove('show');
+        accountDropdownBtn.setAttribute('aria-expanded', 'false');
       }
-    }
-
-    // Colors
-    if (mColorList && mColorRow) {
-      if (currentModalProduct.colors.length > 0) {
-        mColorRow.style.display = 'block';
-        mColorList.innerHTML = currentModalProduct.colors.map((c, i) =>
-          `<button type="button" class="modal-tag ${i === 0 ? 'active' : ''}">${c}</button>`
-        ).join('');
-
-        mColorList.querySelectorAll('.modal-tag').forEach(tag => {
-          tag.addEventListener('click', () => {
-            mColorList.querySelectorAll('.modal-tag').forEach(t => t.classList.remove('active'));
-            tag.classList.add('active');
-          });
-        });
-      } else {
-        mColorRow.style.display = 'none';
-      }
-    }
-
-    // Sizes
-    if (mSizeList && mSizeRow) {
-      if (currentModalProduct.sizes.length > 0) {
-        mSizeRow.style.display = 'block';
-        mSizeList.innerHTML = currentModalProduct.sizes.map((s, i) =>
-          `<button type="button" class="modal-tag ${i === 0 ? 'active' : ''}">${s}</button>`
-        ).join('');
-
-        mSizeList.querySelectorAll('.modal-tag').forEach(tag => {
-          tag.addEventListener('click', () => {
-            mSizeList.querySelectorAll('.modal-tag').forEach(t => t.classList.remove('active'));
-            tag.classList.add('active');
-          });
-        });
-      } else {
-        mSizeRow.style.display = 'none';
-      }
-    }
-
-    if (mQtyInput) mQtyInput.value = 1;
-
-    if (quickBackdrop) quickBackdrop.classList.add('show');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeQuickView() {
-    if (quickBackdrop) quickBackdrop.classList.remove('show');
-    document.body.style.overflow = '';
-  }
-
-  // Bind Quick View triggers
-  document.querySelectorAll('.product-card').forEach(card => {
-    const qvBtn = card.querySelector('.btn-quick-view');
-    const media = card.querySelector('.product-card-media');
-
-    if (qvBtn) {
-      qvBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        openQuickView(card);
-      });
-    }
-
-    if (media) {
-      media.addEventListener('click', (e) => {
-        if (!e.target.closest('.card-hover-actions')) {
-          openQuickView(card);
-        }
-      });
-    }
-  });
-
-  if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeQuickView);
-  if (quickBackdrop) {
-    quickBackdrop.addEventListener('click', (e) => {
-      if (e.target === quickBackdrop) closeQuickView();
     });
   }
 
-  // Modal Qty
-  if (mQtyMinus && mQtyInput) {
-    mQtyMinus.addEventListener('click', () => {
-      let val = parseInt(mQtyInput.value) || 1;
-      if (val > 1) mQtyInput.value = val - 1;
-    });
-  }
 
-  if (mQtyPlus && mQtyInput) {
-    mQtyPlus.addEventListener('click', () => {
-      let val = parseInt(mQtyInput.value) || 1;
-      if (val < 99) mQtyInput.value = val + 1;
-    });
-  }
-
-  // Modal Add to Cart
-  if (mAddToCart) {
-    mAddToCart.addEventListener('click', () => {
-      if (!currentModalProduct) return;
-      const qty = parseInt(mQtyInput?.value) || 1;
-
-      const existing = cart.find(i => i.id === currentModalProduct.id);
-      if (existing) {
-        existing.qty += qty;
-      } else {
-        cart.push({
-          id: currentModalProduct.id,
-          name: currentModalProduct.name,
-          img: currentModalProduct.image,
-          price: currentModalProduct.numPrice,
-          qty: qty
-        });
-      }
-
-      saveCart();
-      closeQuickView();
-      showToast('Berhasil Ditambahkan! ✦', `${qty}x ${currentModalProduct.name} ditambahkan ke keranjang.`);
-    });
-  }
-
-  // ESC key to close modal & drawer
+  /* ==========================================================================
+     7. ESC KEY LISTENER (Closes Modals)
+     ========================================================================== */
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-      closeQuickView();
-      closeCart();
-      closeMobileSidebar();
-      if (userMenu) userMenu.classList.remove('show');
-      if (langMenu) langMenu.classList.remove('show');
+      closeDetailModal();
+      closeCartPopup();
+      if (accountMenuPopover) accountMenuPopover.classList.remove('show');
     }
   });
-
-
-  /* ==========================================================================
-     7. TOAST NOTIFICATION UTILITY
-     ========================================================================== */
-  const toast       = document.getElementById('toastNotification');
-  const toastTitle   = document.getElementById('toastTitle');
-  const toastMessage = document.getElementById('toastMessage');
-  let toastTimer    = null;
-
-  function showToast(title, message) {
-    if (!toast) return;
-
-    if (toastTitle) toastTitle.textContent = title;
-    if (toastMessage) toastMessage.textContent = message;
-
-    toast.classList.add('show');
-
-    if (toastTimer) clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => {
-      toast.classList.remove('show');
-    }, 3200);
-  }
 
 });
