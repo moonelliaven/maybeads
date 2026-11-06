@@ -58,7 +58,7 @@
     </li>
 
         <li>
-          <a href="/admin/orders" data-label="Pesanan" class="nav-item {{ ($active ?? '') === 'pesanan' ? 'active' : '' }}">
+          <a href="{{ route('admin.order.index') }}" data-label="Pesanan" class="nav-item {{ in_array($active ?? '', ['pesanan', 'orders']) ? 'active' : '' }}">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
               <polyline points="14 2 14 8 20 8"></polyline>
@@ -69,7 +69,7 @@
           </a>
         </li>
         <li>
-          <a href="/admin/payments" data-label="Pembayaran" class="nav-item {{ ($active ?? '') === 'pembayaran' ? 'active' : '' }}">
+          <a href="{{ route('admin.payment.index') }}" data-label="Pembayaran" class="nav-item {{ in_array($active ?? '', ['pembayaran', 'payments']) ? 'active' : '' }}">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <rect x="2" y="5" width="20" height="14" rx="2"></rect>
               <line x1="2" y1="10" x2="22" y2="10"></line>
@@ -85,7 +85,7 @@
       <div class="nav-header">MANAGEMENT</div>
       <ul class="nav-list">
         <li>
-          <a href="/admin/users" data-label="User" class="nav-item {{ ($active ?? '') === 'user' ? 'active' : '' }}">
+          <a href="{{ route('admin.user.index') }}" data-label="User" class="nav-item {{ in_array($active ?? '', ['user', 'users']) ? 'active' : '' }}">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
               <circle cx="9" cy="7" r="4"></circle>
@@ -116,7 +116,7 @@
           </a>
         </li>
         <li>
-          <a href="/admin/pos/transactions" data-label="Transaksi Kasir" class="nav-item {{ ($active ?? '') === 'transaksi_kasir' ? 'active' : '' }}">
+          <a href="{{ route('admin.pos.index') }}" data-label="Transaksi Kasir" class="nav-item {{ in_array($active ?? '', ['pos', 'transaksi_kasir']) ? 'active' : '' }}">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1z"></path>
               <line x1="8" y1="6" x2="16" y2="6"></line>

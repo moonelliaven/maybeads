@@ -23,6 +23,7 @@ export default defineConfig({
                 'resources/js/admin/category-index.js',
                 'resources/css/admin/product-form.css',
                 'resources/js/admin/product-form.js',
+                'resources/css/admin/management.css',
                 'resources/css/main/dashboard.css',
                 'resources/js/main/dashboard.js',
                 'resources/css/lenis.css',
