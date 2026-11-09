@@ -562,7 +562,7 @@
 
         <div class="summary-row-line">
           <span>Subtotal</span>
-          <span class="amount-val" id="sumSubtotal">Rp. 120.000,00</span>
+          <span class="amount-val" id="sumSubtotal">Rp. 828.000,00</span>
         </div>
 
         <div class="summary-row-line">
@@ -584,7 +584,7 @@
 
         <div class="final-price-row">
           <span class="final-price-label">Harga Akhir</span>
-          <span class="final-price-num" id="sumFinal">127.500,00</span>
+          <span class="final-price-num" id="sumFinal">835.500,00</span>
         </div>
 
         <!-- Gray Timer Box -->
@@ -644,19 +644,27 @@
       timerEl.textContent = `${m}:${s}`;
     }, 1000);
 
-    // Read subtotal from cart if available
+    // Read subtotal from cart
     try {
-      const raw = localStorage.getItem('maybeads_cart');
-      if (raw) {
-        const cart = JSON.parse(raw);
-        const checked = cart.filter(c => c.checked !== false);
-        if (checked.length > 0) {
-          const sub = checked.reduce((acc, curr) => acc + ((curr.rawPrice || 24000) * (curr.qty || 1)), 0);
-          const finalTotal = sub + 15000 + 2500 - 10000;
-          document.getElementById('sumSubtotal').textContent = 'Rp. ' + sub.toLocaleString('id-ID') + ',00';
-          document.getElementById('sumFinal').textContent = finalTotal.toLocaleString('id-ID') + ',00';
+      let sub = 828000;
+      const savedSub = localStorage.getItem('maybeads_subtotal');
+      if (savedSub && !isNaN(parseInt(savedSub, 10))) {
+        sub = parseInt(savedSub, 10);
+      } else {
+        const raw = localStorage.getItem('maybeads_cart');
+        if (raw) {
+          const cart = JSON.parse(raw);
+          const checked = cart.filter(c => c.checked !== false);
+          if (checked.length > 0) {
+            sub = checked.reduce((acc, curr) => acc + ((curr.rawPrice || 92000) * (curr.qty || 1)), 0);
+          }
         }
       }
+      const finalTotal = sub + 15000 + 2500 - 10000;
+      document.getElementById('sumSubtotal').textContent = 'Rp. ' + sub.toLocaleString('id-ID') + ',00';
+      document.getElementById('sumFinal').textContent = finalTotal.toLocaleString('id-ID') + ',00';
+      localStorage.setItem('maybeads_subtotal', sub);
+      localStorage.setItem('maybeads_final_total', finalTotal);
     } catch(e) {}
   </script>
 </body>

@@ -251,7 +251,7 @@
 
       <div class="receipt-row-line">
         <span>Subtotal</span>
-        <span class="val-text" id="receiptSubtotal">Rp 120.000,00</span>
+        <span class="val-text" id="receiptSubtotal">Rp 828.000,00</span>
       </div>
 
       <div class="receipt-row-line">
@@ -268,7 +268,7 @@
 
       <div class="receipt-total-row">
         <span>Total Pembayaran</span>
-        <span id="receiptTotal">Rp. 137.500,00</span>
+        <span id="receiptTotal">Rp. 845.500,00</span>
       </div>
 
       <div class="receipt-divider"></div>
@@ -308,17 +308,23 @@
   <script>
     // Read amounts if available
     try {
-      const raw = localStorage.getItem('maybeads_cart');
-      if (raw) {
-        const cart = JSON.parse(raw);
-        const checked = cart.filter(c => c.checked !== false);
-        if (checked.length > 0) {
-          const sub = checked.reduce((acc, curr) => acc + ((curr.rawPrice || 24000) * (curr.qty || 1)), 0);
-          const finalTotal = sub + 15000 + 2500;
-          document.getElementById('receiptSubtotal').textContent = 'Rp ' + sub.toLocaleString('id-ID') + ',00';
-          document.getElementById('receiptTotal').textContent = 'Rp. ' + finalTotal.toLocaleString('id-ID') + ',00';
+      let sub = 828000;
+      const savedSub = localStorage.getItem('maybeads_subtotal');
+      if (savedSub && !isNaN(parseInt(savedSub, 10))) {
+        sub = parseInt(savedSub, 10);
+      } else {
+        const raw = localStorage.getItem('maybeads_cart');
+        if (raw) {
+          const cart = JSON.parse(raw);
+          const checked = cart.filter(c => c.checked !== false);
+          if (checked.length > 0) {
+            sub = checked.reduce((acc, curr) => acc + ((curr.rawPrice || 92000) * (curr.qty || 1)), 0);
+          }
         }
       }
+      const finalTotal = sub + 15000 + 2500;
+      document.getElementById('receiptSubtotal').textContent = 'Rp ' + sub.toLocaleString('id-ID') + ',00';
+      document.getElementById('receiptTotal').textContent = 'Rp. ' + finalTotal.toLocaleString('id-ID') + ',00';
     } catch(e) {}
   </script>
 </body>

@@ -678,46 +678,35 @@
       const sampleDefaultItems = [
         {
           id: 101,
-          name: 'Nama Produk nama prodk yang sangat keren',
-          color: 'Merah, XL',
+          name: 'Nama Produk',
+          color: 'Biru, Kuning',
           qty: 3,
-          price: 'Rp 24.000',
-          rawPrice: 24000,
-          image: '/images/products/sample-hub.jpg',
-          checked: false,
-          addedAt: Date.now() - 4000
-        },
-        {
-          id: 102,
-          name: 'Nama Produk nama prodk yang sangat keren',
-          color: 'Merah, XL',
-          qty: 3,
-          price: 'Rp 24.000',
-          rawPrice: 24000,
-          image: '/images/products/sample-hub.jpg',
+          price: 'Rp 92.000',
+          rawPrice: 92000,
+          image: '/images/landing/prod-hairclip.jpg',
           checked: true,
           addedAt: Date.now() - 3000
         },
         {
-          id: 103,
-          name: 'Nama Produk nama prodk yang sangat keren',
-          color: 'Merah, XL',
+          id: 102,
+          name: 'Nama Produk',
+          color: 'Biru, Kuning',
           qty: 3,
-          price: 'Rp 24.000',
-          rawPrice: 24000,
-          image: '/images/products/sample-hub.jpg',
+          price: 'Rp 92.000',
+          rawPrice: 92000,
+          image: '/images/landing/prod-ring.jpg',
           checked: true,
           addedAt: Date.now() - 2000
         },
         {
-          id: 104,
-          name: 'Nama Produk nama prodk yang sangat keren',
-          color: 'Merah, XL',
+          id: 103,
+          name: 'Nama Produk',
+          color: 'Biru, Kuning',
           qty: 3,
-          price: 'Rp 24.000',
-          rawPrice: 24000,
-          image: '/images/products/sample-hub.jpg',
-          checked: false,
+          price: 'Rp 92.000',
+          rawPrice: 92000,
+          image: '/images/landing/prod-butterfly.jpg',
+          checked: true,
           addedAt: Date.now() - 1000
         }
       ];
@@ -725,14 +714,16 @@
       let rawCart = localStorage.getItem('maybeads_cart');
       let cart = rawCart !== null ? JSON.parse(rawCart) : sampleDefaultItems;
 
-      // Ensure every item has a checked state (default to true if not set)
-      cart = cart.map((it, idx) => {
+      // Ensure every item has a checked state (default to true)
+      cart = cart.map((it) => {
         if (typeof it.checked === 'undefined') {
-          // If using sample items, match screenshot: items 1 & 2 checked, 0 & 3 unchecked
-          it.checked = (idx === 1 || idx === 2);
+          it.checked = true;
         }
         if (!it.rawPrice) {
-          it.rawPrice = parseInt((it.price || '').replace(/[^0-9]/g, ''), 10) || 24000;
+          it.rawPrice = parseInt((it.price || '').replace(/[^0-9]/g, ''), 10) || 92000;
+        }
+        return it;
+      });
         }
         return it;
       });
@@ -999,16 +990,18 @@
         });
       }
 
-      // Checkout Button: Langsung buka halaman checkout
+      // Checkout Button: Langsung buka halaman checkout dengan menyimpan subtotal
       if (btnCheckoutAction) {
         btnCheckoutAction.addEventListener('click', (e) => {
           e.preventDefault();
-          const checkedItems = cart.filter(it => it.checked);
+          let checkedItems = cart.filter(it => it.checked);
           if (checkedItems.length === 0) {
-            // Jika belum ada yang dicentang, centang semua item otomatis
             cart.forEach(it => it.checked = true);
-            localStorage.setItem('maybeads_cart', JSON.stringify(cart));
+            checkedItems = cart;
           }
+          const subtotal = checkedItems.reduce((sum, it) => sum + ((it.rawPrice || 92000) * (it.qty || 1)), 0);
+          localStorage.setItem('maybeads_cart', JSON.stringify(cart));
+          localStorage.setItem('maybeads_subtotal', subtotal);
           window.location.href = "{{ route('checkout') }}";
         });
       }
