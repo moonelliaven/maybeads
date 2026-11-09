@@ -24,6 +24,8 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // ─── Landing Page ─────────────────────────────────────────────────────────────
 Route::get('/', fn () => view('landing.home'))->name('home');
+Route::get('/contact', fn () => view('landing.contact'))->name('contact');
+Route::get('/kontak', fn () => redirect()->route('contact'));
 
 // ─── Public / User Catalog & Cart ─────────────────────────────────────────────
 Route::prefix('main')->name('main.')->group(function () {

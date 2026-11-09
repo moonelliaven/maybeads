@@ -10,6 +10,7 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/css/landing/home.css',
                 'resources/js/landing/home.js',
+                'resources/css/landing/contact.css',
                 'resources/css/auth/login.css',
                 'resources/js/auth/login.js',
                 'resources/css/auth/register.css',

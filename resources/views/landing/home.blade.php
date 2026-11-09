@@ -230,7 +230,7 @@
         <ul>
           <li><a href="#home">Home</a></li>
           <li><a href="{{ route('main.dashboard') }}#produk">Produk</a></li>
-          <li><a href="#kontak">Kontak</a></li>
+          <li><a href="{{ route('contact') }}">Kontak</a></li>
         </ul>
       </div>
 

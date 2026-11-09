@@ -9,8 +9,12 @@
 
     <ul class="nav-links">
       <li><a href="{{ $navBase }}#home">BERANDA</a></li>
-      <li><a href="{{ $navBase }}#kontak">KONTAK</a></li>
-      <li><a href="{{ route('main.dashboard') }}#produk">PRODUK</a></li>
+      <li><a href="{{ route('contact') }}">KONTAK</a></li>
+      <li>
+        <a href="{{ route('main.dashboard') }}#produk" class="nav-ext">PRODUK
+          <svg viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/></svg>
+        </a>
+      </li>
     </ul>
 
     <div class="nav-actions">
