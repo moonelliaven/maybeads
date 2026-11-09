@@ -48,14 +48,14 @@
   $reviews = [
       [
           'name'   => 'JOSEPH MANULANG',
-          'mail'   => 'josephm.k@gmail.com',
+          'mail'   => 'Josephm.k@gmail.com',
           'text'   => 'Barang dengan kualitas terbaik yang pernah saya coba.',
           'tag'    => 'Sabuk: Hitam',
           'avatar' => asset('images/avatars/avatar-joseph.jpg'),
       ],
       [
           'name'   => 'AHMED GHANI MENGAL',
-          'mail'   => 'AhmedGM@gmail.com',
+          'mail'   => 'AhmedGM2@gmail.com',
           'text'   => 'Kalungnya persis kayak di foto,warnanya cakep dan pengirimannya cepat.',
           'tag'    => 'Cincin:Emas',
           'avatar' => asset('images/avatars/avatar-ahmed.jpg'),
@@ -69,7 +69,7 @@
       ],
       [
           'name'   => 'CHRISTO GRUZ GARCIA',
-          'mail'   => 'Chruzcal41@gmail.com',
+          'mail'   => 'Chruscal1@gmail.com',
           'text'   => 'Vibe Y2K-nya dapet banget,dipakai nongkrong langsung ditanyain temen.',
           'tag'    => 'Kalung: Biru',
           'avatar' => asset('images/avatars/avatar-christo.jpg'),

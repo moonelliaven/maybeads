@@ -11,11 +11,11 @@
   --paper: #ffffff;
   --white: #ffffff;
   --line: #e2e4ea;
-  --card-line: #141418;
-  --banner-bg: #50688f;
+  --card-line: #e2e4ea;
+  --banner-bg: #4f6d96;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --f-head: 'Plus Jakarta Sans', 'Archivo', system-ui, sans-serif;
-  --f-body: 'Plus Jakarta Sans', 'Poppins', system-ui, sans-serif;
+  --f-head: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --f-body: 'Plus Jakarta Sans', system-ui, sans-serif;
   --pad: clamp(18px, 4vw, 32px);
   --max: 1200px;
 }
@@ -405,9 +405,9 @@ svg {
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--ink);
-  padding: 6px 14px;
-  border-radius: 4px;
+  color: #4b5563;
+  padding: 6px 16px;
+  border-radius: 999px;
   transition: background 0.2s, color 0.2s;
 }
 
@@ -475,7 +475,7 @@ svg {
   left: 10px;
   padding: 4px 10px;
   border-radius: 999px;
-  background: var(--ink);
+  background: #141f36;
   color: #fff;
   font-size: 0.52rem;
   font-weight: 700;
@@ -533,8 +533,11 @@ svg {
 
 .rating-block {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  align-items: center;
+  gap: 18px;
+  background: var(--banner-bg);
+  padding: 16px 24px;
+  border-radius: 4px;
 }
 
 .rating-left {
@@ -546,27 +549,31 @@ svg {
 .rating-num {
   font-family: var(--f-head);
   font-weight: 800;
-  font-size: clamp(3.2rem, 5.5vw, 4.2rem);
-  line-height: 0.88;
-  color: var(--navy);
+  font-size: clamp(2.6rem, 4vw, 3.2rem);
+  line-height: 0.95;
+  color: #ffffff;
 }
 
 .rating-left .stars {
-  color: var(--navy);
-  font-size: 0.82rem;
+  color: #fbbf24;
+  font-size: 0.85rem;
   letter-spacing: 2px;
   margin-top: 6px;
+}
+
+.rating-right {
+  display: flex;
+  align-items: center;
 }
 
 .rating-label {
   font-family: var(--f-head);
   font-weight: 800;
-  font-size: clamp(1.05rem, 1.8vw, 1.45rem);
-  line-height: 1.05;
-  letter-spacing: -0.01em;
-  color: var(--navy);
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  color: #ffffff;
   text-transform: uppercase;
-  padding-top: 4px;
 }
 
 .stars {
