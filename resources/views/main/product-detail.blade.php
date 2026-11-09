@@ -645,16 +645,32 @@
         try {
           const raw = localStorage.getItem('maybeads_cart');
           cart = raw ? JSON.parse(raw) : [];
-        } catch (e) { cart = []; }
-
-        const existing = cart.find(i => i.id == productData.id);
-        if (existing) {
-          existing.qty += productData.qty;
-        } else {
-          cart.push(productData);
+          if (!Array.isArray(cart)) {
+            cart = [];
+          }
+        } catch (e) {
+          cart = [];
         }
+
+        const existing = cart.find(i => Number(i.id) === Number(productData.id));
+        if (existing) {
+          existing.qty = Number(existing.qty || 0) + Number(productData.qty || 1);
+          existing.checked = true;
+          existing.rawPrice = Number(existing.rawPrice || productData.rawPrice || 0);
+          existing.price = productData.price || existing.price;
+          existing.color = productData.color || existing.color;
+          existing.image = productData.image || existing.image;
+        } else {
+          cart.push({
+            ...productData,
+            qty: Number(productData.qty || 1),
+            checked: true,
+            addedAt: Date.now()
+          });
+        }
+
         localStorage.setItem('maybeads_cart', JSON.stringify(cart));
-        const totalQty = cart.reduce((acc, curr) => acc + (curr.qty || 1), 0);
+        const totalQty = cart.reduce((acc, curr) => acc + (Number(curr.qty) || 0), 0);
         if (cartCountEl) cartCountEl.textContent = totalQty;
       }
 

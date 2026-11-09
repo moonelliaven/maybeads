@@ -724,9 +724,6 @@
         }
         return it;
       });
-        }
-        return it;
-      });
 
       if (rawCart === null) {
         localStorage.setItem('maybeads_cart', JSON.stringify(cart));
