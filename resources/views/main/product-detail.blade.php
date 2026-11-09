@@ -73,27 +73,22 @@
        hidden>
   </div>
 
-  {{-- 1. Top Bar --}}
+  {{-- 1. Top Bar (Dark Slate Header - Maybead.s) --}}
   <header class="top-nav-bar">
     <div class="top-nav-container">
       <div class="top-nav-left">
-        <a href="{{ route('main.dashboard') }}" class="back-home-link">
-          <svg class="chevron-back" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-          <span>Kembali ke Katalog</span>
+        <a href="{{ route('home') }}" class="top-nav-brand-logo">
+          Maybead.s
         </a>
       </div>
 
-      <div class="top-nav-right">
-        <a href="#kontak" class="top-link">Kontak</a>
-        <span class="top-pipe">|</span>
-        @auth
-          <span class="top-link">{{ Auth::user()->name }}</span>
-        @else
-          <a href="{{ route('login') }}" class="top-link">Masuk</a>
-          <span class="top-pipe">|</span>
-          <a href="{{ route('register') }}" class="top-link">Daftar</a>
-        @endauth
-      </div>
+      <nav class="top-nav-right" aria-label="Navigasi Utama">
+        <ul class="top-nav-menu-links">
+          <li><a href="{{ route('home') }}" class="top-menu-link">BERANDA</a></li>
+          <li><a href="{{ route('home') }}#kontak" class="top-menu-link">KONTAK</a></li>
+          <li><a href="{{ route('main.dashboard') }}" class="top-menu-link active">PRODUK</a></li>
+        </ul>
+      </nav>
     </div>
   </header>
 
@@ -119,6 +114,18 @@
             {{ $cartCount ?? 0 }}
           </span>
         </a>
+
+        <!-- Akun Button -->
+        <div class="account-dropdown-wrapper" style="position: relative;">
+          <a href="{{ route('login') }}" class="action-pill-btn" title="Menu Akun">
+            <svg class="pill-icon" viewBox="0 0 24 24">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span>Akun</span>
+            <svg class="chevron-down" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </a>
+        </div>
       </div>
     </div>
   </nav>

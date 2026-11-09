@@ -38,5 +38,52 @@ class Order extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    public function payment()
+    {
+        return $this->hasOne(Payment::class, 'order_id');
+    }
+
+    public function getBuktiPembayaranAttribute(): ?string
+    {
+        return $this->payment?->bukti_pembayaran;
+    }
+
+    public function getFormattedIdAttribute(): string
+    {
+        return str_pad((string)$this->id, 6, '0', STR_PAD_LEFT);
+    }
+
+    public function getOrderCodeAttribute(): string
+    {
+        return '#MBDS-' . str_pad((string)$this->id, 6, '0', STR_PAD_LEFT);
+    }
+
+    public function getDeliveryTypeAttribute(): string
+    {
+        if (empty($this->address)) {
+            return 'Ambil Ditempat';
+        }
+        $addr = strtolower($this->address);
+        if (str_contains($addr, 'ambil') || str_contains($addr, 'ditempat') || str_contains($addr, 'di tempat')) {
+            return 'Ambil Ditempat';
+        }
+        return 'Antar ketempat';
+    }
+
+    public function getDeliveryFeeAttribute(): float
+    {
+        return $this->delivery_type === 'Ambil Ditempat' ? 0.00 : 15000.00;
+    }
+
+    public function getAdminFeeAttribute(): float
+    {
+        return 2000.00;
+    }
+
+    public function getGrandTotalAttribute(): float
+    {
+        return (float)$this->subtotal + $this->delivery_fee + $this->admin_fee;
+    }
 }
 

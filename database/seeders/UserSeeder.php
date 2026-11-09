@@ -29,15 +29,16 @@ class UserSeeder extends Seeder
         );
 
         $dummyUsers = [
-            ['name' => 'trandinhtuan567', 'email' => 'trandinhtuan@example.com', 'role' => 'user', 'address' => 'Jl. 1 No. 5 Kampung Sigm..'],
-            ['name' => 'nguyenanhdao77', 'email' => 'nguyenanhdao@example.com', 'role' => 'user', 'address' => 'Jl. 4 No. 2 Kampung Sigm..'],
-            ['name' => 'nguyenminhkhoa101', 'email' => 'nguyenminhkhoa@example.com', 'role' => 'user', 'address' => 'Jl. 6 No. 2 Kampung Sigm..'],
-            ['name' => 'phamquynh88', 'email' => 'phamquynh@example.com', 'role' => 'user', 'address' => 'Jl. 4 No. 2 Kampung Sigm..'],
-            ['name' => 'lequocviet101', 'email' => 'lequocviet@example.com', 'role' => 'user', 'address' => 'Jl. 3 No. 2 Kampung Sigm..'],
-            ['name' => 'dinhhoangyen88', 'email' => 'dinhhoangyen@example.com', 'role' => 'user', 'address' => 'Jl. 4 No. 2 Kampung Sigm..'],
-            ['name' => 'lethihoa99', 'email' => 'lethihoa@example.com', 'role' => 'user', 'address' => 'Jl. 1 No. 2 Kampung Sigm..'],
-            ['name' => 'nguyenthiphuong', 'email' => 'nguyenthiphuong@example.com', 'role' => 'user', 'address' => 'Jl. 1 No. 4 Kampung Sigm..'],
-            ['name' => 'nguyentranhieu', 'email' => 'nguyentranhieu@example.com', 'role' => 'user', 'address' => 'Jl. 1 No. 3 Kampung Sigm..'],
+            ['name' => 'moonelliaven', 'email' => 'moonelliaven@gmail.com', 'role' => 'user'],
+            ['name' => 'nguyenvinhhoa567', 'email' => 'nguyenvinhhoa@example.com', 'role' => 'user'],
+            ['name' => 'trantrungkien', 'email' => 'trantrungkien@example.com', 'role' => 'user'],
+            ['name' => 'trandinhtuan567', 'email' => 'trandinhtuan@example.com', 'role' => 'user'],
+            ['name' => 'nguyenanhdao77', 'email' => 'nguyenanhdao@example.com', 'role' => 'user'],
+            ['name' => 'hoangthanhphat88', 'email' => 'hoangthanhphat@example.com', 'role' => 'user'],
+            ['name' => 'lehongson2023', 'email' => 'lehongson@example.com', 'role' => 'user'],
+            ['name' => 'bachdangthang', 'email' => 'bachdangthang@example.com', 'role' => 'user'],
+            ['name' => 'nguyenminhkhoa101', 'email' => 'nguyenminhkhoa@example.com', 'role' => 'user'],
+            ['name' => 'phamquynh88', 'email' => 'phamquynh@example.com', 'role' => 'user'],
         ];
 
         foreach ($dummyUsers as $u) {
@@ -47,7 +48,6 @@ class UserSeeder extends Seeder
                     'name' => $u['name'],
                     'password' => Hash::make('password123'),
                     'role' => $u['role'],
-                    'address' => $u['address'],
                 ]
             );
         }

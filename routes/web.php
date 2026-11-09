@@ -3,6 +3,8 @@
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\MainController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\UserController;
@@ -68,6 +70,18 @@ Route::middleware(['auth', 'admin'])
                 Route::put('/{category}', 'update')->name('update');
                 Route::delete('/{category}', 'destroy')->name('destroy');
             });
+
+        // Orders
+        Route::prefix('order')
+            ->name('order.')
+            ->controller(OrderController::class)
+            ->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/detail/{order}', 'show')->name('detail');
+                Route::get('/{order}', 'show')->name('show');
+            });
+
+        Route::redirect('/orders', '/admin/order');
 
         // Users
         Route::prefix('user')
