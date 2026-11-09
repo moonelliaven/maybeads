@@ -999,17 +999,17 @@
         });
       }
 
-      // Checkout Button
+      // Checkout Button: Langsung buka halaman checkout
       if (btnCheckoutAction) {
         btnCheckoutAction.addEventListener('click', (e) => {
           e.preventDefault();
           const checkedItems = cart.filter(it => it.checked);
           if (checkedItems.length === 0) {
-            alert('Silakan pilih setidaknya 1 produk untuk checkout.');
-            return;
+            // Jika belum ada yang dicentang, centang semua item otomatis
+            cart.forEach(it => it.checked = true);
+            localStorage.setItem('maybeads_cart', JSON.stringify(cart));
           }
-          const subtotal = checkedItems.reduce((sum, it) => sum + ((it.rawPrice || 24000) * (it.qty || 1)), 0);
-          alert(`Melanjutkan ke proses pembayaran...\nTotal Item: ${checkedItems.length}\nSubtotal: Rp. ${subtotal.toLocaleString('id-ID')}`);
+          window.location.href = "{{ route('checkout') }}";
         });
       }
 
