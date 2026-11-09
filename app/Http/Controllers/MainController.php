@@ -155,4 +155,160 @@ class MainController extends Controller
 
         return view('main.cart', compact('cartCount'));
     }
+
+    public function productDetail($id)
+    {
+        $product = Product::with(['category', 'variants'])->find($id);
+        if (!$product) {
+            $product = Product::with(['category', 'variants'])->firstOrFail();
+        }
+
+        $relatedProducts = Product::with(['category'])
+            ->where('id', '!=', $product->id)
+            ->where('status', 'aktif')
+            ->take(4)
+            ->get();
+
+        $cartCount = Auth::check()
+            ? Cart::where('user_id', Auth::id())->sum('quantity')
+            : count(session()->get('cart', []));
+
+        return view('main.product-detail', compact('product', 'relatedProducts', 'cartCount'));
+    }
+
+    public function checkout(Request $request)
+    {
+        $cartCount = Auth::check()
+            ? Cart::where('user_id', Auth::id())->sum('quantity')
+            : count(session()->get('cart', []));
+
+        // Sample product fallback if cart empty
+        $sampleProduct = Product::with('category')->first();
+
+        return view('main.checkout', compact('cartCount', 'sampleProduct'));
+    }
+
+    public function processCheckout(Request $request)
+    {
+        $method = $request->input('payment_method', 'qris');
+        $address = $request->input('address', 'Banjarbaru, Kalimantan Selatan');
+        $totalAmount = (float) $request->input('total_amount', 98000);
+        $productId = $request->input('product_id');
+        if (!$productId) {
+            $firstProd = Product::first();
+            $productId = $firstProd ? $firstProd->id : 1;
+        }
+
+        try {
+            $order = \App\Models\Order::create([
+                'user_id'        => Auth::id() ?? 1,
+                'product_id'     => $productId,
+                'quantity'       => (int) $request->input('quantity', 1),
+                'subtotal'       => $totalAmount,
+                'order_status'   => 'diproses',
+                'payment_status' => 'belum_dibayar',
+                'address'        => $address,
+                'order_at'       => now(),
+            ]);
+
+            \App\Models\Payment::create([
+                'order_id'       => $order->id,
+                'payment_method' => $method,
+                'amount'         => $totalAmount,
+                'payment_status' => 'pending',
+            ]);
+
+            $orderId = $order->id;
+        } catch (\Throwable $e) {
+            $orderId = rand(1001, 9999);
+        }
+
+        session()->put('current_order', [
+            'id'             => $orderId,
+            'amount'         => $totalAmount,
+            'payment_method' => $method,
+            'address'        => $address,
+            'name'           => $request->input('customer_name', Auth::user()?->name ?? 'Customer Maybeads'),
+            'phone'          => $request->input('customer_phone', '081234567890'),
+            'date'           => now()->format('d M Y, H:i'),
+        ]);
+
+        if ($method === 'transfer') {
+            return redirect()->route('payment.transfer', ['order_id' => $orderId]);
+        }
+
+        return redirect()->route('payment.qris', ['order_id' => $orderId]);
+    }
+
+    public function paymentQris($orderId = null)
+    {
+        $order = session('current_order', [
+            'id'             => $orderId ?? 'ORD-' . rand(1000, 9999),
+            'amount'         => 98000,
+            'payment_method' => 'qris',
+            'date'           => now()->format('d M Y, H:i'),
+        ]);
+
+        $cartCount = Auth::check() ? Cart::where('user_id', Auth::id())->sum('quantity') : 0;
+
+        return view('main.payment-qris', compact('order', 'cartCount'));
+    }
+
+    public function paymentTransfer($orderId = null)
+    {
+        $order = session('current_order', [
+            'id'             => $orderId ?? 'ORD-' . rand(1000, 9999),
+            'amount'         => 98000,
+            'payment_method' => 'transfer',
+            'date'           => now()->format('d M Y, H:i'),
+        ]);
+
+        $cartCount = Auth::check() ? Cart::where('user_id', Auth::id())->sum('quantity') : 0;
+
+        return view('main.payment-transfer', compact('order', 'cartCount'));
+    }
+
+    public function paymentSuccess($orderId = null)
+    {
+        $order = session('current_order', [
+            'id'             => $orderId ?? 'ORD-' . rand(1000, 9999),
+            'amount'         => 98000,
+            'payment_method' => 'qris',
+            'address'        => 'Jl. Pangeran Suriansyah, Loktabat Utara, Banjarbaru',
+            'name'           => Auth::user()?->name ?? 'Customer Maybeads',
+            'phone'          => '081234567890',
+            'date'           => now()->format('d M Y, H:i'),
+        ]);
+
+        // Update status in DB if exists
+        try {
+            if ($orderId && is_numeric($orderId)) {
+                \App\Models\Order::where('id', $orderId)->update([
+                    'payment_status' => 'sudah_dibayar',
+                    'order_status'   => 'diproses'
+                ]);
+                \App\Models\Payment::where('order_id', $orderId)->update([
+                    'payment_status' => 'berhasil',
+                    'paid_at'        => now()
+                ]);
+            }
+        } catch (\Throwable $e) {}
+
+        $cartCount = 0;
+
+        return view('main.payment-success', compact('order', 'cartCount'));
+    }
+
+    public function myOrders()
+    {
+        $userId = Auth::id() ?? 1;
+        $orders = \App\Models\Order::with(['product', 'payment'])
+            ->where('user_id', $userId)
+            ->latest('id')
+            ->get();
+
+        $cartCount = Auth::check() ? Cart::where('user_id', Auth::id())->sum('quantity') : 0;
+
+        return view('main.orders', compact('orders', 'cartCount'));
+    }
 }

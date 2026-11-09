@@ -27,13 +27,24 @@ Route::get('/', fn () => view('landing.home'))->name('home');
 Route::get('/contact', fn () => view('landing.contact'))->name('contact');
 Route::get('/kontak', fn () => redirect()->route('contact'));
 
-// ─── Public / User Catalog & Cart ─────────────────────────────────────────────
+// ─── Public / User Store Flow (Catalog, Detail, Cart, Checkout, Payment) ──────
 Route::prefix('main')->name('main.')->group(function () {
     Route::get('/dashboard', [MainController::class, 'dashboard'])->name('dashboard');
     Route::get('/cart',      [MainController::class, 'cart'])->name('cart');
 });
 
-Route::get('/cart', [MainController::class, 'cart'])->name('cart.index');
+Route::get('/cart',                    [MainController::class, 'cart'])->name('cart.index');
+Route::get('/product/{id}',            [MainController::class, 'productDetail'])->name('product.detail');
+Route::get('/produk/{id}',             fn ($id) => redirect()->route('product.detail', $id));
+
+Route::get('/checkout',                [MainController::class, 'checkout'])->name('checkout');
+Route::post('/checkout',               [MainController::class, 'processCheckout'])->name('checkout.process');
+
+Route::get('/payment/qris/{order_id?}',     [MainController::class, 'paymentQris'])->name('payment.qris');
+Route::get('/payment/transfer/{order_id?}', [MainController::class, 'paymentTransfer'])->name('payment.transfer');
+Route::get('/payment/success/{order_id?}',  [MainController::class, 'paymentSuccess'])->name('payment.success');
+
+Route::get('/orders',                  [MainController::class, 'myOrders'])->name('orders.history');
 
 // ─── Admin Routes ─────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {

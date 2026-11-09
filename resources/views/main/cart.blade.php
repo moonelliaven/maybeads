@@ -639,7 +639,7 @@
         <div class="cart-subtotal-display">
           Subtotal: <strong id="cartSubtotalText">Rp. 0</strong>
         </div>
-        <a href="#" class="btn-checkout-action" id="btnCheckoutAction">
+        <a href="{{ route('checkout') }}" class="btn-checkout-action" id="btnCheckoutAction">
           <span>Checkout</span>
           <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
         </a>
