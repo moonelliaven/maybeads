@@ -5,6 +5,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\MainController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 // Authentication
@@ -25,9 +26,11 @@ Route::get('/', fn () => view('landing.home'))->name('home');
 Route::prefix('main')->name('main.')->group(function () {
     Route::get('/dashboard', [MainController::class, 'dashboard'])->name('dashboard');
     Route::get('/cart', [MainController::class, 'cart'])->name('cart');
+    Route::get('/product/{product}', [MainController::class, 'productDetail'])->name('product.detail');
 });
 
-// Cart
+// Direct Product Detail & Cart
+Route::get('/product/{product}', [MainController::class, 'productDetail'])->name('product.show');
 Route::get('/cart', [MainController::class, 'cart'])->name('cart.index');
 
 // Admin Routes
@@ -65,4 +68,17 @@ Route::middleware(['auth', 'admin'])
                 Route::put('/{category}', 'update')->name('update');
                 Route::delete('/{category}', 'destroy')->name('destroy');
             });
+
+        // Users
+        Route::prefix('user')
+            ->name('user.')
+            ->controller(UserController::class)
+            ->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/detail/{user}', 'detail')->name('detail');
+                Route::get('/{user}', 'detail')->name('show');
+                Route::delete('/{user}', 'destroy')->name('destroy');
+            });
+
+        Route::redirect('/users', '/admin/user');
     });

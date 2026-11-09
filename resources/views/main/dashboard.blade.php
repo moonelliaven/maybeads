@@ -233,7 +233,6 @@
             <!-- Hidden inputs to preserve query params -->
             <input type="hidden" name="sort" id="inputSort" value="{{ $currentSort }}">
             <input type="hidden" name="category" id="inputCategory" value="{{ $currentCategory }}">
-            <input type="hidden" name="color" id="inputColor" value="{{ $currentColor }}">
             @if($currentSearch)
               <input type="hidden" name="search" id="inputSearch" value="{{ $currentSearch }}">
             @endif
@@ -258,9 +257,9 @@
             <!-- Divider -->
             <div class="filter-block-divider"></div>
 
-            <!-- 2. URUTAN PRODUK (Categories from DB with count & expand) -->
+            <!-- 2. KATEGORI PRODUK (Categories from DB with count & expand) -->
             <div class="filter-block">
-              <h4 class="filter-block-title">URUTAN PRODUK</h4>
+              <h4 class="filter-block-title">KATEGORI PRODUK</h4>
               <div class="category-options-list" id="categoryOptionsList">
                 <!-- Semua Kategori -->
                 <button type="button"
@@ -295,69 +294,7 @@
               @endif
             </div>
 
-            <!-- Divider -->
-            <div class="filter-block-divider"></div>
-
-            <!-- 3. PILIHAN WARNA (Color Pill buttons) -->
-            <div class="filter-block">
-              <h4 class="filter-block-title">PILIHAN WARNA</h4>
-              <div class="color-options-wrap">
-                <!-- Row 1: Merah & Biru -->
-                <div class="color-row">
-                  <button type="button"
-                          class="color-pill-btn {{ strtolower($currentColor) === 'merah' ? 'selected' : '' }}"
-                          data-color="Merah"
-                          title="Warna Merah">
-                    <span class="color-swatch-dot dot-red"></span>
-                    <span>Merah</span>
-                  </button>
-
-                  <button type="button"
-                          class="color-pill-btn {{ strtolower($currentColor) === 'biru' ? 'selected' : '' }}"
-                          data-color="Biru"
-                          title="Warna Biru">
-                    <span class="color-swatch-dot dot-blue"></span>
-                    <span>Biru</span>
-                  </button>
-                </div>
-
-                <!-- Row 2: Monokrom -->
-                <div class="color-row">
-                  <button type="button"
-                          class="color-pill-btn {{ strtolower($currentColor) === 'monokrom' ? 'selected' : '' }}"
-                          data-color="Monokrom"
-                          title="Warna Monokrom">
-                    <span class="color-swatch-dot dot-monochrome"></span>
-                    <span>Monokrom</span>
-                  </button>
-                </div>
-
-                <!-- Extra colors from variants -->
-                @if(isset($colors) && $colors->count())
-                  <div class="extra-colors-wrap is-hidden" id="extraColorsWrap">
-                    @foreach($colors as $color)
-                      @php $cLow = strtolower($color); @endphp
-                      @if(!in_array($cLow, ['merah', 'biru', 'monokrom', 'black', 'hitam']))
-                        <button type="button"
-                                class="color-pill-btn {{ $currentColor === $color ? 'selected' : '' }}"
-                                data-color="{{ $color }}"
-                                title="Warna {{ $color }}">
-                          <span class="color-swatch-dot dot-default"></span>
-                          <span>{{ $color }}</span>
-                        </button>
-                      @endif
-                    @endforeach
-                  </div>
-
-                  <button type="button" class="btn-expand-outline" id="btnToggleColors">
-                    <span id="textExpandColors">Lainnya</span>
-                    <svg class="chevron-expand" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                  </button>
-                @endif
-              </div>
-            </div>
-
-            @if($currentCategory || $currentColor || $currentSearch || $currentSort !== 'terbaru')
+            @if($currentCategory || $currentSearch || $currentSort !== 'terbaru')
               <div class="reset-filter-row">
                 <a href="{{ route('main.dashboard') }}" class="btn-clear-all-filter">
                   &times; Reset Filter
@@ -389,9 +326,6 @@
               @endif
               @if($currentCategory)
                 <input type="hidden" name="category" value="{{ $currentCategory }}">
-              @endif
-              @if($currentColor)
-                <input type="hidden" name="color" value="{{ $currentColor }}">
               @endif
 
               <div class="search-input-container">
@@ -437,9 +371,7 @@
                      data-image="{{ $productImg }}"
                      data-desc="{{ $desc }}"
                      data-stock="{{ $product->stock }}"
-                     data-color="{{ $colorList }}"
-                     data-edit-url="{{ route('admin.product.edit', $product->id) }}"
-                     data-delete-url="{{ route('admin.product.destroy', $product->id) }}">
+                     data-color="{{ $colorList }}">
 
               <!-- Image with Top-Left Code Badge -->
               <div class="card-media-wrap">
@@ -460,25 +392,19 @@
                   {{ $desc }}
                 </p>
 
-                <!-- Bottom Actions Row: Detail | Edit | Delete -->
+                <!-- Bottom Actions Row: Detail | Tambah ke Keranjang -->
                 <div class="card-actions-row">
-                  <button type="button" class="btn-card-detail" data-action="detail">
+                  <a href="{{ route('main.product.detail', $product->id) }}" class="btn-card-detail" aria-label="Lihat detail {{ $product->product_name }}">
                     Detail
-                  </button>
-
-                  <a href="{{ route('admin.product.edit', $product->id) }}"
-                     class="btn-card-icon btn-edit-product"
-                     title="Edit Produk (Admin)">
-                    <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                   </a>
 
                   <button type="button"
-                          class="btn-card-icon btn-delete-product"
-                          data-action="delete"
-                          data-delete-url="{{ route('admin.product.destroy', $product->id) }}"
-                          data-name="{{ $product->product_name }}"
-                          title="Hapus Produk (Admin)">
-                    <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                          class="btn-card-add-cart"
+                          data-action="add-cart"
+                          title="Tambah ke Keranjang"
+                          aria-label="Tambah {{ $product->product_name }} ke keranjang">
+                    <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                    <span>+ Keranjang</span>
                   </button>
                 </div>
               </div>
@@ -652,12 +578,6 @@
 
 
 
-
-  <!-- Hidden Form for Admin Delete -->
-  <form id="deleteProductForm" method="POST" style="display: none;">
-    @csrf
-    @method('DELETE')
-  </form>
 
 </body>
 </html>

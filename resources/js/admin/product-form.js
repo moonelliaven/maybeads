@@ -2,6 +2,9 @@
  * Admin Product Form Interactivity (Create, Edit, Show) - Maybead.s
  */
 
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
+
 document.addEventListener('DOMContentLoaded', () => {
 
   /* =====================================================================
@@ -723,5 +726,28 @@ document.addEventListener('DOMContentLoaded', () => {
       statusLabel.textContent = statusToggle.checked ? 'Aktif' : 'Nonaktif';
     });
   }
+
+  /* =====================================================================
+     10. SWEETALERT2: Konfirmasi Logout
+  ===================================================================== */
+  document.querySelectorAll('form[action*="logout"], .sidebar-logout-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      Swal.fire({
+        title: 'Konfirmasi Logout',
+        text: 'Apakah Anda yakin ingin keluar dari sistem admin?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Ya, Logout',
+        cancelButtonText: 'Kembali',
+        reverseButtons: true,
+        customClass: { popup: 'admin-swal-popup' }
+      }).then(result => {
+        if (result.isConfirmed) form.submit();
+      });
+    });
+  });
 
 });

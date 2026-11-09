@@ -155,4 +155,35 @@ class MainController extends Controller
 
         return view('main.cart', compact('cartCount'));
     }
+
+    public function productDetail($id)
+    {
+        $product = Product::with(['category', 'variants'])->findOrFail($id);
+
+        // Related products in the same category
+        $relatedProducts = Product::with(['category', 'variants'])
+            ->where('status', 'aktif')
+            ->where('id', '!=', $product->id)
+            ->where('category_id', $product->category_id)
+            ->take(4)
+            ->get();
+
+        if ($relatedProducts->isEmpty()) {
+            $relatedProducts = Product::with(['category', 'variants'])
+                ->where('status', 'aktif')
+                ->where('id', '!=', $product->id)
+                ->take(4)
+                ->get();
+        }
+
+        // Cart count
+        $cartCount = 0;
+        if (Auth::check()) {
+            $cartCount = Cart::where('user_id', Auth::id())->sum('quantity');
+        } else {
+            $cartCount = count(session()->get('cart', []));
+        }
+
+        return view('main.product-detail', compact('product', 'relatedProducts', 'cartCount'));
+    }
 }

@@ -984,11 +984,11 @@ input {
 .btn-card-detail {
   flex: 1;
   border: 1px solid #d1d5db;
-  background: transparent;
+  background: #ffffff;
   border-radius: 6px;
-  padding: 5px 12px;
+  padding: 6px 10px;
   font-size: 11.5px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-text-main);
   text-align: center;
   cursor: pointer;
@@ -996,44 +996,42 @@ input {
 }
 
 .btn-card-detail:hover {
-  background: #f8fafc;
+  background: #f1f5f9;
   border-color: #94a3b8;
+  color: #0f172a;
 }
 
-.btn-card-icon {
-  width: 28px;
-  height: 28px;
-  border: 1px solid #d1d5db;
-  background: transparent;
+.btn-card-add-cart {
+  flex: 1.2;
+  border: 1px solid var(--color-navy, #23477d);
+  background: var(--color-navy, #23477d);
+  color: #ffffff;
   border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-muted);
+  gap: 5px;
   cursor: pointer;
   transition: all 0.15s ease;
-  text-decoration: none;
-  flex-shrink: 0;
+  white-space: nowrap;
 }
 
-.btn-card-icon svg {
+.btn-card-add-cart:hover {
+  background: #1c3863;
+  border-color: #1c3863;
+  box-shadow: 0 2px 6px rgba(35, 71, 125, 0.2);
+}
+
+.btn-card-add-cart svg {
   width: 14px;
   height: 14px;
   stroke: currentColor;
   fill: none;
-  stroke-width: 1.8;
-}
-
-.btn-card-icon.btn-edit-product:hover {
-  background: #f8fafc;
-  color: var(--color-text-main);
-  border-color: #94a3b8;
-}
-
-.btn-card-icon.btn-delete-product:hover {
-  background: #fee2e2;
-  color: #dc2626;
-  border-color: #fca5a5;
+  stroke-width: 2;
+  flex-shrink: 0;
 }
 
 

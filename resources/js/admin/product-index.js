@@ -2,6 +2,9 @@
    Product Index JS - Maybead.s
    ========================================================================== */
 
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
+
 'use strict';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -480,10 +483,25 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-delete-id]').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = btn.dataset.deleteId;
-        if (confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
-          const form = btn.closest('form');
-          if (form) form.submit();
-        }
+        Swal.fire({
+          title: 'Hapus Produk?',
+          text: 'Produk yang dihapus tidak dapat dikembalikan.',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#ef4444',
+          cancelButtonColor: '#64748b',
+          confirmButtonText: 'Ya, Hapus',
+          cancelButtonText: 'Batal',
+          reverseButtons: true,
+          customClass: {
+            popup: 'admin-swal-popup'
+          }
+        }).then((result) => {
+          if (result.isConfirmed) {
+            const form = btn.closest('form');
+            if (form) form.submit();
+          }
+        });
       });
     });
   }
@@ -680,5 +698,28 @@ document.addEventListener('DOMContentLoaded', () => {
      19. INIT
   ===================================================================== */
   render();
+
+  /* =====================================================================
+     20. SWEETALERT2: Konfirmasi Logout
+  ===================================================================== */
+  document.querySelectorAll('form[action*="logout"], .sidebar-logout-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      Swal.fire({
+        title: 'Konfirmasi Logout',
+        text: 'Apakah Anda yakin ingin keluar dari sistem admin?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Ya, Logout',
+        cancelButtonText: 'Kembali',
+        reverseButtons: true,
+        customClass: { popup: 'admin-swal-popup' }
+      }).then(result => {
+        if (result.isConfirmed) form.submit();
+      });
+    });
+  });
 
 });

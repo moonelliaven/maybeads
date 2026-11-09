@@ -34,6 +34,23 @@
     </header>
 
     <main class="form-content-area" style="max-width: 680px;">
+
+      {{-- Validation Error Alert (SweetAlert2) --}}
+      @if ($errors->any())
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            if (typeof Swal !== 'undefined') {
+              Swal.fire({
+                icon: 'error',
+                title: 'Validasi Gagal!',
+                html: '{!! implode("<br>", $errors->all()) !!}',
+                confirmButtonColor: '#23477d',
+                customClass: { popup: 'admin-swal-popup' }
+              });
+            }
+          });
+        </script>
+      @endif
       <div class="form-top-nav">
         <a href="{{ route('admin.category.index') }}" class="btn-back-link">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">

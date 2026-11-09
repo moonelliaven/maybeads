@@ -33,7 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const filterForm    = document.getElementById('filterForm');
   const inputSort     = document.getElementById('inputSort');
   const inputCategory = document.getElementById('inputCategory');
-  const inputColor    = document.getElementById('inputColor');
 
   // Sort Radio Options
   document.querySelectorAll('.sort-radio-option[data-sort]').forEach(btn => {
@@ -55,17 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Color Pills
-  document.querySelectorAll('.color-pill-btn[data-color]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (inputColor && filterForm) {
-        // Toggle if already selected
-        inputColor.value = (inputColor.value.toLowerCase() === btn.dataset.color.toLowerCase()) ? '' : btn.dataset.color;
-        filterForm.submit();
-      }
-    });
-  });
-
   // Expand Categories Toggle
   const btnToggleCategories  = document.getElementById('btnToggleCategories');
   const textExpandCategories = document.getElementById('textExpandCategories');
@@ -80,97 +68,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Expand Colors Toggle
-  const btnToggleColors  = document.getElementById('btnToggleColors');
-  const extraColorsWrap  = document.getElementById('extraColorsWrap');
-  const textExpandColors = document.getElementById('textExpandColors');
-  if (btnToggleColors && extraColorsWrap) {
-    btnToggleColors.addEventListener('click', () => {
-      const isExpanded = btnToggleColors.classList.toggle('expanded');
-      extraColorsWrap.classList.toggle('is-hidden', !isExpanded);
-      if (textExpandColors) {
-        textExpandColors.textContent = isExpanded ? 'Tutup' : 'Lainnya';
-      }
-    });
-  }
-
 
   /* ==========================================================================
-     3. DETAIL / QUICK VIEW MODAL
-     ========================================================================== */
-  const detailModalBackdrop = document.getElementById('detailModalBackdrop');
-  const btnDetailClose      = document.getElementById('btnDetailClose');
-  const modalProductImage   = document.getElementById('modalProductImage');
-  const modalCategoryTag    = document.getElementById('modalCategoryTag');
-  const modalCodeTag        = document.getElementById('modalCodeTag');
-  const modalProductName    = document.getElementById('modalProductName');
-  const modalProductPrice   = document.getElementById('modalProductPrice');
-  const modalProductDesc    = document.getElementById('modalProductDesc');
-  const modalAddToCartBtn   = document.getElementById('modalAddToCartBtn');
-
-  let currentDetailProduct = null;
-
-  document.querySelectorAll('.product-card-item').forEach(card => {
-    const detailBtn = card.querySelector('[data-action="detail"]');
-    if (detailBtn) {
-      detailBtn.addEventListener('click', () => {
-        const data = card.dataset;
-        currentDetailProduct = data;
-
-        if (modalProductImage) modalProductImage.src = data.image || '';
-        if (modalCategoryTag) modalCategoryTag.textContent = data.category || 'Aksesoris';
-        if (modalCodeTag) modalCodeTag.textContent = '#' + (data.code || '0001');
-        if (modalProductName) modalProductName.textContent = data.name || '';
-        if (modalProductPrice) modalProductPrice.textContent = data.price || 'Rp 0';
-        if (modalProductDesc) modalProductDesc.textContent = data.desc || '';
-
-        if (detailModalBackdrop) {
-          detailModalBackdrop.classList.add('show');
-          document.body.style.overflow = 'hidden';
-        }
-      });
-    }
-  });
-
-  function closeDetailModal() {
-    if (detailModalBackdrop) {
-      detailModalBackdrop.classList.remove('show');
-      document.body.style.overflow = '';
-    }
-  }
-
-  if (btnDetailClose) btnDetailClose.addEventListener('click', closeDetailModal);
-  if (detailModalBackdrop) {
-    detailModalBackdrop.addEventListener('click', (e) => {
-      if (e.target === detailModalBackdrop) closeDetailModal();
-    });
-  }
-
-
-  /* ==========================================================================
-     4. DELETE PRODUCT ACTION (Admin confirmation)
-     ========================================================================== */
-  const deleteProductForm = document.getElementById('deleteProductForm');
-
-  document.querySelectorAll('.btn-delete-product').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const deleteUrl = btn.dataset.deleteUrl;
-      const productName = btn.dataset.name || 'produk ini';
-
-      if (!deleteUrl || !deleteProductForm) return;
-
-      const confirmDelete = window.confirm(`Apakah Anda yakin ingin menghapus "${productName}"? Tindakan ini tidak dapat dibatalkan.`);
-      if (confirmDelete) {
-        deleteProductForm.action = deleteUrl;
-        deleteProductForm.submit();
-      }
-    });
-  });
-
-
-  /* ==========================================================================
-     5. CART POP-UP CARD (No Blur, Clean Pop-Up, Max 5 Recent Items)
+     3. CART POP-UP CARD & CART LOGIC
      ========================================================================== */
   const cartOpenBtn          = document.getElementById('cartOpenBtn');
   const cartDropdownWrapper  = document.getElementById('cartDropdownWrapper');
@@ -325,38 +225,106 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Add to cart from modal
+  // Helper: Add product to cart
+  function addItemToCart(data) {
+    if (!data) return;
+    const rawNum = parseInt((data.price || '').replace(/[^0-9]/g, ''), 10) || 50000;
+    const existing = localCart.find(it => String(it.id) === String(data.id));
+    if (existing) {
+      existing.qty = (existing.qty || 1) + 1;
+      existing.addedAt = Date.now();
+    } else {
+      localCart.unshift({
+        id: data.id,
+        name: data.name,
+        price: data.price,
+        rawPrice: rawNum,
+        image: data.image,
+        color: data.color || 'Biru, Kuning',
+        qty: 1,
+        addedAt: Date.now()
+      });
+    }
+    localStorage.setItem('maybeads_cart', JSON.stringify(localCart));
+    updateCartUI();
+    openCartPopup();
+  }
+
+
+  /* ==========================================================================
+     4. DETAIL MODAL & CARD ACTIONS (Detail & Add to Cart)
+     ========================================================================== */
+  const detailModalBackdrop = document.getElementById('detailModalBackdrop');
+  const btnDetailClose      = document.getElementById('btnDetailClose');
+  const modalProductImage   = document.getElementById('modalProductImage');
+  const modalCategoryTag    = document.getElementById('modalCategoryTag');
+  const modalCodeTag        = document.getElementById('modalCodeTag');
+  const modalProductName    = document.getElementById('modalProductName');
+  const modalProductPrice   = document.getElementById('modalProductPrice');
+  const modalProductDesc    = document.getElementById('modalProductDesc');
+  const modalAddToCartBtn   = document.getElementById('modalAddToCartBtn');
+
+  let currentDetailProduct = null;
+
+  document.querySelectorAll('.product-card-item').forEach(card => {
+    // 1. Button Detail
+    const detailBtn = card.querySelector('[data-action="detail"]');
+    if (detailBtn) {
+      detailBtn.addEventListener('click', () => {
+        const data = card.dataset;
+        currentDetailProduct = data;
+
+        if (modalProductImage) modalProductImage.src = data.image || '';
+        if (modalCategoryTag) modalCategoryTag.textContent = data.category || 'Aksesoris';
+        if (modalCodeTag) modalCodeTag.textContent = '#' + (data.code || '0001');
+        if (modalProductName) modalProductName.textContent = data.name || '';
+        if (modalProductPrice) modalProductPrice.textContent = data.price || 'Rp 0';
+        if (modalProductDesc) modalProductDesc.textContent = data.desc || '';
+
+        if (detailModalBackdrop) {
+          detailModalBackdrop.classList.add('show');
+          document.body.style.overflow = 'hidden';
+        }
+      });
+    }
+
+    // 2. Button Tambah ke Keranjang (+ Keranjang)
+    const addCartBtn = card.querySelector('[data-action="add-cart"]');
+    if (addCartBtn) {
+      addCartBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        addItemToCart(card.dataset);
+      });
+    }
+  });
+
+  function closeDetailModal() {
+    if (detailModalBackdrop) {
+      detailModalBackdrop.classList.remove('show');
+      document.body.style.overflow = '';
+    }
+  }
+
+  if (btnDetailClose) btnDetailClose.addEventListener('click', closeDetailModal);
+  if (detailModalBackdrop) {
+    detailModalBackdrop.addEventListener('click', (e) => {
+      if (e.target === detailModalBackdrop) closeDetailModal();
+    });
+  }
+
+  // Add to cart from detail modal
   if (modalAddToCartBtn) {
     modalAddToCartBtn.addEventListener('click', () => {
       if (currentDetailProduct) {
-        const rawNum = parseInt((currentDetailProduct.price || '').replace(/[^0-9]/g, ''), 10) || 50000;
-        const existing = localCart.find(it => it.id === currentDetailProduct.id);
-        if (existing) {
-          existing.qty = (existing.qty || 1) + 1;
-          existing.addedAt = Date.now();
-        } else {
-          localCart.unshift({
-            id: currentDetailProduct.id,
-            name: currentDetailProduct.name,
-            price: currentDetailProduct.price,
-            rawPrice: rawNum,
-            image: currentDetailProduct.image,
-            color: currentDetailProduct.color || 'Biru, Kuning',
-            qty: 1,
-            addedAt: Date.now()
-          });
-        }
-        localStorage.setItem('maybeads_cart', JSON.stringify(localCart));
-        updateCartUI();
+        addItemToCart(currentDetailProduct);
         closeDetailModal();
-        openCartPopup();
       }
     });
   }
 
 
   /* ==========================================================================
-     6. USER ACCOUNT MENU DROPDOWN POPOVER
+     5. USER ACCOUNT MENU DROPDOWN POPOVER
      ========================================================================== */
   const accountDropdownBtn = document.getElementById('accountDropdownBtn');
   const accountMenuPopover = document.getElementById('accountMenuPopover');
@@ -378,7 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   /* ==========================================================================
-     7. ESC KEY LISTENER (Closes Modals)
+     6. ESC KEY LISTENER (Closes Modals)
      ========================================================================== */
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {

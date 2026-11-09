@@ -85,7 +85,7 @@
       <div class="nav-header">MANAGEMENT</div>
       <ul class="nav-list">
         <li>
-          <a href="/admin/users" data-label="User" class="nav-item {{ ($active ?? '') === 'user' ? 'active' : '' }}">
+          <a href="{{ route('admin.user.index') }}" data-label="User" class="nav-item {{ ($active ?? '') === 'user' ? 'active' : '' }}">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
               <circle cx="9" cy="7" r="4"></circle>
