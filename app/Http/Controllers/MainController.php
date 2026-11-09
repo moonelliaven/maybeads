@@ -311,4 +311,9 @@ class MainController extends Controller
 
         return view('main.orders', compact('orders', 'cartCount'));
     }
+
+    public function orderDetail($orderId = null)
+    {
+        return view('main.order-detail', compact('orderId'));
+    }
 }

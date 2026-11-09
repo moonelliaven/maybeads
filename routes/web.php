@@ -45,6 +45,7 @@ Route::get('/payment/transfer/{order_id?}', [MainController::class, 'paymentTran
 Route::get('/payment/success/{order_id?}',  [MainController::class, 'paymentSuccess'])->name('payment.success');
 
 Route::get('/orders',                  [MainController::class, 'myOrders'])->name('orders.history');
+Route::get('/order/detail/{order_id?}',[MainController::class, 'orderDetail'])->name('order.detail');
 
 // ─── Admin Routes ─────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
