@@ -304,5 +304,13 @@
     </div>
   </div>
 
+  <script>
+    // Mencegah halaman ditampilkan dari memory cache (bfcache) jika admin sudah logout
+    window.addEventListener('pageshow', function (e) {
+      if (e.persisted || (window.performance && window.performance.navigation && window.performance.navigation.type === 2)) {
+        window.location.reload();
+      }
+    });
+  </script>
 </body>
 </html>

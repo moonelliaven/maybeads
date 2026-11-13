@@ -27,11 +27,22 @@ Route::get('/', fn () => view('landing.home'))->name('home');
 Route::get('/contact', fn () => view('landing.contact'))->name('contact');
 Route::get('/kontak', fn () => redirect()->route('contact'));
 
-// ─── Public / User Store Flow (Catalog, Detail, Cart, Checkout, Payment) ──────
+// ─── Protected Dashboard & User History (Wajib Login) ────────────────────────
+Route::get('/dashboard', fn () => redirect()->route('main.dashboard'));
+
+Route::middleware(['auth'])->group(function () {
+    Route::prefix('main')->name('main.')->group(function () {
+        Route::get('/dashboard', [MainController::class, 'dashboard'])->name('dashboard');
+    });
+
+    Route::get('/orders',                   [MainController::class, 'myOrders'])->name('orders.history');
+    Route::get('/order/detail/{order_id?}', [MainController::class, 'orderDetail'])->name('order.detail');
+});
+
+// ─── Store Flow (Catalog Detail, Cart, Checkout, Payment) ─────────────────────
 Route::prefix('main')->name('main.')->group(function () {
-    Route::get('/dashboard',        [MainController::class, 'dashboard'])->name('dashboard');
-    Route::get('/cart',             [MainController::class, 'cart'])->name('cart');
-    Route::get('/product/{product}',[MainController::class, 'productDetail'])->name('product.detail');
+    Route::get('/cart',              [MainController::class, 'cart'])->name('cart');
+    Route::get('/product/{product}', [MainController::class, 'productDetail'])->name('product.detail');
 });
 
 // Direct Product Detail & Cart
@@ -46,9 +57,6 @@ Route::post('/checkout',               [MainController::class, 'processCheckout'
 Route::get('/payment/qris/{order_id?}',     [MainController::class, 'paymentQris'])->name('payment.qris');
 Route::get('/payment/transfer/{order_id?}', [MainController::class, 'paymentTransfer'])->name('payment.transfer');
 Route::get('/payment/success/{order_id?}',  [MainController::class, 'paymentSuccess'])->name('payment.success');
-
-Route::get('/orders',                  [MainController::class, 'myOrders'])->name('orders.history');
-Route::get('/order/detail/{order_id?}',[MainController::class, 'orderDetail'])->name('order.detail');
 
 // ─── Admin Routes ─────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
