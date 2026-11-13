@@ -163,11 +163,20 @@ class MainController extends Controller
             $product = Product::with(['category', 'variants'])->firstOrFail();
         }
 
-        $relatedProducts = Product::with(['category'])
-            ->where('id', '!=', $product->id)
+        $relatedProducts = Product::with(['category', 'variants'])
             ->where('status', 'aktif')
+            ->where('id', '!=', $product->id)
+            ->where('category_id', $product->category_id)
             ->take(4)
             ->get();
+
+        if ($relatedProducts->isEmpty()) {
+            $relatedProducts = Product::with(['category', 'variants'])
+                ->where('status', 'aktif')
+                ->where('id', '!=', $product->id)
+                ->take(4)
+                ->get();
+        }
 
         $cartCount = Auth::check()
             ? Cart::where('user_id', Auth::id())->sum('quantity')

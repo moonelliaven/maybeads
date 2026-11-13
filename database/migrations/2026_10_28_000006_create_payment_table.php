@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('payment_method');
             $table->decimal('amount', 10, 2);
             $table->string('payment_status');
+            $table->string('bukti_pembayaran')->nullable();
             $table->timestamp('paid_at')->nullable();
         });
     }

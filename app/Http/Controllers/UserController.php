@@ -2,41 +2,72 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
+    /**
+     * Menampilkan daftar semua pengguna
+     */
     public function index(Request $request)
     {
-        $query = User::query();
+        $users = User::orderBy('id', 'desc')->get()->map(function ($u) {
+            return [
+                'id'           => $u->id,
+                'formatted_id' => $u->formatted_id ?? str_pad((string)$u->id, 5, '0', STR_PAD_LEFT),
+                'name'         => $u->name,
+                'email'        => $u->email,
+                'role'         => ucfirst($u->role ?? 'user'),
+                'address'      => $u->address ?? '-',
+                'phone'        => $u->phone ?? '-',
+                'avatar_url'   => $u->avatar_url ?? null,
+                'created_at'   => $u->created_at ? $u->created_at->format('d M Y') : '-',
+            ];
+        });
 
-        if ($search = $request->input('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
-            });
-        }
-
-        if ($role = $request->input('role')) {
-            if ($role !== 'semua') {
-                $query->where('role', $role);
-            }
-        }
-
-        $users = $query->latest('id')->paginate(10)->withQueryString();
-
-        $stats = [
-            'total' => User::count(),
-            'admin' => User::where('role', 'admin')->count(),
-            'user'  => User::where('role', 'user')->count(),
-        ];
-
-        return view('admin.user.index', compact('users', 'stats'));
+        return view('admin.user.index', compact('users'));
     }
 
+    /**
+     * Menampilkan detail data user yang dipilih
+     */
+    public function detail($id)
+    {
+        $user = User::findOrFail($id);
+
+        $orders = collect();
+        $totalOrders = 0;
+        $totalSpent = 0;
+
+        try {
+            if (class_exists(Order::class)) {
+                $orders = Order::where('user_id', $user->id)
+                    ->with('product')
+                    ->orderBy('order_at', 'desc')
+                    ->get();
+                $totalOrders = $orders->count();
+                $totalSpent = $orders->sum('subtotal');
+            }
+        } catch (\Throwable $e) {
+            // Abaikan jika tabel orders belum siap
+        }
+
+        $stats = [
+            'total_orders' => $totalOrders,
+            'total_spent'  => $totalSpent,
+        ];
+
+        return view('admin.user.detail', compact('user', 'orders', 'stats'));
+    }
+
+    /**
+     * Menyimpan data pengguna baru
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -57,8 +88,13 @@ class UserController extends Controller
             ->with('success', 'Pengguna baru berhasil ditambahkan.');
     }
 
-    public function update(Request $request, User $user)
+    /**
+     * Memperbarui data pengguna
+     */
+    public function update(Request $request, $id)
     {
+        $user = User::findOrFail($id);
+
         $validated = $request->validate([
             'name'     => 'required|string|max:255',
             'email'    => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
@@ -82,15 +118,20 @@ class UserController extends Controller
             ->with('success', 'Data pengguna berhasil diperbarui.');
     }
 
-    public function destroy(User $user)
+    /**
+     * Menghapus pengguna
+     */
+    public function destroy($id)
     {
-        if ($user->id === auth()->id()) {
+        $user = User::findOrFail($id);
+
+        if (Auth::check() && Auth::id() === $user->id) {
             return back()->with('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
         }
 
         $user->delete();
 
         return redirect()->route('admin.user.index')
-            ->with('success', 'Pengguna berhasil dihapus.');
+            ->with('success', 'User ' . $user->name . ' berhasil dihapus.');
     }
 }

@@ -103,15 +103,40 @@
         <span class="breadcrumb-current">Produk</span>
       </nav>
 
-      {{-- Success Alert --}}
+      {{-- Success Alert (SweetAlert2) --}}
       @if (session('success'))
-        <div class="alert-success" role="alert" style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:10px;color:#065f46;font-size:13.5px;font-weight:500;margin-bottom:20px;">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-          </svg>
-          <span>{{ session('success') }}</span>
-        </div>
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            if (typeof Swal !== 'undefined') {
+              Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: @json(session('success')),
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                customClass: { popup: 'admin-swal-popup' }
+              });
+            }
+          });
+        </script>
+      @endif
+
+      @if (session('error'))
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            if (typeof Swal !== 'undefined') {
+              Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: @json(session('error')),
+                confirmButtonColor: '#23477d',
+                customClass: { popup: 'admin-swal-popup' }
+              });
+            }
+          });
+        </script>
       @endif
 
       {{-- Page heading + search --}}

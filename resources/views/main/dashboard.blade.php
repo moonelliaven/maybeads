@@ -59,38 +59,23 @@
 <body class="dashboard-page">
 
   <!-- ========================================================================
-       1. TOP BAR (Dark Slate Header)
+       1. TOP BAR (Dark Slate Header - Maybead.s)
        ======================================================================== -->
   <header class="top-nav-bar">
     <div class="top-nav-container">
       <div class="top-nav-left">
-        <a href="{{ route('home') }}" class="back-home-link">
-          <svg class="chevron-back" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-          <span>Kembali ke Utama</span>
+        <a href="{{ route('home') }}" class="top-nav-brand-logo">
+          Maybead.s
         </a>
       </div>
 
-      <div class="top-nav-right">
-        <a href="#kontak" class="top-link">
-          <svg class="pin-icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-          <span>Kontak</span>
-        </a>
-        <span class="top-pipe">|</span>
-        @auth
-          <a href="{{ Auth::user()->isAdmin() ? route('admin.dashboard') : route('main.dashboard') }}" class="top-link user-name">
-            {{ Auth::user()->name }}
-          </a>
-          <span class="top-pipe">|</span>
-          <form method="POST" action="{{ route('logout') }}" class="inline-logout-form">
-            @csrf
-            <button type="submit" class="top-link-btn">Keluar</button>
-          </form>
-        @else
-          <a href="{{ route('login') }}" class="top-link">Masuk</a>
-          <span class="top-pipe">|</span>
-          <a href="{{ route('register') }}" class="top-link">Daftar</a>
-        @endauth
-      </div>
+      <nav class="top-nav-right" aria-label="Navigasi Utama">
+        <ul class="top-nav-menu-links">
+          <li><a href="{{ route('home') }}" class="top-menu-link">BERANDA</a></li>
+          <li><a href="{{ route('home') }}#kontak" class="top-menu-link">KONTAK</a></li>
+          <li><a href="{{ route('main.dashboard') }}" class="top-menu-link active">PRODUK</a></li>
+        </ul>
+      </nav>
     </div>
   </header>
 
@@ -106,72 +91,38 @@
     <div class="hero-container">
       <h1 class="hero-main-title">Temukan Gaya Favoritmu</h1>
       <p class="hero-main-desc">
-        Jelajahi koleksi pilihan Maybeads dan temukan berbagai aksesori serta produk unik yang melengkapi gayamu.
+        Jelajahi koleksi pilihan Maybeads dan temukan berbagai aksesori serta<br>
+        produk unik yang melengkapi gayamu.
       </p>
     </div>
   </section>
 
 
   <!-- ========================================================================
-       3. SUB-NAVBAR (White Bar with Filter button, Logo, Cart, and Account)
+       3. SUB-NAVBAR (White Bar with Logo, Breadcrumb, Cart, and Account)
        ======================================================================== -->
   <nav class="sub-navbar-bar" id="subNavbar">
     <div class="sub-navbar-container">
-      <!-- Left: Filter button + Brand Logo + Breadcrumb -->
+      <!-- Left: Brand Logo + Breadcrumb -->
       <div class="sub-nav-left">
-        <button type="button" class="btn-filter-pill" id="filterToggleBtn" aria-label="Toggle Filter Urutan Produk">
-          <span>Filter</span>
-          <svg class="filter-arrow" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        </button>
-
         <a href="{{ route('main.dashboard') }}" class="sub-nav-brand">
           Maybeads
         </a>
-
         <span class="sub-nav-crumb">/ Katalog Belanja</span>
       </div>
 
       <!-- Right: Keranjang and Akun buttons -->
       <div class="sub-nav-right">
-        <!-- Keranjang Button with Pop-up (No Blur, Exact Match Mockup) -->
-        <div class="cart-dropdown-wrapper" id="cartDropdownWrapper">
-          <button type="button" class="action-pill-btn" id="cartOpenBtn" aria-expanded="false" title="Lihat Keranjang">
-            <svg class="pill-icon" viewBox="0 0 24 24">
-              <circle cx="9" cy="21" r="1"></circle>
-              <circle cx="20" cy="21" r="1"></circle>
-              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-            </svg>
-            <span>Keranjang</span>
-            <span class="cart-count-badge {{ ($cartCount ?? 0) > 0 ? 'visible' : '' }}" id="cartCountBadge">{{ $cartCount ?? 0 }}</span>
-          </button>
-
-          <!-- Cart Pop-up Card -->
-          <div class="cart-popup-card" id="cartPopupCard" role="dialog" aria-label="Keranjang Belanja">
-            <div class="cart-popup-header">
-              <div class="cart-popup-title">
-                <svg viewBox="0 0 24 24" class="cart-popup-icon"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-                <span>Keranjang Belanja</span>
-              </div>
-              <button type="button" class="btn-close-cart-popup" id="btnCloseCartPopup" aria-label="Tutup Keranjang">&times;</button>
-            </div>
-
-            <div class="cart-popup-divider"></div>
-
-            <div class="cart-popup-items-list" id="cartPopupItemsList">
-              <!-- Dynamically populated via JS, max 5 items -->
-            </div>
-
-            <div class="cart-popup-footer">
-              <div class="cart-popup-note" id="cartPopupNote">
-                Menampilkan 5 Produk Terakhir Ditambahkan
-              </div>
-              <a href="{{ route('cart.index') }}" class="btn-cart-popup-detail" id="btnCartPopupDetail">
-                <span>Lihat Detail</span>
-                <svg viewBox="0 0 24 24" class="btn-arrow-icon"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-              </a>
-            </div>
-          </div>
-        </div>
+        <!-- Keranjang Button (Langsung ke Halaman Detail Keranjang) -->
+        <a href="{{ route('cart.index') }}" class="action-pill-btn" id="cartOpenBtn" title="Lihat Keranjang">
+          <svg class="pill-icon" viewBox="0 0 24 24">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+          <span>Keranjang</span>
+          <span class="cart-count-badge {{ ($cartCount ?? 0) > 0 ? 'visible' : '' }}" id="cartCountBadge">{{ $cartCount ?? 0 }}</span>
+        </a>
 
         <!-- Akun Button with dropdown -->
         <div class="account-dropdown-wrapper">
@@ -237,7 +188,6 @@
             <!-- Hidden inputs to preserve query params -->
             <input type="hidden" name="sort" id="inputSort" value="{{ $currentSort }}">
             <input type="hidden" name="category" id="inputCategory" value="{{ $currentCategory }}">
-            <input type="hidden" name="color" id="inputColor" value="{{ $currentColor }}">
             @if($currentSearch)
               <input type="hidden" name="search" id="inputSearch" value="{{ $currentSearch }}">
             @endif
@@ -262,9 +212,9 @@
             <!-- Divider -->
             <div class="filter-block-divider"></div>
 
-            <!-- 2. URUTAN PRODUK (Categories from DB with count & expand) -->
+            <!-- 2. KATEGORI PRODUK (Categories from DB with count & expand) -->
             <div class="filter-block">
-              <h4 class="filter-block-title">URUTAN PRODUK</h4>
+              <h4 class="filter-block-title">KATEGORI PRODUK</h4>
               <div class="category-options-list" id="categoryOptionsList">
                 <!-- Semua Kategori -->
                 <button type="button"
@@ -299,69 +249,7 @@
               @endif
             </div>
 
-            <!-- Divider -->
-            <div class="filter-block-divider"></div>
-
-            <!-- 3. PILIHAN WARNA (Color Pill buttons) -->
-            <div class="filter-block">
-              <h4 class="filter-block-title">PILIHAN WARNA</h4>
-              <div class="color-options-wrap">
-                <!-- Row 1: Merah & Biru -->
-                <div class="color-row">
-                  <button type="button"
-                          class="color-pill-btn {{ strtolower($currentColor) === 'merah' ? 'selected' : '' }}"
-                          data-color="Merah"
-                          title="Warna Merah">
-                    <span class="color-swatch-dot dot-red"></span>
-                    <span>Merah</span>
-                  </button>
-
-                  <button type="button"
-                          class="color-pill-btn {{ strtolower($currentColor) === 'biru' ? 'selected' : '' }}"
-                          data-color="Biru"
-                          title="Warna Biru">
-                    <span class="color-swatch-dot dot-blue"></span>
-                    <span>Biru</span>
-                  </button>
-                </div>
-
-                <!-- Row 2: Monokrom -->
-                <div class="color-row">
-                  <button type="button"
-                          class="color-pill-btn {{ strtolower($currentColor) === 'monokrom' ? 'selected' : '' }}"
-                          data-color="Monokrom"
-                          title="Warna Monokrom">
-                    <span class="color-swatch-dot dot-monochrome"></span>
-                    <span>Monokrom</span>
-                  </button>
-                </div>
-
-                <!-- Extra colors from variants -->
-                @if(isset($colors) && $colors->count())
-                  <div class="extra-colors-wrap is-hidden" id="extraColorsWrap">
-                    @foreach($colors as $color)
-                      @php $cLow = strtolower($color); @endphp
-                      @if(!in_array($cLow, ['merah', 'biru', 'monokrom', 'black', 'hitam']))
-                        <button type="button"
-                                class="color-pill-btn {{ $currentColor === $color ? 'selected' : '' }}"
-                                data-color="{{ $color }}"
-                                title="Warna {{ $color }}">
-                          <span class="color-swatch-dot dot-default"></span>
-                          <span>{{ $color }}</span>
-                        </button>
-                      @endif
-                    @endforeach
-                  </div>
-
-                  <button type="button" class="btn-expand-outline" id="btnToggleColors">
-                    <span id="textExpandColors">Lainnya</span>
-                    <svg class="chevron-expand" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                  </button>
-                @endif
-              </div>
-            </div>
-
-            @if($currentCategory || $currentColor || $currentSearch || $currentSort !== 'terbaru')
+            @if($currentCategory || $currentSearch || $currentSort !== 'terbaru')
               <div class="reset-filter-row">
                 <a href="{{ route('main.dashboard') }}" class="btn-clear-all-filter">
                   &times; Reset Filter
@@ -394,9 +282,6 @@
               @if($currentCategory)
                 <input type="hidden" name="category" value="{{ $currentCategory }}">
               @endif
-              @if($currentColor)
-                <input type="hidden" name="color" value="{{ $currentColor }}">
-              @endif
 
               <div class="search-input-container">
                 <svg class="search-lens-icon" viewBox="0 0 24 24">
@@ -421,15 +306,15 @@
         <div class="products-grid-wrapper" id="productsGridWrapper">
           @forelse($products as $index => $product)
             @php
-              $formattedPrice = 'Rp ' . number_format($product->price, 0, ',', '.');
+              $rawPrice = (float)$product->price < 1000 ? (float)$product->price * 1000 : (float)$product->price;
+              $originalPrice = $rawPrice * 1.15;
+              $formattedPrice = number_format($rawPrice, 0, ',', '.');
+              $formattedOriginalPrice = 'Rp ' . number_format($originalPrice, 0, ',', '.');
               $productImg = $imgFor($product, $index);
               $productCode = str_pad($product->id, 4, '0', STR_PAD_LEFT);
               $categoryName = $product->category_name;
               $desc = $product->description ?: 'Set perhiasan elegan dengan hiasan orisinil berkualitas tinggi. Cocok digunakan untuk melengkapi penampilan sehari-hari.';
-              $colorList = $product->variants ? $product->variants->pluck('color')->filter()->unique()->implode(', ') : '';
-              if (!$colorList) {
-                $colorList = 'Biru, Kuning';
-              }
+              $variantsData = $product->variants ? $product->variants->toArray() : [];
             @endphp
 
             <article class="product-card-item"
@@ -437,17 +322,15 @@
                      data-code="{{ $productCode }}"
                      data-name="{{ $product->product_name }}"
                      data-category="{{ $categoryName }}"
-                     data-price="{{ $formattedPrice }}"
+                     data-price="{{ $rawPrice }}"
+                     data-formatted-price="{{ $formattedPrice }}"
                      data-image="{{ $productImg }}"
                      data-desc="{{ $desc }}"
-                     data-stock="{{ $product->stock }}"
-                     data-color="{{ $colorList }}"
-                     data-edit-url="{{ route('admin.product.edit', $product->id) }}"
-                     data-delete-url="{{ route('admin.product.destroy', $product->id) }}">
+                     data-variants="{{ json_encode($variantsData) }}">
 
-              <!-- Image with Top-Left Code Badge -->
+              <!-- Image with Top-Left Best Seller Badge -->
               <div class="card-media-wrap">
-                <span class="card-code-badge">BEST SELLER #{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</span>
+                <span class="card-code-badge">{{ $productCode }}</span>
                 <img src="{{ $productImg }}"
                      alt="{{ $product->product_name }}"
                      class="card-product-img"
@@ -460,32 +343,30 @@
                 <h3 class="card-product-title" title="{{ $product->product_name }}">
                   {{ $product->product_name }}
                 </h3>
-                <div style="display: flex; align-items: baseline; gap: 6px; margin-bottom: 12px;">
-                  <span style="font-size: 14.5px; font-weight: 800; color: #141418;">{{ $formattedPrice }}</span>
-                  <span style="font-size: 10.5px; color: #94a3b8; text-decoration: line-through;">Rp 20.000</span>
-                </div>
+                <p class="card-product-desc" title="{{ $desc }}">
+                  {{ $desc }}
+                </p>
 
-                <!-- Bottom Actions Row: Detail & Cart Icon -->
+                <!-- Bottom Actions Row: Detail | Edit | Delete -->
                 <div class="card-actions-row">
-                  <a href="{{ route('product.detail', $product->id) }}" class="btn-card-detail" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; flex: 1;">
+                  <button type="button" class="btn-card-detail" data-action="detail">
                     Detail
+                  </button>
+
+                  <a href="{{ route('admin.product.edit', $product->id) }}"
+                     class="btn-card-icon btn-edit-product"
+                     title="Edit Produk (Admin)">
+                    <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                   </a>
 
                   <button type="button"
-                          class="btn-card-icon"
-                          style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; background: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center;"
-                          onclick="openQuickAddModal('{{ addslashes($product->product_name) }}', '{{ $formattedPrice }}', {{ (int)$product->price }}, '{{ $productImg }}', {{ $product->id }})"
-                          title="Tambah ke Keranjang">
-                    <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2;"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                          class="btn-card-icon btn-delete-product"
+                          data-action="delete"
+                          data-delete-url="{{ route('admin.product.destroy', $product->id) }}"
+                          data-name="{{ $product->product_name }}"
+                          title="Hapus Produk (Admin)">
+                    <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                   </button>
-
-                  @if(Auth::check() && Auth::user()->isAdmin())
-                    <a href="{{ route('admin.product.edit', $product->id) }}"
-                       class="btn-card-icon btn-edit-product"
-                       title="Edit Produk (Admin)">
-                      <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                    </a>
-                  @endif
                 </div>
               </div>
             </article>
@@ -786,11 +667,72 @@
     });
   </script>
 
-  <!-- Hidden Form for Admin Delete -->
-  <form id="deleteProductForm" method="POST" style="display: none;">
-    @csrf
-    @method('DELETE')
-  </form>
+  <!-- ========================================================================
+       MODAL 2: TAMBAH PRODUK KE KERANJANG (Cart Options Modal)
+       ======================================================================== -->
+  <div class="cart-modal-backdrop" id="cartModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="cartModalTitle" hidden>
+    <div class="cart-modal-container">
+      <!-- Header Modal -->
+      <div class="cart-modal-header">
+        <h3 class="cart-modal-title" id="cartModalTitle">Tambah Produk ke Keranjang</h3>
+        <button type="button" class="btn-cart-modal-close" id="btnCartModalClose" aria-label="Tutup">&times;</button>
+      </div>
+
+      <div class="cart-modal-body">
+        <!-- Info Produk: Foto + Nama + Harga -->
+        <div class="cart-modal-product-summary">
+          <img src="" alt="" class="cart-modal-product-img" id="cartModalProductImg">
+          <div class="cart-modal-product-meta">
+            <h4 class="cart-modal-product-name" id="cartModalProductName">Nama Produk</h4>
+            <div class="cart-modal-product-cat" id="cartModalProductCat">Kategori</div>
+            <div class="cart-modal-product-price" id="cartModalProductPrice">Rp 0</div>
+          </div>
+        </div>
+
+        <div class="cart-modal-divider"></div>
+
+        <!-- Jenis Produk: Warna -->
+        <div class="cart-modal-field-group" id="cartModalColorGroup">
+          <label class="cart-modal-label">Pilih Warna</label>
+          <div class="cart-modal-chips-wrap" id="cartModalColorChips">
+            <!-- Dynamically populated via JS -->
+          </div>
+        </div>
+
+        <!-- Jenis Produk: Ukuran -->
+        <div class="cart-modal-field-group" id="cartModalSizeGroup">
+          <label class="cart-modal-label">Pilih Ukuran</label>
+          <div class="cart-modal-chips-wrap" id="cartModalSizeChips">
+            <!-- Dynamically populated via JS -->
+          </div>
+        </div>
+
+        <!-- Quantity (Jumlah) -->
+        <div class="cart-modal-field-group">
+          <label class="cart-modal-label">Jumlah Produk</label>
+          <div class="cart-modal-qty-stepper">
+            <button type="button" class="btn-qty-step" id="btnQtyMinus" aria-label="Kurangi Jumlah">&minus;</button>
+            <input type="number" class="input-qty-val" id="inputQtyVal" value="1" min="1" max="99" readonly>
+            <button type="button" class="btn-qty-step" id="btnQtyPlus" aria-label="Tambah Jumlah">&plus;</button>
+          </div>
+        </div>
+
+        <div class="cart-modal-divider"></div>
+
+        <!-- Total Harga Produk -->
+        <div class="cart-modal-total-row">
+          <span class="cart-modal-total-label">Total Harga:</span>
+          <span class="cart-modal-total-val" id="cartModalTotalVal">Rp 0</span>
+        </div>
+      </div>
+
+      <!-- Footer: Tombol Batal & Tambahkan -->
+      <div class="cart-modal-footer">
+        <button type="button" class="btn-cart-modal-cancel" id="btnCartModalCancel">Batal</button>
+        <button type="button" class="btn-cart-modal-submit" id="btnCartModalSubmit">Tambahkan</button>
+      </div>
+    </div>
+  </div>
 
 </body>
 </html>

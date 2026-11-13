@@ -29,14 +29,17 @@ Route::get('/kontak', fn () => redirect()->route('contact'));
 
 // ─── Public / User Store Flow (Catalog, Detail, Cart, Checkout, Payment) ──────
 Route::prefix('main')->name('main.')->group(function () {
-    Route::get('/dashboard', [MainController::class, 'dashboard'])->name('dashboard');
-    Route::get('/cart',      [MainController::class, 'cart'])->name('cart');
+    Route::get('/dashboard',        [MainController::class, 'dashboard'])->name('dashboard');
+    Route::get('/cart',             [MainController::class, 'cart'])->name('cart');
+    Route::get('/product/{product}',[MainController::class, 'productDetail'])->name('product.detail');
 });
 
-Route::get('/cart',                    [MainController::class, 'cart'])->name('cart.index');
+// Direct Product Detail & Cart
 Route::get('/product/{id}',            [MainController::class, 'productDetail'])->name('product.detail');
 Route::get('/produk/{id}',             fn ($id) => redirect()->route('product.detail', $id));
+Route::get('/cart',                    [MainController::class, 'cart'])->name('cart.index');
 
+// Checkout & Payment
 Route::get('/checkout',                [MainController::class, 'checkout'])->name('checkout');
 Route::post('/checkout',               [MainController::class, 'processCheckout'])->name('checkout.process');
 
@@ -75,33 +78,39 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     });
 
     // Orders
-    Route::prefix('orders')->name('order.')->controller(OrderController::class)->group(function () {
-        Route::get('/',            'index')->name('index');
-        Route::get('/{order}',     'show')->name('show');
-        Route::put('/{order}',     'update')->name('update');
-        Route::delete('/{order}',  'destroy')->name('destroy');
+    Route::prefix('order')->name('order.')->controller(OrderController::class)->group(function () {
+        Route::get('/',               'index')->name('index');
+        Route::get('/detail/{order}', 'show')->name('detail');
+        Route::get('/{order}',        'show')->name('show');
+        Route::put('/{order}',        'update')->name('update');
+        Route::delete('/{order}',     'destroy')->name('destroy');
     });
+    Route::redirect('/orders', '/admin/order');
 
     // Payments
-    Route::prefix('payments')->name('payment.')->controller(PaymentController::class)->group(function () {
-        Route::get('/',              'index')->name('index');
-        Route::get('/{payment}',     'show')->name('show');
-        Route::put('/{payment}',     'update')->name('update');
-        Route::delete('/{payment}',  'destroy')->name('destroy');
+    Route::prefix('payment')->name('payment.')->controller(PaymentController::class)->group(function () {
+        Route::get('/',               'index')->name('index');
+        Route::get('/{payment}',      'show')->name('show');
+        Route::put('/{payment}',      'update')->name('update');
+        Route::delete('/{payment}',   'destroy')->name('destroy');
     });
+    Route::redirect('/payments', '/admin/payment');
 
     // User Management
-    Route::prefix('users')->name('user.')->controller(UserController::class)->group(function () {
-        Route::get('/',           'index')->name('index');
-        Route::post('/',          'store')->name('store');
-        Route::put('/{user}',     'update')->name('update');
-        Route::delete('/{user}',  'destroy')->name('destroy');
+    Route::prefix('user')->name('user.')->controller(UserController::class)->group(function () {
+        Route::get('/',               'index')->name('index');
+        Route::post('/',              'store')->name('store');
+        Route::get('/detail/{user}',  'detail')->name('detail');
+        Route::get('/{user}',         'detail')->name('show');
+        Route::put('/{user}',         'update')->name('update');
+        Route::delete('/{user}',      'destroy')->name('destroy');
     });
+    Route::redirect('/users', '/admin/user');
 
-    // Point of Sale (Kasir)
+    // POS Kasir
     Route::prefix('pos')->name('pos.')->controller(PosController::class)->group(function () {
-        Route::get('/',              'index')->name('index');
-        Route::get('/transactions',  'index')->name('transactions');
-        Route::post('/checkout',     'checkout')->name('checkout');
+        Route::get('/',               'index')->name('index');
+        Route::get('/transactions',   'index')->name('transactions');
+        Route::post('/checkout',      'checkout')->name('checkout');
     });
 });

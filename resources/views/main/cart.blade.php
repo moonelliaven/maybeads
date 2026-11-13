@@ -35,34 +35,124 @@
       flex: 1;
     }
 
-    /* Top Bar on Header */
+    /* Top Bar on Header (Maybead.s) */
     .cart-top-bar {
-      background-color: #1f2735;
-      height: 40px;
-      color: #cbd5e1;
-      font-size: 12px;
+      background-color: #202634;
+      height: 52px;
+      color: #ffffff;
       display: flex;
       align-items: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
     .cart-top-container {
       max-width: 1240px;
       width: 100%;
       margin: 0 auto;
-      padding: 0 24px;
+      padding: 0 32px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .cart-top-link {
-      display: inline-flex;
+    .top-nav-brand-logo {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.2px;
+      text-decoration: none;
+      transition: opacity 0.15s ease;
+    }
+    .top-nav-brand-logo:hover {
+      opacity: 0.9;
+    }
+    .top-nav-menu-links {
+      display: flex;
       align-items: center;
-      gap: 6px;
-      color: #cbd5e1;
+      gap: 28px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .top-menu-link {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      color: #e2e8f0;
       font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+    .top-menu-link:hover {
+      color: #ffffff;
+    }
+
+    /* Sub-Navbar Bar */
+    .cart-sub-navbar-bar {
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .cart-sub-navbar-container {
+      max-width: 1240px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 12px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .cart-sub-nav-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .cart-sub-nav-brand {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 24px;
+      font-weight: 800;
+      color: #23477d;
+      letter-spacing: -0.3px;
       text-decoration: none;
     }
-    .cart-top-link:hover { color: #ffffff; }
+    .cart-sub-nav-crumb {
+      font-size: 13.5px;
+      color: #64748b;
+      font-weight: 500;
+    }
+    .cart-sub-nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .cart-action-pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 7px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #0f172a;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+    .cart-action-pill-btn:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
+    .cart-action-pill-btn .pill-icon {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+    }
 
     /* Page Header: Breadcrumb + Title + Search */
     .cart-header-row {
@@ -558,32 +648,57 @@
 </head>
 <body class="cart-detail-page">
 
-  <!-- Top bar (Dark Slate Header matching design) -->
+  <!-- Top bar (Dark Slate Header - Maybead.s) -->
   <header class="cart-top-bar">
     <div class="cart-top-container">
       <div class="cart-top-left">
-        <a href="{{ route('home') }}" class="cart-top-link">
-          <svg style="width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.2;" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-          <span>Kembali ke Utama</span>
+        <a href="{{ route('home') }}" class="top-nav-brand-logo">
+          Maybead.s
         </a>
       </div>
 
-      <div class="cart-top-right">
-        <a href="{{ route('home') }}#kontak" class="cart-top-link">
-          <svg style="width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-          <span>Kontak</span>
-        </a>
-        <span style="color: rgba(255, 255, 255, 0.25); margin: 0 10px;">|</span>
-        @auth
-          <span style="font-weight: 600; color: #ffffff;">{{ Auth::user()->name }}</span>
-        @else
-          <a href="{{ route('login') }}" class="cart-top-link">Masuk</a>
-          <span style="color: rgba(255, 255, 255, 0.25); margin: 0 10px;">|</span>
-          <a href="{{ route('register') }}" class="cart-top-link">Daftar</a>
-        @endauth
-      </div>
+      <nav class="top-nav-right" aria-label="Navigasi Utama">
+        <ul class="top-nav-menu-links">
+          <li><a href="{{ route('home') }}" class="top-menu-link">BERANDA</a></li>
+          <li><a href="{{ route('home') }}#kontak" class="top-menu-link">KONTAK</a></li>
+          <li><a href="{{ route('main.dashboard') }}" class="top-menu-link">PRODUK</a></li>
+        </ul>
+      </nav>
     </div>
   </header>
+
+  <!-- Sub-Navbar Bar -->
+  <nav class="cart-sub-navbar-bar">
+    <div class="cart-sub-navbar-container">
+      <div class="cart-sub-nav-left">
+        <a href="{{ route('main.dashboard') }}" class="cart-sub-nav-brand">
+          Maybeads
+        </a>
+        <span class="cart-sub-nav-crumb">/ Data Lengkap Keranjang</span>
+      </div>
+
+      <div class="cart-sub-nav-right">
+        <a href="{{ route('cart.index') }}" class="cart-action-pill-btn" title="Lihat Keranjang Belanja">
+          <svg class="pill-icon" viewBox="0 0 24 24">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+          <span>Keranjang</span>
+        </a>
+
+        <!-- Akun Button -->
+        <a href="{{ route('login') }}" class="cart-action-pill-btn" title="Menu Akun">
+          <svg class="pill-icon" viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span>Akun</span>
+          <svg class="chevron-down" viewBox="0 0 24 24" style="width: 13px; height: 13px; stroke: #475569; fill: none; stroke-width: 2.2;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </a>
+      </div>
+    </div>
+  </nav>
 
   <!-- Main Content -->
   <main class="cart-main-container">

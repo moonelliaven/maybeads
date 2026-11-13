@@ -4,331 +4,234 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>Manajemen Pengguna — Maybeads</title>
+  <title>Data User — Maybeads</title>
   <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  @vite(['resources/css/admin/management.css', 'resources/js/admin/dashboard.js'])
+  @vite(['resources/css/admin/user-index.css', 'resources/js/admin/user-index.js'])
 </head>
 <body>
 
+@php
+  $usersJson = json_encode($users ?? [], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG);
+@endphp
+
+{{-- Hidden data store untuk JavaScript --}}
+<div id="userDataStore"
+     data-users="{{ $usersJson }}"
+     hidden>
+</div>
+
 <div class="admin-layout">
-  @include('admin.sidebar', ['active' => 'users'])
+  @include('admin.sidebar', ['active' => 'user'])
 
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
   <div class="admin-main">
+    {{-- ====== HEADER ====== --}}
     <header class="admin-header">
       <div class="header-left">
-        <button type="button" class="btn-sidebar-toggle" id="sidebarToggle" aria-label="Buka navigasi">
+        <button type="button" class="btn-sidebar-toggle" id="sidebarToggle"
+                aria-label="Toggle navigasi" aria-controls="adminSidebar">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <line x1="3" y1="6"  x2="21" y2="6"></line>
             <line x1="3" y1="12" x2="21" y2="12"></line>
             <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
         </button>
-        <span class="header-title">Admin Dashboard / Pengguna</span>
+        <span class="header-title">Admin Dashboard</span>
       </div>
 
       <div class="header-right">
-        <div class="header-user-badge">
-          <div class="header-user-avatar">{{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}</div>
-          <div class="header-user-info">
-            <span class="header-user-name">{{ Auth::user()->name ?? 'Administrator' }}</span>
-            <span class="header-user-role">{{ ucfirst(Auth::user()->role ?? 'Admin') }}</span>
-          </div>
+        {{-- Notifikasi --}}
+        <div class="dropdown" data-dropdown>
+          <button type="button" class="notification-btn" aria-label="Notifikasi" data-dropdown-trigger>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span class="notification-badge" data-notif-badge>1</span>
+          </button>
         </div>
       </div>
     </header>
 
-    <main class="page-container">
-      @if(session('success'))
-        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 12px 18px; border-radius: 8px; margin-bottom: 20px; font-size: 13.5px; font-weight: 500;">
-          {{ session('success') }}
-        </div>
+    {{-- ====== MAIN CONTENT ====== --}}
+    <main class="user-content">
+
+      {{-- Breadcrumb --}}
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="{{ route('admin.dashboard') }}">Dashboard</a>
+        <span class="breadcrumb-sep">&gt;</span>
+        <span class="breadcrumb-current">User</span>
+      </nav>
+
+      {{-- Success & Error Alerts --}}
+      @if (session('success'))
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            if (typeof Swal !== 'undefined') {
+              Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: @json(session('success')),
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+              });
+            }
+          });
+        </script>
       @endif
 
-      @if(session('error'))
-        <div style="background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 12px 18px; border-radius: 8px; margin-bottom: 20px; font-size: 13.5px; font-weight: 500;">
-          {{ session('error') }}
-        </div>
+      @if (session('error'))
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            if (typeof Swal !== 'undefined') {
+              Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: @json(session('error')),
+                confirmButtonColor: '#23477d'
+              });
+            }
+          });
+        </script>
       @endif
 
-      @if(isset($errors) && $errors->any())
-        <div style="background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 12px 18px; border-radius: 8px; margin-bottom: 20px; font-size: 13.5px;">
-          <ul style="margin: 0; padding-left: 20px;">
-            @foreach($errors->all() as $error)
-              <li>{{ $error }}</li>
-            @endforeach
-          </ul>
-        </div>
-      @endif
+      {{-- Page Heading + Search Bar --}}
+      <div class="user-page-head">
+        <h1 class="user-page-title">Data User</h1>
 
-      <div class="page-header">
-        <div>
-          <h1 class="page-title">Manajemen User</h1>
-          <p class="page-subtitle">Kelola akun administrator, kasir, dan pelanggan terdaftar</p>
-        </div>
-        <div class="page-actions">
-          <button type="button" class="btn-primary" onclick="openCreateUserModal()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            Tambah User
-          </button>
-        </div>
-      </div>
-
-      <!-- Stats Grid -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-info">
-            <span class="stat-label">Total Pengguna</span>
-            <span class="stat-value">{{ number_format($stats['total'] ?? 0) }}</span>
-          </div>
-          <div class="stat-icon-wrap blue">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-info">
-            <span class="stat-label">Administrator</span>
-            <span class="stat-value">{{ number_format($stats['admin'] ?? 0) }}</span>
-          </div>
-          <div class="stat-icon-wrap purple">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-            </svg>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-info">
-            <span class="stat-label">Regular User</span>
-            <span class="stat-value">{{ number_format($stats['user'] ?? 0) }}</span>
-          </div>
-          <div class="stat-icon-wrap green">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <!-- Filter Toolbar -->
-      <div class="toolbar-card">
-        <form method="GET" action="{{ route('admin.user.index') }}" class="search-form">
-          <div class="search-input-wrap">
+        <div class="user-search-wrap">
+          <span class="search-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
-            <input type="text" name="search" placeholder="Cari nama atau email pengguna..." value="{{ request('search') }}">
-          </div>
-        </form>
-
-        <form method="GET" action="{{ route('admin.user.index') }}" class="filter-group">
-          @if(request('search'))
-            <input type="hidden" name="search" value="{{ request('search') }}">
-          @endif
-          <select name="role" class="filter-select" onchange="this.form.submit()">
-            <option value="semua" {{ request('role') === 'semua' || !request('role') ? 'selected' : '' }}>Semua Role</option>
-            <option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>Administrator</option>
-            <option value="user" {{ request('role') === 'user' ? 'selected' : '' }}>User</option>
-          </select>
-        </form>
+          </span>
+          <input type="text"
+                 id="userSearchInput"
+                 class="user-search-input"
+                 placeholder="Cari Berdasarkan ..."
+                 autocomplete="off"
+                 aria-label="Cari data user">
+        </div>
       </div>
 
-      <!-- Data Table -->
-      <div class="table-card">
-        <table class="data-table">
+      {{-- Filter Row (Tabs & Date range) --}}
+      <div class="user-filter-row">
+        <div class="user-filter-left">
+          <span class="filter-label">Sortir:</span>
+          <div class="filter-tabs" role="tablist">
+            <button type="button" class="filter-tab active" data-tab="semua">Semua</button>
+            <button type="button" class="filter-tab" data-tab="selesai">Selesai</button>
+            <button type="button" class="filter-tab" data-tab="gagal">Gagal</button>
+          </div>
+        </div>
+
+        <div class="user-filter-right">
+          <span class="filter-label">Sortir:</span>
+          <div class="date-filter-box" title="Filter rentang tanggal">
+            <span>Sept, 28 2026 23.59 &nbsp;–&nbsp; Okt, 28 2026 23.59</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      {{-- ====== TABLE LAYOUT ====== --}}
+      <div class="user-table-wrap">
+        <table class="user-table" id="userTable">
           <thead>
             <tr>
+              <th class="cb-col">
+                <input type="checkbox" class="tbl-check" id="selectAll" aria-label="Pilih semua user">
+              </th>
               <th>ID</th>
-              <th>Nama Pengguna</th>
+              <th>Username</th>
               <th>Email</th>
+              <th>Alamat</th>
               <th>Role</th>
-              <th>Terdaftar Pada</th>
               <th>Aksi</th>
             </tr>
           </thead>
-          <tbody>
-            @forelse($users as $user)
-              <tr>
-                <td><strong>#USR-{{ str_pad($user->id, 4, '0', STR_PAD_LEFT) }}</strong></td>
-                <td>
-                  <div style="display: flex; align-items: center; gap: 12px;">
-                    <div style="width: 36px; height: 36px; border-radius: 50%; background: #e2e8f0; color: #475569; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">
-                      {{ strtoupper(substr($user->name, 0, 1)) }}
+          <tbody id="userTableBody">
+            @forelse ($users as $user)
+              @php
+                $avatarInitial = strtoupper(substr($user['name'] ?? 'U', 0, 1));
+                $colors = ['#2563eb', '#7c3aed', '#059669', '#ea580c', '#db2777', '#0891b2'];
+                $bgColor = $colors[($user['id'] ?? 1) % count($colors)];
+              @endphp
+              <tr data-id="{{ $user['id'] }}">
+                <td class="cb-col">
+                  <input type="checkbox" class="tbl-check row-cb" data-id="{{ $user['id'] }}" aria-label="Pilih {{ $user['name'] }}">
+                </td>
+                <td class="col-id">{{ $user['formatted_id'] ?? ('IDP' . str_pad($user['id'], 4, '0', STR_PAD_LEFT)) }}</td>
+                <td class="col-user">
+                  <div class="user-meta-cell">
+                    <div class="user-cell-avatar" style="background-color: {{ $bgColor }}">
+                      {{ $avatarInitial }}
                     </div>
-                    <div>
-                      <div style="font-weight: 700; color: #1e293b;">{{ $user->name }}</div>
-                      @if($user->id === auth()->id())
-                        <span style="font-size: 10.5px; background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 4px; font-weight: 700;">Akun Anda</span>
-                      @endif
-                    </div>
+                    <span class="user-cell-name">{{ $user['name'] }}</span>
                   </div>
                 </td>
-                <td style="color: #475569;">{{ $user->email }}</td>
-                <td>
-                  <span class="badge {{ $user->role === 'admin' ? 'badge-admin' : 'badge-user' }}">
-                    <span class="badge-dot"></span>
-                    {{ ucfirst($user->role) }}
-                  </span>
-                </td>
-                <td style="font-size: 12.5px; color: #64748b;">
-                  {{ $user->created_at ? $user->created_at->format('d M Y, H:i') : '-' }}
-                </td>
-                <td>
-                  <div class="table-actions">
-                    <button type="button" class="btn-action" title="Edit Pengguna" onclick='openEditUserModal(@json($user))'>
+                <td class="col-email">{{ $user['email'] }}</td>
+                <td class="col-address" title="{{ $user['address'] }}">{{ $user['address'] }}</td>
+                <td class="col-role">{{ $user['role'] ?? 'User' }}</td>
+                <td class="col-action">
+                  <div class="action-btns">
+                    <a href="{{ route('admin.user.detail', $user['id']) }}" class="btn-detail-struk">Detail</a>
+                    <button type="button" class="btn-delete-icon" data-delete-id="{{ $user['id'] }}" data-name="{{ $user['name'] }}" title="Hapus User">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6l-1 14H6L5 6"></path>
+                        <path d="M10 11v6"></path>
+                        <path d="M14 11v6"></path>
+                        <path d="M9 6V4h6v2"></path>
                       </svg>
                     </button>
-
-                    @if($user->id !== auth()->id())
-                      <form method="POST" action="{{ route('admin.user.destroy', $user->id) }}" onsubmit="return confirm('Yakin ingin menghapus user ini?')">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn-action danger" title="Hapus">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                          </svg>
-                        </button>
-                      </form>
-                    @endif
                   </div>
                 </td>
               </tr>
             @empty
               <tr>
-                <td colspan="6" style="text-align: center; padding: 40px; color: #94a3b8;">
-                  Tidak ada pengguna yang cocok dengan pencarian.
+                <td colspan="7" class="user-empty">
+                  Belum ada data user.
                 </td>
               </tr>
             @endforelse
           </tbody>
         </table>
 
-        @if($users->hasPages())
-          <div class="pagination-wrap">
-            {{ $users->links() }}
+        {{-- Pagination --}}
+        <div class="pagination-bar" id="paginationBar">
+          <div class="pagination-left">
+            <button type="button" class="btn-all" id="btnPagAll">ALL</button>
+            <button type="button" class="btn-show-less" id="btnPagLess">Show Less</button>
+            <div class="pagination-sep"></div>
+            <span class="pagination-info" id="paginationInfo">
+              Menampilkan {{ count($users) > 0 ? min(8, count($users)) : 0 }} user dari {{ count($users) }}
+            </span>
           </div>
-        @endif
+          <div class="pagination-pages" id="paginationPages" aria-label="Navigasi halaman">
+            {{-- Dirender oleh JavaScript --}}
+          </div>
+        </div>
       </div>
+
     </main>
   </div>
 </div>
 
-<!-- Modal Tambah User -->
-<div class="modal-backdrop" id="createUserModal" style="display: none;">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3 class="modal-title">Tambah Pengguna Baru</h3>
-      <button type="button" class="modal-close" onclick="closeCreateUserModal()">✕</button>
-    </div>
-    <form method="POST" action="{{ route('admin.user.store') }}">
-      @csrf
-      <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label">Nama Lengkap</label>
-          <input type="text" name="name" class="form-control" required placeholder="Contoh: Budi Santoso">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Alamat Email</label>
-          <input type="email" name="email" class="form-control" required placeholder="budi@example.com">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Password (Minimal 8 Karakter)</label>
-          <input type="password" name="password" class="form-control" required placeholder="••••••••">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Role Akses</label>
-          <select name="role" class="form-control" required>
-            <option value="user">User (Pelanggan)</option>
-            <option value="admin">Administrator</option>
-          </select>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn-secondary" onclick="closeCreateUserModal()">Batal</button>
-        <button type="submit" class="btn-primary">Simpan User</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Modal Edit User -->
-<div class="modal-backdrop" id="editUserModal" style="display: none;">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3 class="modal-title">Edit Pengguna</h3>
-      <button type="button" class="modal-close" onclick="closeEditUserModal()">✕</button>
-    </div>
-    <form id="editUserForm" method="POST" action="">
-      @csrf
-      @method('PUT')
-      <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label">Nama Lengkap</label>
-          <input type="text" id="editUserName" name="name" class="form-control" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Alamat Email</label>
-          <input type="email" id="editUserEmail" name="email" class="form-control" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Ganti Password (Kosongkan jika tidak diganti)</label>
-          <input type="password" name="password" class="form-control" placeholder="Biarkan kosong untuk mempertahankan">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Role Akses</label>
-          <select id="editUserRole" name="role" class="form-control" required>
-            <option value="user">User (Pelanggan)</option>
-            <option value="admin">Administrator</option>
-          </select>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn-secondary" onclick="closeEditUserModal()">Batal</button>
-        <button type="submit" class="btn-primary">Update User</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<script>
-  function openCreateUserModal() {
-    document.getElementById('createUserModal').style.display = 'flex';
-  }
-  function closeCreateUserModal() {
-    document.getElementById('createUserModal').style.display = 'none';
-  }
-  function openEditUserModal(user) {
-    document.getElementById('editUserForm').action = '/admin/users/' + user.id;
-    document.getElementById('editUserName').value = user.name;
-    document.getElementById('editUserEmail').value = user.email;
-    document.getElementById('editUserRole').value = user.role;
-    document.getElementById('editUserModal').style.display = 'flex';
-  }
-  function closeEditUserModal() {
-    document.getElementById('editUserModal').style.display = 'none';
-  }
-</script>
-
 </body>
 </html>
+

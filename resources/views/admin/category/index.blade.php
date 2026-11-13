@@ -111,15 +111,40 @@
         <span class="breadcrumb-current">Kategori</span>
       </nav>
 
-      {{-- Success Alert --}}
+      {{-- Success Alert (SweetAlert2) --}}
       @if (session('success'))
-        <div class="alert-success" role="alert">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-          </svg>
-          <span>{{ session('success') }}</span>
-        </div>
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            if (typeof Swal !== 'undefined') {
+              Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: @json(session('success')),
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                customClass: { popup: 'admin-swal-popup' }
+              });
+            }
+          });
+        </script>
+      @endif
+
+      @if (session('error'))
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            if (typeof Swal !== 'undefined') {
+              Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: @json(session('error')),
+                confirmButtonColor: '#23477d',
+                customClass: { popup: 'admin-swal-popup' }
+              });
+            }
+          });
+        </script>
       @endif
 
       {{-- Page Heading + Action Row (Tambah Data & Cari Kategori) --}}
