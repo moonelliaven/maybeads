@@ -447,7 +447,7 @@
 
               <!-- Image with Top-Left Code Badge -->
               <div class="card-media-wrap">
-                <span class="card-code-badge">{{ $productCode }}</span>
+                <span class="card-code-badge">BEST SELLER #{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</span>
                 <img src="{{ $productImg }}"
                      alt="{{ $product->product_name }}"
                      class="card-product-img"
@@ -460,30 +460,32 @@
                 <h3 class="card-product-title" title="{{ $product->product_name }}">
                   {{ $product->product_name }}
                 </h3>
-                <p class="card-product-desc" title="{{ $desc }}">
-                  {{ $desc }}
-                </p>
+                <div style="display: flex; align-items: baseline; gap: 6px; margin-bottom: 12px;">
+                  <span style="font-size: 14.5px; font-weight: 800; color: #141418;">{{ $formattedPrice }}</span>
+                  <span style="font-size: 10.5px; color: #94a3b8; text-decoration: line-through;">Rp 20.000</span>
+                </div>
 
-                <!-- Bottom Actions Row: Detail | Edit | Delete -->
+                <!-- Bottom Actions Row: Detail & Cart Icon -->
                 <div class="card-actions-row">
-                  <a href="{{ route('product.detail', $product->id) }}" class="btn-card-detail" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
+                  <a href="{{ route('product.detail', $product->id) }}" class="btn-card-detail" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; flex: 1;">
                     Detail
                   </a>
 
-                  <a href="{{ route('admin.product.edit', $product->id) }}"
-                     class="btn-card-icon btn-edit-product"
-                     title="Edit Produk (Admin)">
-                    <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                  </a>
-
                   <button type="button"
-                          class="btn-card-icon btn-delete-product"
-                          data-action="delete"
-                          data-delete-url="{{ route('admin.product.destroy', $product->id) }}"
-                          data-name="{{ $product->product_name }}"
-                          title="Hapus Produk (Admin)">
-                    <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                          class="btn-card-icon"
+                          style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; background: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center;"
+                          onclick="openQuickAddModal('{{ addslashes($product->product_name) }}', '{{ $formattedPrice }}', {{ (int)$product->price }}, '{{ $productImg }}', {{ $product->id }})"
+                          title="Tambah ke Keranjang">
+                    <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2;"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                   </button>
+
+                  @if(Auth::check() && Auth::user()->isAdmin())
+                    <a href="{{ route('admin.product.edit', $product->id) }}"
+                       class="btn-card-icon btn-edit-product"
+                       title="Edit Produk (Admin)">
+                      <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    </a>
+                  @endif
                 </div>
               </div>
             </article>
@@ -656,6 +658,133 @@
 
 
 
+
+  <!-- Modal Tambah Produk ke Keranjang (Persis Foto 8) -->
+  <div class="modal-backdrop" id="quickAddCartModal" style="display: none; align-items: center; justify-content: center; z-index: 1000; background: rgba(0,0,0,0.5);">
+    <div style="background: #ffffff; border-radius: 12px; max-width: 480px; width: 100%; padding: 28px 32px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);">
+      <h3 style="font-size: 17px; font-weight: 800; color: #141418; margin-bottom: 20px;">Tambah Produk ke Keranjang</h3>
+
+      <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+        <img src="" alt="Product" id="modalThumb" style="width: 70px; height: 70px; border-radius: 8px; background: #d4d4d8; object-fit: cover;">
+        <div>
+          <div id="modalTitle" style="font-size: 15px; font-weight: 700; color: #141418; margin-bottom: 6px;">Nama Produk yang Keren</div>
+          <div id="modalPrice" style="font-size: 18px; font-weight: 800; color: #141418;">Rp 123.000</div>
+        </div>
+      </div>
+
+      <!-- Dua Kolom Varian: Jenis & Warna -->
+      <div style="display: grid; grid-template-columns: 1fr 1px 1.2fr; gap: 16px; align-items: center; margin-bottom: 20px;">
+        <div>
+          <div style="font-size: 13.5px; font-weight: 700; color: #141418; margin-bottom: 10px;">Jenis</div>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="variant-pill-demo active" style="padding: 6px 14px; border-radius: 6px; border: 1px solid #d4d4d8; background: #e4e4e7; color: #18181b; font-size: 12.5px; font-weight: 700; cursor: pointer;">XL</button>
+            <button type="button" class="variant-pill-demo" style="padding: 6px 14px; border-radius: 6px; border: 1px solid #e4e4e7; background: #f4f4f5; color: #18181b; font-size: 12.5px; font-weight: 700; cursor: pointer;">L</button>
+            <button type="button" class="variant-pill-demo" style="padding: 6px 14px; border-radius: 6px; border: 1px solid #e4e4e7; background: #f4f4f5; color: #18181b; font-size: 12.5px; font-weight: 700; cursor: pointer;">S</button>
+          </div>
+        </div>
+
+        <div style="background: #e2e8f0; height: 100%; width: 1px;"></div>
+
+        <div>
+          <div style="font-size: 13.5px; font-weight: 700; color: #141418; margin-bottom: 10px;">Warna</div>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="color-pill-demo active" style="padding: 6px 14px; border-radius: 6px; border: 1px solid #d4d4d8; background: #e4e4e7; color: #18181b; font-size: 12.5px; font-weight: 700; cursor: pointer;">Merah</button>
+            <button type="button" class="color-pill-demo" style="padding: 6px 14px; border-radius: 6px; border: 1px solid #e4e4e7; background: #f4f4f5; color: #18181b; font-size: 12.5px; font-weight: 700; cursor: pointer;">Biru</button>
+            <button type="button" class="color-pill-demo" style="padding: 6px 14px; border-radius: 6px; border: 1px solid #e4e4e7; background: #f4f4f5; color: #18181b; font-size: 12.5px; font-weight: 700; cursor: pointer;">Hijau</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Jumlah Stepper -->
+      <div style="margin-bottom: 24px;">
+        <div style="font-size: 13.5px; font-weight: 700; color: #141418; margin-bottom: 6px;">Jumlah</div>
+        <div style="display: inline-flex; align-items: center; border: 1px solid #cbd5e1; border-radius: 6px; padding: 2px 8px; gap: 12px;">
+          <button type="button" id="btnQuickMinus" style="background:none; border:none; font-size:16px; font-weight:700; cursor:pointer;">-</button>
+          <span id="quickQtyVal" style="font-size:13px; font-weight:700; min-width:18px; text-align:center;">1</span>
+          <button type="button" id="btnQuickPlus" style="background:none; border:none; font-size:16px; font-weight:700; cursor:pointer;">+</button>
+        </div>
+      </div>
+
+      <!-- Total -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <span style="font-size: 16px; font-weight: 800; color: #141418;">Total</span>
+        <span id="quickTotalVal" style="font-size: 19px; font-weight: 800; color: #141418;">125.000</span>
+      </div>
+
+      <!-- Modal Action Buttons -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        <button type="button" id="btnCloseQuickAdd" style="padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; color: #141418; font-size: 13px; font-weight: 700; cursor: pointer;">Batal</button>
+        <button type="button" id="btnSaveQuickAdd" style="padding: 10px; border-radius: 8px; border: none; background: #374f7c; color: #ffffff; font-size: 13px; font-weight: 700; cursor: pointer;">Tambahkan</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let activeQuickProd = null;
+    let activeQuickQty = 1;
+    let activeQuickPrice = 18500;
+
+    window.openQuickAddModal = function(name, displayPrice, rawPrice, imgSrc, id) {
+      activeQuickProd = { id, name, displayPrice, rawPrice, imgSrc };
+      activeQuickQty = 1;
+      activeQuickPrice = rawPrice || 18500;
+
+      document.getElementById('modalTitle').textContent = name;
+      document.getElementById('modalPrice').textContent = displayPrice;
+      document.getElementById('modalThumb').src = imgSrc;
+      document.getElementById('quickQtyVal').textContent = '1';
+      document.getElementById('quickTotalVal').textContent = (activeQuickPrice).toLocaleString('id-ID');
+
+      const modal = document.getElementById('quickAddCartModal');
+      modal.style.display = 'flex';
+    };
+
+    document.getElementById('btnCloseQuickAdd')?.addEventListener('click', () => {
+      document.getElementById('quickAddCartModal').style.display = 'none';
+    });
+
+    document.getElementById('btnQuickMinus')?.addEventListener('click', () => {
+      if (activeQuickQty > 1) {
+        activeQuickQty--;
+        document.getElementById('quickQtyVal').textContent = activeQuickQty;
+        document.getElementById('quickTotalVal').textContent = (activeQuickPrice * activeQuickQty).toLocaleString('id-ID');
+      }
+    });
+
+    document.getElementById('btnQuickPlus')?.addEventListener('click', () => {
+      activeQuickQty++;
+      document.getElementById('quickQtyVal').textContent = activeQuickQty;
+      document.getElementById('quickTotalVal').textContent = (activeQuickPrice * activeQuickQty).toLocaleString('id-ID');
+    });
+
+    document.getElementById('btnSaveQuickAdd')?.addEventListener('click', () => {
+      if (!activeQuickProd) return;
+      try {
+        const raw = localStorage.getItem('maybeads_cart');
+        const cart = raw ? JSON.parse(raw) : [];
+        cart.push({
+          id: activeQuickProd.id,
+          name: activeQuickProd.name,
+          color: 'XL, Merah',
+          qty: activeQuickQty,
+          price: activeQuickProd.displayPrice,
+          rawPrice: activeQuickPrice,
+          image: activeQuickProd.imgSrc,
+          checked: true,
+          addedAt: Date.now()
+        });
+        localStorage.setItem('maybeads_cart', JSON.stringify(cart));
+        const badge = document.getElementById('cartCountBadge');
+        if (badge) {
+          const totalQty = cart.reduce((a, b) => a + (b.qty || 1), 0);
+          badge.textContent = totalQty;
+          badge.classList.add('visible');
+        }
+      } catch(e) {}
+      document.getElementById('quickAddCartModal').style.display = 'none';
+      alert('Produk berhasil ditambahkan ke keranjang!');
+    });
+  </script>
 
   <!-- Hidden Form for Admin Delete -->
   <form id="deleteProductForm" method="POST" style="display: none;">
