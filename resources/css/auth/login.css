@@ -1,2 +1,301 @@
 /* Login — gaya utama ada di auth.css (dipakai bersama register) */
 @import './auth.css';
+
+/* ==========================================================================
+   Maybeads — Fullscreen Login Layout
+   ========================================================================== */
+html, body.fullscreen-auth {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+body.fullscreen-auth nav.nav {
+  display: none !important;
+}
+
+/* Halaman Auth Fullscreen */
+body.fullscreen-auth .auth-page {
+  min-height: 100vh !important;
+  height: 100vh !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: stretch !important;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+body.fullscreen-auth .auth-card {
+  width: 100vw !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  max-width: 100vw !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  background: #ffffff !important;
+  overflow: hidden !important;
+  opacity: 1;
+}
+
+/* Kolom Form */
+body.fullscreen-auth .auth-form {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  padding: 32px clamp(24px, 5vw, 64px) !important;
+  background: #ffffff !important;
+  overflow-y: auto !important;
+}
+
+.auth-top-bar {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: auto;
+  padding-bottom: 12px;
+}
+
+.auth-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #64748b;
+  text-decoration: none;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.auth-back-btn:hover {
+  color: #1e293b;
+  transform: translateX(-3px);
+}
+
+.auth-back-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.2;
+}
+
+/* Central Form Container */
+body.fullscreen-auth .auth-inner {
+  width: 100% !important;
+  max-width: 380px !important;
+  margin: auto 0 !important;
+  padding: 16px 0 !important;
+  text-align: center;
+}
+
+body.fullscreen-auth .auth-brand {
+  font-size: 1.55rem !important;
+  letter-spacing: -0.02em !important;
+  margin-bottom: 6px !important;
+}
+
+body.fullscreen-auth .auth-title {
+  font-size: clamp(1.6rem, 2.3vw, 1.95rem) !important;
+  margin-top: 4px !important;
+  font-weight: 800 !important;
+}
+
+body.fullscreen-auth .auth-sub {
+  font-size: 0.82rem !important;
+  margin-top: 6px !important;
+  color: #64748b !important;
+}
+
+body.fullscreen-auth .auth-fields {
+  margin-top: 24px !important;
+  gap: 15px !important;
+}
+
+body.fullscreen-auth .f label {
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
+  margin-bottom: 6px !important;
+}
+
+body.fullscreen-auth .inp {
+  height: 44px !important;
+  border-radius: 9px !important;
+  border: 1px solid #cbd5e1 !important;
+  background: #f8fafc !important;
+  transition: all 0.2s ease !important;
+}
+
+body.fullscreen-auth .inp:focus-within {
+  background: #ffffff !important;
+  border-color: #23477d !important;
+  box-shadow: 0 0 0 3px rgba(35, 71, 125, 0.12) !important;
+}
+
+body.fullscreen-auth .inp input {
+  font-size: 0.88rem !important;
+}
+
+body.fullscreen-auth .submit {
+  height: 44px !important;
+  border-radius: 9px !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  background: #1a2232 !important;
+  color: #ffffff !important;
+  transition: all 0.2s ease !important;
+  margin-top: 10px !important;
+}
+
+body.fullscreen-auth .submit:hover {
+  background: #0f172a !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.25) !important;
+}
+
+body.fullscreen-auth .google {
+  height: 44px !important;
+  border-radius: 9px !important;
+  font-size: 0.86rem !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #ffffff !important;
+  transition: all 0.2s ease !important;
+}
+
+body.fullscreen-auth .google:hover {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+
+body.fullscreen-auth .auth-foot {
+  margin-top: auto !important;
+  padding-top: 20px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 12px !important;
+  list-style: none !important;
+  font-size: 0.74rem !important;
+  color: #94a3b8 !important;
+}
+
+body.fullscreen-auth .auth-foot a {
+  color: #94a3b8 !important;
+  text-decoration: none !important;
+  transition: color 0.2s ease !important;
+}
+
+body.fullscreen-auth .auth-foot a:hover {
+  color: #334155 !important;
+}
+
+/* Kolom Ilustrasi Kanan Fullscreen */
+body.fullscreen-auth .auth-art {
+  position: relative !important;
+  width: 100% !important;
+  height: 100vh !important;
+  border-left: 1px solid #f1f5f9 !important;
+  overflow: hidden !important;
+  background: #1a2232 !important;
+}
+
+body.fullscreen-auth .auth-art img {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  transform: scale(1.02) !important;
+  transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+body.fullscreen-auth .auth-art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(26, 34, 50, 0.15) 0%, rgba(26, 34, 50, 0.65) 100%);
+  pointer-events: none;
+}
+
+.auth-art-overlay {
+  position: absolute;
+  bottom: 48px;
+  left: 48px;
+  right: 48px;
+  z-index: 2;
+  color: #ffffff;
+  pointer-events: none;
+}
+
+.auth-art-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  color: #ffffff;
+}
+
+.auth-art-title {
+  font-family: var(--f-logo);
+  font-size: clamp(1.4rem, 2.2vw, 1.85rem);
+  font-weight: 800;
+  line-height: 1.25;
+  color: #ffffff;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+.auth-art-desc {
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin-top: 8px;
+  line-height: 1.5;
+  max-width: 460px;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsif Layar Kecil */
+@media (max-width: 900px) {
+  html, body.fullscreen-auth {
+    overflow-y: auto !important;
+    height: auto !important;
+  }
+  body.fullscreen-auth .auth-page {
+    height: auto !important;
+    min-height: 100vh !important;
+  }
+  body.fullscreen-auth .auth-card {
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+    min-height: 100vh !important;
+  }
+  body.fullscreen-auth .auth-art {
+    display: none !important;
+  }
+  body.fullscreen-auth .auth-form {
+    height: auto !important;
+    min-height: 100vh !important;
+    padding: 24px 20px !important;
+  }
+}

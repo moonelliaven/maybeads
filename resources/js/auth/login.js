@@ -28,12 +28,12 @@ import { animate, stagger, inView } from 'motion';
     var easeBounce = [0.34, 1.56, 0.64, 1];
 
     if (!reduce) {
-      /* Auth card entrance — scale + fade from bottom */
+      /* Auth card entrance — clean fade */
       var authCard = $('.auth-card');
       if (authCard) {
         animate(authCard, 
-          { opacity: [0, 1], y: [40, 0], scale: [0.96, 1] },
-          { duration: 0.9, ease: easeOut, delay: 0.1 }
+          { opacity: [0, 1] },
+          { duration: 0.6, ease: easeOut }
         );
       }
 

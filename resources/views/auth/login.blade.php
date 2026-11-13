@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>Maybeads</title>
+  <title>Masuk — Maybeads</title>
   <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}">
   <meta name="description" content="Masuk ke akun Maybeads untuk melanjutkan belanja aksesoris Y2K favoritmu.">
 
@@ -14,16 +14,24 @@
 
   @vite(['resources/css/lenis.css', 'resources/css/auth/login.css'])
 </head>
-<body>
-
-  <!-- Navigation (sama dengan landing page) -->
-  @include('partials.nav')
+<body class="fullscreen-auth">
 
   <main class="auth-page">
     <section class="auth-card">
 
-      <!-- Kolom form -->
+      <!-- Kolom form kiri -->
       <div class="auth-form">
+        <!-- Top bar tombol kembali -->
+        <div class="auth-top-bar">
+          <a class="auth-back-btn" href="{{ url('/') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Kembali ke Beranda
+          </a>
+        </div>
+
         <div class="auth-inner">
           <a class="auth-brand" href="{{ url('/') }}">Maybead<span>.</span>s</a>
           <h1 class="auth-title">Selamat Datang Kembali!</h1>
@@ -82,18 +90,25 @@
           </a>
 
           <p class="alt">Belum punya akun? <a href="{{ route('register') }}">Daftar</a></p>
-
-          <ul class="auth-foot">
-            <li><a href="{{ url('/') }}">Beranda</a></li>
-            <li><a href="#">Ketentuan</a></li>
-            <li><a href="#">Privasi</a></li>
-          </ul>
         </div>
+
+        <ul class="auth-foot">
+          <li><a href="{{ url('/') }}">Beranda</a></li>
+          <li>&bull;</li>
+          <li><a href="#">Ketentuan Layanan</a></li>
+          <li>&bull;</li>
+          <li><a href="#">Kebijakan Privasi</a></li>
+        </ul>
       </div>
 
-      <!-- Kolom ilustrasi -->
+      <!-- Kolom ilustrasi kanan fullscreen -->
       <div class="auth-art" aria-hidden="true">
         <img src="{{ asset('images/auth/auth-illustration.jpg') }}" alt="" loading="eager">
+        <div class="auth-art-overlay">
+          <div class="auth-art-badge">Maybeads Y2K Aesthetic</div>
+          <h2 class="auth-art-title">Ekspresikan Gayamu Tanpa Batas</h2>
+          <p class="auth-art-desc">Koleksi aksesoris futuristik, streetwear, dan nostalgia 2000-an yang otentik untuk melengkapi penampilanmu setiap hari.</p>
+        </div>
       </div>
     </section>
   </main>
