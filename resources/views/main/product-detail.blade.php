@@ -2,7 +2,18 @@
   use App\Models\Category;
   use App\Models\Product;
 
-  $mainImg = asset('images/products/sample-hub.jpg');
+  $fallbacks = [
+      'prod-hairclip.jpg',
+      'prod-ring.jpg',
+      'prod-butterfly.jpg',
+      'prod-keychain.jpg',
+      'hero-main.jpg',
+      'hero-cross.jpg',
+      'hero-butterfly.jpg',
+      'keychain-01.jpg',
+  ];
+
+  $mainImg = null;
   if ($product->image && file_exists(storage_path('app/public/product/' . $product->image))) {
       $mainImg = asset('storage/product/' . $product->image);
   } elseif ($product->image && file_exists(public_path('images/products/' . $product->image))) {
@@ -10,11 +21,13 @@
   } elseif ($product->image && file_exists(public_path('images/landing/' . $product->image))) {
       $mainImg = asset('images/landing/' . $product->image);
   } else {
-      $mainImg = asset('images/landing/banner-accessories.jpg');
+      $mainImg = asset('images/landing/' . $fallbacks[$product->id % count($fallbacks)]);
   }
 
   $prodName = $product->product_name ?: 'Set Kalung dan Anting Pink';
-  $prodPrice = 'Rp ' . number_format($product->price ?: 89000, 0, ',', '.');
+  $rawPrice = (float) $product->price < 1000 ? (float) $product->price * 1000 : (float) $product->price;
+  if ($rawPrice <= 0) $rawPrice = 89000;
+  $prodPrice = 'Rp ' . number_format($rawPrice, 0, ',', '.');
   $categoryName = $product->category ? $product->category->category_name : 'Aksesoris';
 @endphp
 <!DOCTYPE html>
@@ -955,24 +968,61 @@
     <div style="margin-top: 32px;">
       <h3 class="related-title">Produk Terkait Lainnya</h3>
       <div class="related-grid">
-        @for($i = 1; $i <= 4; $i++)
-          <div class="rel-card">
-            <span class="rel-badge">BEST SELLER #01</span>
-            <div class="rel-img-box"></div>
-            <div class="rel-cat-text">Kategori</div>
-            <div class="rel-name-text">Nama Produk Yang Keren</div>
-            <div class="rel-price-row">
-              <span class="rel-price-bold">Rp18,500</span>
-              <span class="rel-price-strike">Rp 20.000</span>
+        @if(isset($relatedProducts) && $relatedProducts->count() > 0)
+          @foreach($relatedProducts as $rIdx => $rProduct)
+            @php
+              $rRawPrice = (float)$rProduct->price < 1000 ? (float)$rProduct->price * 1000 : (float)$rProduct->price;
+              if ($rRawPrice <= 0) $rRawPrice = 18500;
+              $rPriceFmt = number_format($rRawPrice, 0, ',', '.');
+              $rStrikeFmt = number_format($rRawPrice * 1.15, 0, ',', '.');
+              $rImg = asset('images/landing/' . $fallbacks[($rIdx + 2) % count($fallbacks)]);
+              if ($rProduct->image && file_exists(storage_path('app/public/product/' . $rProduct->image))) {
+                  $rImg = asset('storage/product/' . $rProduct->image);
+              } elseif ($rProduct->image && file_exists(public_path('images/products/' . $rProduct->image))) {
+                  $rImg = asset('images/products/' . $rProduct->image);
+              } elseif ($rProduct->image && file_exists(public_path('images/landing/' . $rProduct->image))) {
+                  $rImg = asset('images/landing/' . $rProduct->image);
+              }
+            @endphp
+            <div class="rel-card">
+              <span class="rel-badge">BEST SELLER #{{ str_pad($rIdx + 1, 2, '0', STR_PAD_LEFT) }}</span>
+              <div class="rel-img-box">
+                <img src="{{ $rImg }}" alt="{{ $rProduct->product_name }}" style="width:100%;height:100%;object-fit:cover;">
+              </div>
+              <div class="rel-cat-text">{{ $rProduct->category ? $rProduct->category->category_name : 'Kategori' }}</div>
+              <div class="rel-name-text">{{ $rProduct->product_name }}</div>
+              <div class="rel-price-row">
+                <span class="rel-price-bold">Rp{{ $rPriceFmt }}</span>
+                <span class="rel-price-strike">Rp {{ $rStrikeFmt }}</span>
+              </div>
+              <div class="rel-actions-row">
+                <a href="{{ route('product.detail', $rProduct->id) }}" class="btn-rel-detail">Detail</a>
+                <button type="button" class="btn-rel-cart" onclick="openQuickModal('{{ addslashes($rProduct->product_name) }}', '{{ $rPriceFmt }}', {{ $rRawPrice }})">
+                  <svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2;"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                </button>
+              </div>
             </div>
-            <div class="rel-actions-row">
-              <a href="{{ route('product.detail', $product->id) }}" class="btn-rel-detail">Detail</a>
-              <button type="button" class="btn-rel-cart" onclick="openQuickModal('Nama Produk Yang Keren', '18.500', 18500)">
-                <svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2;"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-              </button>
+          @endforeach
+        @else
+          @for($i = 1; $i <= 4; $i++)
+            <div class="rel-card">
+              <span class="rel-badge">BEST SELLER #0{{ $i }}</span>
+              <div class="rel-img-box"></div>
+              <div class="rel-cat-text">Kategori</div>
+              <div class="rel-name-text">Nama Produk Yang Keren</div>
+              <div class="rel-price-row">
+                <span class="rel-price-bold">Rp18,500</span>
+                <span class="rel-price-strike">Rp 20.000</span>
+              </div>
+              <div class="rel-actions-row">
+                <a href="{{ route('product.detail', $product->id) }}" class="btn-rel-detail">Detail</a>
+                <button type="button" class="btn-rel-cart" onclick="openQuickModal('Nama Produk Yang Keren', '18.500', 18500)">
+                  <svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2;"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                </button>
+              </div>
             </div>
-          </div>
-        @endfor
+          @endfor
+        @endif
       </div>
     </div>
 
