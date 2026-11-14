@@ -1,5 +1,6 @@
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
+import '../../css/common/sweetalert-theme.css';
 
 // Expose SweetAlert globally
 window.Swal = Swal;
@@ -311,17 +312,17 @@ window.Swal = Swal;
         e.preventDefault();
         if (typeof Swal !== 'undefined') {
           Swal.fire({
-            title: 'Konfirmasi Logout',
-            text: 'Apakah Anda yakin ingin keluar dari sistem admin?',
-            icon: 'question',
+            title: 'Keluar dari Akun Admin',
+            text: 'Apakah Anda yakin ingin keluar dari Admin Dashboard Maybeads?',
+            icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#ef4444',
-            cancelButtonColor: '#64748b',
-            confirmButtonText: 'Ya, Logout',
+            confirmButtonColor: '#d9383a',
+            cancelButtonColor: '#5c5656',
+            confirmButtonText: 'Ya, Keluar',
             cancelButtonText: 'Kembali',
             reverseButtons: true,
             customClass: {
-              popup: 'admin-swal-popup'
+              popup: 'maybeads-swal-popup'
             }
           }).then(function (result) {
             if (result.isConfirmed) {
@@ -329,7 +330,7 @@ window.Swal = Swal;
             }
           });
         } else {
-          if (confirm('Apakah Anda yakin ingin keluar dari sistem admin? Pilih Batal untuk Kembali.')) {
+          if (confirm('Apakah Anda yakin ingin keluar dari Admin Dashboard? Pilih Batal untuk Kembali.')) {
             form.submit();
           }
         }

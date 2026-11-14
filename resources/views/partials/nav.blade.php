@@ -44,3 +44,7 @@
     </div>
   </div>
 </nav>
+
+@auth
+  @include('partials.user-logout-modal')
+@endauth

@@ -12,9 +12,12 @@ return new class extends Migration
             $table->foreignId('category_id')->constrained('categories');
             $table->string('product_name', 100)->unique();
             $table->string('image')->nullable();
+            $table->json('secondary_images')->nullable();
+            $table->json('secondary_categories')->nullable();
             $table->text('description')->nullable();
             $table->decimal('price', 12, 2);
             $table->integer('stock')->default(0);
+            $table->unsignedInteger('order_count')->default(0);
             $table->enum('status', ['aktif', 'tidak aktif'])->default('aktif');
             $table->timestamp('created_at')->useCurrent();
         });

@@ -16,8 +16,13 @@ return new class extends Migration
             $table->foreignId('user_id')
                 ->constrained('users')
                 ->cascadeOnDelete();
+            $table->foreignId('product_id')
+                ->nullable()
+                ->constrained('products')
+                ->nullOnDelete();
             $table->text('message');
             $table->tinyInteger('rating');
+            $table->boolean('is_store_testimonial')->default(false); // true = testimoni untuk toko, false = untuk produk spesifik
             $table->timestamps();
         });
     }

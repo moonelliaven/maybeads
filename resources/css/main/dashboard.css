@@ -1,3 +1,5 @@
+@import '../common/sweetalert-theme.css';
+
 /* ==========================================================================
    Main Product Catalog Stylesheet - Maybeads
    Pixel-perfect match to the user's provided design mockup
@@ -854,6 +856,40 @@ input {
   border-radius: 9999px;
   letter-spacing: 0.02em;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Badge Top 3 (Best Seller Resmi) */
+.card-badge-bestseller.badge-top3 {
+  background: #0f172a;
+  color: #f59e0b;
+  border: 1.5px solid #f59e0b;
+  font-weight: 800;
+  font-size: 11px;
+  box-shadow: 0 3px 10px rgba(245, 158, 11, 0.3);
+  letter-spacing: 0.03em;
+}
+
+/* Badge Top 10 */
+.card-badge-bestseller.badge-top10 {
+  background: #ffffff;
+  color: #2563eb;
+  border: 1.5px solid #93c5fd;
+  font-weight: 700;
+  font-size: 10.5px;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.12);
+}
+
+.btn-card-cart-icon.guest-disabled {
+  opacity: 0.75;
+  color: #64748b;
+  text-decoration: none;
+}
+.btn-card-cart-icon.guest-disabled:hover {
+  background: #f1f5f9;
+  color: #0f172a;
 }
 
 .card-product-img {
@@ -1892,4 +1928,126 @@ input {
     gap: 10px;
     text-align: center;
   }
+}
+
+/* ==========================================================================
+   Login Required Prompt Modal (Session Check Popup)
+   ========================================================================== */
+.login-prompt-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: promptFadeIn 0.2s ease-out;
+}
+
+.login-prompt-backdrop[hidden] {
+  display: none !important;
+}
+
+.login-prompt-box {
+  background: #ffffff;
+  border-radius: 16px;
+  max-width: 440px;
+  width: 100%;
+  padding: 36px 30px 30px;
+  text-align: center;
+  box-shadow: 0 25px 40px -10px rgba(0, 0, 0, 0.2);
+  animation: promptScaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+.login-prompt-icon-wrap {
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: transparent;
+  color: #fcaa30;
+  border: 3.5px solid #fcaa30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.login-prompt-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 10px;
+  line-height: 1.3;
+}
+
+.login-prompt-desc {
+  font-size: 15px;
+  color: #334155;
+  margin: 0 0 26px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.login-prompt-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.btn-prompt-cancel {
+  background: #5c5656;
+  color: #ffffff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  min-width: 105px;
+}
+
+.btn-prompt-cancel:hover {
+  background: #484343;
+  color: #ffffff;
+}
+
+.btn-prompt-login {
+  background: #244173;
+  color: #ffffff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  min-width: 105px;
+}
+
+.btn-prompt-login:hover {
+  background: #1b3259;
+  color: #ffffff;
+}
+
+@keyframes promptFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes promptScaleIn {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }

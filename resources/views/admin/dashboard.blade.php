@@ -120,7 +120,7 @@
           <div>
             <div class="breadcrumb-label">Admin Dashboard</div>
             <h1 class="page-title">Dashboard</h1>
-            <p class="welcome-text"><span data-greeting>Selamat Datang</span>, {{ Auth::user()->name ? explode(' ', trim(Auth::user()->name))[0] : 'Waiz' }}.</p>
+            <p class="welcome-text"><span data-greeting>Selamat Datang</span>, {{ Auth::user()?->name ? explode(' ', trim(Auth::user()->name))[0] : 'Waiz' }}.</p>
           </div>
           <div class="date-chip" aria-live="off">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

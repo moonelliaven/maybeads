@@ -4,6 +4,9 @@
 
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
+import '../../css/common/sweetalert-theme.css';
+
+window.Swal = Swal;
 
 'use strict';
 
@@ -151,10 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
   /* Filter Users */
   function getFilteredUsers() {
     return rawUsers.filter(user => {
-      // Tab filter
-      if (activeTab === 'selesai' && user.role.toLowerCase() !== 'user') return false;
-      if (activeTab === 'gagal' && user.role.toLowerCase() !== 'admin') return false;
-
       // Search filter
       if (searchQuery.trim() !== '') {
         const q = searchQuery.toLowerCase().trim();
@@ -225,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <td class="col-role">${escapeHtml(user.role || 'User')}</td>
             <td class="col-action">
               <div class="action-btns">
-                <a href="/admin/user/detail/${user.id}" class="btn-detail-struk">Detail Struk</a>
+                <a href="/admin/user/detail/${user.id}" class="btn-detail-struk">Detail</a>
                 <button type="button" class="btn-delete-icon" data-delete-id="${user.id}" data-name="${escapeHtml(user.name)}" title="Hapus User">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="3 6 5 6 21 6"></polyline>
@@ -402,15 +401,18 @@ document.addEventListener('DOMContentLoaded', () => {
       const userName = deleteBtn.dataset.name || 'User ini';
 
       Swal.fire({
-        title: 'Hapus User?',
-        text: `Apakah Anda yakin ingin menghapus user "${userName}"? Tindakan ini tidak dapat dibatalkan.`,
+        title: 'Hapus User',
+        text: 'User yang dihapus tidak dapat dikembalikan.',
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#dc2626',
-        cancelButtonColor: '#64748b',
-        confirmButtonText: 'Ya, Hapus!',
-        cancelButtonText: 'Batal',
+        confirmButtonColor: '#d9383a',
+        cancelButtonColor: '#5c5656',
+        confirmButtonText: 'Ya, Hapus',
+        cancelButtonText: 'Kembali',
         reverseButtons: true,
+        customClass: {
+          popup: 'maybeads-swal-popup'
+        }
       }).then(result => {
         if (result.isConfirmed) {
           // Submit delete form

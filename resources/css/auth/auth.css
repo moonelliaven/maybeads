@@ -1,3 +1,5 @@
+@import '../common/sweetalert-theme.css';
+
 /* ==========================================================================
    Maybeads — Auth (Login & Register)
    Header mengikuti landing page, konten berupa kartu split (form | ilustrasi)
@@ -397,32 +399,8 @@ svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; 
 }
 
 /* --------------------------------------------------------------------------
-   SweetAlert2
+   SweetAlert2 applied from top import
    -------------------------------------------------------------------------- */
-div:where(.swal2-container) .y2k-swal-popup {
-  border-radius: 14px !important;
-  font-family: var(--f-body) !important;
-  border: 1px solid rgba(20, 20, 24, 0.55) !important;
-  box-shadow: 0 30px 60px -30px rgba(20, 20, 24, 0.45) !important;
-  padding: 24px 20px 28px !important;
-}
-div:where(.swal2-container) .swal2-title {
-  font-family: var(--f-logo) !important;
-  font-weight: 900 !important;
-  color: var(--ink) !important;
-}
-div:where(.swal2-container) .swal2-html-container {
-  font-family: var(--f-body) !important;
-  color: var(--muted) !important;
-  font-size: 0.95rem !important;
-}
-div:where(.swal2-container) .swal2-confirm {
-  border-radius: 8px !important;
-  padding: 11px 26px !important;
-  font-family: var(--f-body) !important;
-  font-weight: 500 !important;
-}
-div:where(.swal2-container) .swal2-timer-progress-bar { background: var(--navy) !important; }
 
 /* --------------------------------------------------------------------------
    Motion Graph Animations — Auth Floating Particles

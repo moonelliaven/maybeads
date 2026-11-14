@@ -2,6 +2,12 @@
    Product Detail JS - Maybeads
    ========================================================================== */
 
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
+import '../../css/common/sweetalert-theme.css';
+
+window.Swal = Swal;
+
 'use strict';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -85,6 +91,70 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* 4. Cart Storage & Helpers */
   const cartCountBadge = document.getElementById('cartCountBadge');
+  const loginPromptModal = document.getElementById('loginPromptModal');
+  const btnCancelLoginPrompt = document.getElementById('btnCancelLoginPrompt');
+
+  function openLoginPromptModal() {
+    if (typeof Swal !== 'undefined') {
+      Swal.fire({
+        title: 'Silahkan Login Terlebih Dahulu',
+        text: 'Anda perlu masuk ke akun untuk dapat menambahkan produk ke keranjang belanja.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#244173',
+        cancelButtonColor: '#5c5656',
+        confirmButtonText: 'Login',
+        cancelButtonText: 'Kembali',
+        reverseButtons: true,
+        customClass: {
+          popup: 'maybeads-swal-popup',
+          confirmButton: 'swal-btn-navy'
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = '/login';
+        }
+      });
+      return;
+    }
+
+    if (loginPromptModal) {
+      loginPromptModal.removeAttribute('hidden');
+      document.body.style.overflow = 'hidden';
+    } else {
+      if (confirm('Silahkan login terlebih dahulu\n\nKlik OK untuk Login, atau Cancel untuk Kembali.')) {
+        window.location.href = '/login';
+      }
+    }
+  }
+
+  function closeLoginPromptModal() {
+    if (loginPromptModal) {
+      loginPromptModal.setAttribute('hidden', '');
+      document.body.style.overflow = '';
+    }
+  }
+
+  if (btnCancelLoginPrompt) {
+    btnCancelLoginPrompt.addEventListener('click', closeLoginPromptModal);
+  }
+
+  if (loginPromptModal) {
+    loginPromptModal.addEventListener('click', (e) => {
+      if (e.target === loginPromptModal) {
+        closeLoginPromptModal();
+      }
+    });
+  }
+
+  // Trigger pop up login untuk semua elemen berkelas .btn-trigger-login-prompt
+  document.querySelectorAll('.btn-trigger-login-prompt').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openLoginPromptModal();
+    });
+  });
 
   function getLocalCart() {
     try {
@@ -110,6 +180,11 @@ document.addEventListener('DOMContentLoaded', () => {
   updateCartCountBadge();
 
   function addCurrentProductToCart() {
+    if (window.isUserLoggedIn === false) {
+      openLoginPromptModal();
+      return false;
+    }
+
     const detailBox = document.getElementById('productDetailStore');
     if (!detailBox) return;
 
@@ -137,6 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
         image: data.image,
         color: variantStr,
         qty: qty,
+        checked: true,
         addedAt: Date.now()
       });
     }
@@ -148,6 +224,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnAddToCart = document.getElementById('btnAddToCartMain');
   if (btnAddToCart) {
     btnAddToCart.addEventListener('click', () => {
+      if (window.isUserLoggedIn === false) {
+        openLoginPromptModal();
+        return;
+      }
       addCurrentProductToCart();
 
       // UI Feedback on button
@@ -171,6 +251,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnBuyNow = document.getElementById('btnBuyNow');
   if (btnBuyNow) {
     btnBuyNow.addEventListener('click', () => {
+      if (window.isUserLoggedIn === false) {
+        openLoginPromptModal();
+        return;
+      }
       addCurrentProductToCart();
       window.location.href = '/cart';
     });
@@ -180,6 +264,10 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.btn-related-add-cart').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
+      if (window.isUserLoggedIn === false) {
+        openLoginPromptModal();
+        return;
+      }
       const card = btn.closest('.product-card-item');
       if (!card) return;
       const data = card.dataset;
@@ -200,6 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
           image: data.image,
           color: data.color || 'Biru, Kuning',
           qty: 1,
+          checked: true,
           addedAt: Date.now()
         });
       }
@@ -211,6 +300,13 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.textContent = '+ Keranjang';
       }, 1200);
     });
+  });
+
+  /* 8. ESC Key Listener */
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeLoginPromptModal();
+    }
   });
 
 });

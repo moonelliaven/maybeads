@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\ProductVariant;
 use App\Models\Cart;
+use App\Models\Testimonial;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,7 +16,7 @@ class MainController extends Controller
     {
         $perPage = 12; // 4 columns x 3 rows = 12 products per page
 
-        $query = Product::with(['category', 'variants'])
+        $query = Product::with(['category', 'variants', 'testimonials.user'])
             ->where('status', 'aktif');
 
         // Search: matches product ID, name, category, variants, description
@@ -80,7 +81,7 @@ class MainController extends Controller
         }
 
         // Sort
-        $sort = $request->input('sort', 'terbaru');
+        $sort = $request->input('sort', 'terlaris');
         switch ($sort) {
             case 'terlama':
                 $query->oldest('id');
@@ -97,8 +98,11 @@ class MainController extends Controller
             case 'nama_za':
                 $query->orderBy('product_name', 'desc');
                 break;
-            default: // terbaru
+            case 'terbaru':
                 $query->latest('id');
+                break;
+            default: // terlaris (default)
+                $query->orderByDesc('order_count')->latest('id');
                 break;
         }
 
@@ -124,12 +128,22 @@ class MainController extends Controller
 
         $totalProducts = Product::where('status', 'aktif')->count();
 
-        // Cart count for current user
+        // Hitung peringkat penjualan otomatis (Best Seller Top 3, Top 10)
+        $rankedProductIds = Product::where('status', 'aktif')
+            ->orderByDesc('order_count')
+            ->orderBy('id')
+            ->pluck('id')
+            ->toArray();
+
+        $rankMap = [];
+        foreach ($rankedProductIds as $idx => $pId) {
+            $rankMap[$pId] = $idx + 1; // 1, 2, 3, dst
+        }
+
+        // Cart count for current user (hanya jika logged in)
         $cartCount = 0;
         if (Auth::check()) {
             $cartCount = Cart::where('user_id', Auth::id())->sum('quantity');
-        } else {
-            $cartCount = count(session()->get('cart', []));
         }
 
         return view('main.dashboard', compact(
@@ -140,30 +154,62 @@ class MainController extends Controller
             'totalProducts',
             'sort',
             'search',
-            'cartCount'
+            'cartCount',
+            'rankMap'
         ));
     }
 
     public function cart(Request $request)
     {
-        $cartCount = 0;
-        if (Auth::check()) {
-            $cartCount = Cart::where('user_id', Auth::id())->sum('quantity');
-        } else {
-            $cartCount = count(session()->get('cart', []));
+        // Wajib user yang berada dalam session (login)
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('warning', 'Silakan login terlebih dahulu untuk mengakses keranjang.');
         }
 
-        return view('main.cart', compact('cartCount'));
+        $cartCount = Cart::where('user_id', Auth::id())->sum('quantity');
+        $cartItems = Cart::with('product.category')->where('user_id', Auth::id())->get();
+
+        return view('main.cart', compact('cartCount', 'cartItems'));
+    }
+
+    public function orderDetail(Request $request, $orderId = null)
+    {
+        // Wajib user login
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('warning', 'Silakan login terlebih dahulu untuk mengakses detail pesanan.');
+        }
+
+        $paymentMethods = class_exists(\App\Models\PaymentMethod::class) ? \App\Models\PaymentMethod::all() : collect();
+        $deliveryMethods = class_exists(\App\Models\DeliveryMethod::class) ? \App\Models\DeliveryMethod::all() : collect();
+        $cartCount = Cart::where('user_id', Auth::id())->sum('quantity');
+        $user = Auth::user();
+
+        if (view()->exists('main.order-progress.order-detail')) {
+            return view('main.order-progress.order-detail', compact(
+                'orderId',
+                'paymentMethods',
+                'deliveryMethods',
+                'cartCount',
+                'user'
+            ));
+        }
+
+        return view('main.order-detail', compact('orderId', 'cartCount', 'user'));
     }
 
     public function productDetail($id)
     {
-        $product = Product::with(['category', 'variants'])->find($id);
-        if (!$product) {
-            $product = Product::with(['category', 'variants'])->firstOrFail();
-        }
+        $product = Product::with(['category', 'variants', 'testimonials.user'])->findOrFail($id);
 
-        $relatedProducts = Product::with(['category', 'variants'])
+        // Testimonial khusus untuk produk ini
+        $testimonials = $product->testimonials()
+            ->with('user')
+            ->where('is_store_testimonial', false)
+            ->latest()
+            ->get();
+
+        // Related products in the same category
+        $relatedProducts = Product::with(['category', 'variants', 'testimonials'])
             ->where('status', 'aktif')
             ->where('id', '!=', $product->id)
             ->where('category_id', $product->category_id)
@@ -171,18 +217,20 @@ class MainController extends Controller
             ->get();
 
         if ($relatedProducts->isEmpty()) {
-            $relatedProducts = Product::with(['category', 'variants'])
+            $relatedProducts = Product::with(['category', 'variants', 'testimonials'])
                 ->where('status', 'aktif')
                 ->where('id', '!=', $product->id)
                 ->take(4)
                 ->get();
         }
 
-        $cartCount = Auth::check()
-            ? Cart::where('user_id', Auth::id())->sum('quantity')
-            : count(session()->get('cart', []));
+        // Cart count
+        $cartCount = 0;
+        if (Auth::check()) {
+            $cartCount = Cart::where('user_id', Auth::id())->sum('quantity');
+        }
 
-        return view('main.product-detail', compact('product', 'relatedProducts', 'cartCount'));
+        return view('main.product-detail', compact('product', 'relatedProducts', 'cartCount', 'testimonials'));
     }
 
     public function checkout(Request $request)
@@ -320,9 +368,4 @@ class MainController extends Controller
 
         return view('main.orders', compact('orders', 'cartCount'));
     }
-
-    public function orderDetail($orderId = null)
-    {
-        return view('main.order-detail', compact('orderId'));
-    }
-}
+};

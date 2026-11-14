@@ -4,6 +4,9 @@
 
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
+import '../../css/common/sweetalert-theme.css';
+
+window.Swal = Swal;
 
 'use strict';
 
@@ -484,17 +487,17 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.addEventListener('click', () => {
         const id = btn.dataset.deleteId;
         Swal.fire({
-          title: 'Hapus Produk?',
+          title: 'Hapus Produk',
           text: 'Produk yang dihapus tidak dapat dikembalikan.',
           icon: 'warning',
           showCancelButton: true,
-          confirmButtonColor: '#ef4444',
-          cancelButtonColor: '#64748b',
+          confirmButtonColor: '#d9383a',
+          cancelButtonColor: '#5c5656',
           confirmButtonText: 'Ya, Hapus',
-          cancelButtonText: 'Batal',
+          cancelButtonText: 'Kembali',
           reverseButtons: true,
           customClass: {
-            popup: 'admin-swal-popup'
+            popup: 'maybeads-swal-popup'
           }
         }).then((result) => {
           if (result.isConfirmed) {
@@ -706,16 +709,16 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', function(e) {
       e.preventDefault();
       Swal.fire({
-        title: 'Konfirmasi Logout',
-        text: 'Apakah Anda yakin ingin keluar dari sistem admin?',
-        icon: 'question',
+        title: 'Keluar dari Akun Admin',
+        text: 'Apakah Anda yakin ingin keluar dari Admin Dashboard Maybeads?',
+        icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#64748b',
-        confirmButtonText: 'Ya, Logout',
+        confirmButtonColor: '#d9383a',
+        cancelButtonColor: '#5c5656',
+        confirmButtonText: 'Ya, Keluar',
         cancelButtonText: 'Kembali',
         reverseButtons: true,
-        customClass: { popup: 'admin-swal-popup' }
+        customClass: { popup: 'maybeads-swal-popup' }
       }).then(result => {
         if (result.isConfirmed) form.submit();
       });

@@ -55,6 +55,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   @vite(['resources/css/main/dashboard.css', 'resources/js/main/dashboard.js'])
+  <script>
+    window.isUserLoggedIn = {{ Auth::check() ? 'true' : 'false' }};
+  </script>
 </head>
 <body class="dashboard-page">
 
@@ -113,16 +116,27 @@
 
       <!-- Right: Keranjang and Akun buttons -->
       <div class="sub-nav-right">
-        <!-- Keranjang Button (Langsung ke Halaman Detail Keranjang) -->
-        <a href="{{ route('cart.index') }}" class="action-pill-btn" id="cartOpenBtn" title="Lihat Keranjang">
-          <svg class="pill-icon" viewBox="0 0 24 24">
-            <circle cx="9" cy="21" r="1"></circle>
-            <circle cx="20" cy="21" r="1"></circle>
-            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-          </svg>
-          <span>Keranjang</span>
-          <span class="cart-count-badge {{ ($cartCount ?? 0) > 0 ? 'visible' : '' }}" id="cartCountBadge">{{ $cartCount ?? 0 }}</span>
-        </a>
+        <!-- Keranjang Button -->
+        @auth
+          <a href="{{ route('cart.index') }}" class="action-pill-btn" id="cartOpenBtn" title="Lihat Keranjang">
+            <svg class="pill-icon" viewBox="0 0 24 24">
+              <circle cx="9" cy="21" r="1"></circle>
+              <circle cx="20" cy="21" r="1"></circle>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
+            <span>Keranjang</span>
+            <span class="cart-count-badge {{ ($cartCount ?? 0) > 0 ? 'visible' : '' }}" id="cartCountBadge">{{ $cartCount ?? 0 }}</span>
+          </a>
+        @else
+          <button type="button" class="action-pill-btn btn-trigger-login-prompt" title="Lihat Keranjang">
+            <svg class="pill-icon" viewBox="0 0 24 24">
+              <circle cx="9" cy="21" r="1"></circle>
+              <circle cx="20" cy="21" r="1"></circle>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
+            <span>Keranjang</span>
+          </button>
+        @endauth
 
         <!-- Akun Button with dropdown -->
         <div class="account-dropdown-wrapper">
@@ -306,7 +320,7 @@
         <div class="products-grid-wrapper" id="productsGridWrapper">
           @forelse($products as $index => $product)
             @php
-              $rawPrice = (float)$product->price < 1000 ? (float)$product->price * 1000 : (float)$product->price;
+              $rawPrice = (float)$product->price;
               $originalPrice = $rawPrice * 1.15;
               $formattedPrice = number_format($rawPrice, 0, ',', '.');
               $formattedOriginalPrice = 'Rp ' . number_format($originalPrice, 0, ',', '.');
@@ -315,6 +329,11 @@
               $categoryName = $product->category_name;
               $desc = $product->description ?: 'Set perhiasan elegan dengan hiasan orisinil berkualitas tinggi. Cocok digunakan untuk melengkapi penampilan sehari-hari.';
               $variantsData = $product->variants ? $product->variants->toArray() : [];
+
+              // Peringkat penjualan otomatis
+              $rank = $rankMap[$product->id] ?? 99;
+              $isTop3 = $rank <= 3;
+              $isTop10 = $rank > 3 && $rank <= 10;
             @endphp
 
             <article class="product-card-item"
@@ -328,9 +347,20 @@
                      data-desc="{{ $desc }}"
                      data-variants="{{ json_encode($variantsData) }}">
 
-              <!-- Image with Top-Left Best Seller Badge -->
+              <!-- Image with Top-Left Best Seller Badge (Top 3 & Top 10) -->
               <div class="card-media-wrap">
-                <span class="card-code-badge">BEST SELLER #{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</span>
+                @if(isset($isTop3) && $isTop3)
+                  <span class="card-badge-bestseller badge-top3" title="Best Seller Top 3 (Total Order: {{ $product->order_count }})">
+                    <svg viewBox="0 0 24 24" fill="currentColor" style="width:12px;height:12px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    BEST SELLER #{{ str_pad($rank ?? ($index + 1), 2, '0', STR_PAD_LEFT) }}
+                  </span>
+                @elseif(isset($isTop10) && $isTop10)
+                  <span class="card-badge-bestseller badge-top10" title="Top 10 Populer (Total Order: {{ $product->order_count }})">
+                    TOP 10 #{{ str_pad($rank ?? ($index + 1), 2, '0', STR_PAD_LEFT) }}
+                  </span>
+                @else
+                  <span class="card-code-badge">BEST SELLER #{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</span>
+                @endif
                 <img src="{{ $productImg }}"
                      alt="{{ $product->product_name }}"
                      class="card-product-img"
@@ -343,6 +373,17 @@
                 <h3 class="card-product-title" title="{{ $product->product_name }}">
                   {{ $product->product_name }}
                 </h3>
+
+                <!-- Rating & Reviews (Data Nyata Dari Testimonial) -->
+                @if(isset($product->avg_rating))
+                  <div class="card-rating-row">
+                    <svg class="rating-star-icon" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    <span class="rating-score">{{ number_format($product->avg_rating, 1, ',', '.') }}</span>
+                    <span class="rating-count">({{ $product->review_count > 0 ? $product->review_count . ' Review' : '0 Review' }})</span>
+                  </div>
+                @endif
 
                 <!-- Price Row -->
                 <div class="card-price-row">
@@ -357,16 +398,22 @@
                     Detail
                   </a>
 
-                  <button type="button"
-                          class="btn-card-cart-icon btn-open-cart-modal"
-                          onclick="openQuickAddModal('{{ addslashes($product->product_name) }}', 'Rp {{ $formattedPrice }}', {{ $rawPrice }}, '{{ $productImg }}', {{ $product->id }})"
-                          title="Tambah ke Keranjang">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">
-                      <circle cx="9" cy="21" r="1"></circle>
-                      <circle cx="20" cy="21" r="1"></circle>
-                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                    </svg>
-                  </button>
+                  @auth
+                    <button type="button"
+                            class="btn-card-cart-icon btn-open-cart-modal"
+                            data-action="open-cart-modal"
+                            title="Tambah ke Keranjang"
+                            aria-label="Tambah {{ $product->product_name }} ke keranjang">
+                      <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                    </button>
+                  @else
+                    <button type="button"
+                            class="btn-card-cart-icon btn-trigger-login-prompt"
+                            title="Tambah ke Keranjang"
+                            aria-label="Tambah {{ $product->product_name }} ke keranjang">
+                      <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                    </button>
+                  @endauth
                 </div>
               </div>
             </article>
@@ -733,6 +780,23 @@
       </div>
     </div>
   </div>
+
+  <!-- ========================================================================
+       MODAL 3: POP UP LOGIN DIPERLUKAN (Guest Restriction)
+       ======================================================================== -->
+  <div class="login-prompt-backdrop" id="loginPromptModal" role="dialog" aria-modal="true" aria-labelledby="loginPromptTitle" hidden>
+    <div class="login-prompt-box">
+      <div class="login-prompt-icon-wrap">!</div>
+      <h3 class="login-prompt-title" id="loginPromptTitle">Silahkan Login Terlebih Dahulu</h3>
+      <p class="login-prompt-desc">Anda perlu masuk ke akun untuk dapat menggunakan fitur ini.</p>
+      <div class="login-prompt-actions">
+        <button type="button" class="btn-prompt-cancel" id="btnCancelLoginPrompt">Kembali</button>
+        <a href="{{ route('login') }}" class="btn-prompt-login" id="btnProceedLogin">Login Sekarang</a>
+      </div>
+    </div>
+  </div>
+
+  @include('partials.user-logout-modal')
 
   <script>
     // Mencegah halaman ditampilkan dari memory cache (bfcache) jika user sudah logout

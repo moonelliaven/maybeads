@@ -123,31 +123,6 @@
         </div>
       </div>
 
-      {{-- Filter Row (Tabs & Date range) --}}
-      <div class="user-filter-row">
-        <div class="user-filter-left">
-          <span class="filter-label">Sortir:</span>
-          <div class="filter-tabs" role="tablist">
-            <button type="button" class="filter-tab active" data-tab="semua">Semua</button>
-            <button type="button" class="filter-tab" data-tab="selesai">Selesai</button>
-            <button type="button" class="filter-tab" data-tab="gagal">Gagal</button>
-          </div>
-        </div>
-
-        <div class="user-filter-right">
-          <span class="filter-label">Sortir:</span>
-          <div class="date-filter-box" title="Filter rentang tanggal">
-            <span>Sept, 28 2026 23.59 &nbsp;–&nbsp; Okt, 28 2026 23.59</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-          </div>
-        </div>
-      </div>
-
       {{-- ====== TABLE LAYOUT ====== --}}
       <div class="user-table-wrap">
         <table class="user-table" id="userTable">

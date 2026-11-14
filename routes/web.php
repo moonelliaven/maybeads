@@ -5,6 +5,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\MainController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\PosController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RegisterController;
@@ -27,28 +28,22 @@ Route::get('/', fn () => view('landing.home'))->name('home');
 Route::get('/contact', fn () => view('landing.contact'))->name('contact');
 Route::get('/kontak', fn () => redirect()->route('contact'));
 
-// ─── Protected Dashboard & User History (Wajib Login) ────────────────────────
-Route::get('/dashboard', fn () => redirect()->route('main.dashboard'));
+// ─── Storefront & Catalog (Public & Auth Friendly) ───────────────────────────
+Route::get('/dashboard',               [MainController::class, 'dashboard'])->name('dashboard');
+Route::get('/main/dashboard',          [MainController::class, 'dashboard'])->name('main.dashboard');
 
-Route::middleware(['auth'])->group(function () {
-    Route::prefix('main')->name('main.')->group(function () {
-        Route::get('/dashboard', [MainController::class, 'dashboard'])->name('dashboard');
-    });
+// Direct Product Detail & Aliases
+Route::get('/product/{product}',       [MainController::class, 'productDetail'])->name('product.detail');
+Route::get('/produk/{product}',        [MainController::class, 'productDetail'])->name('product.show');
+Route::get('/main/product/{product}',  [MainController::class, 'productDetail'])->name('main.product.detail');
 
-    Route::get('/orders',                   [MainController::class, 'myOrders'])->name('orders.history');
-    Route::get('/order/detail/{order_id?}', [MainController::class, 'orderDetail'])->name('order.detail');
-});
-
-// ─── Store Flow (Catalog Detail, Cart, Checkout, Payment) ─────────────────────
-Route::prefix('main')->name('main.')->group(function () {
-    Route::get('/cart',              [MainController::class, 'cart'])->name('cart');
-    Route::get('/product/{product}', [MainController::class, 'productDetail'])->name('product.detail');
-});
-
-// Direct Product Detail & Cart
-Route::get('/product/{id}',            [MainController::class, 'productDetail'])->name('product.detail');
-Route::get('/produk/{id}',             fn ($id) => redirect()->route('product.detail', $id));
+// Cart & Order Detail
 Route::get('/cart',                    [MainController::class, 'cart'])->name('cart.index');
+Route::get('/main/cart',               [MainController::class, 'cart'])->name('main.cart');
+
+Route::get('/order-detail',            [MainController::class, 'orderDetail'])->name('order.checkout.detail');
+Route::get('/order/detail/{order_id?}',[MainController::class, 'orderDetail'])->name('order.detail');
+Route::get('/main/order-detail',       [MainController::class, 'orderDetail'])->name('main.order.checkout');
 
 // Checkout & Payment
 Route::get('/checkout',                [MainController::class, 'checkout'])->name('checkout');
@@ -57,6 +52,11 @@ Route::post('/checkout',               [MainController::class, 'processCheckout'
 Route::get('/payment/qris/{order_id?}',     [MainController::class, 'paymentQris'])->name('payment.qris');
 Route::get('/payment/transfer/{order_id?}', [MainController::class, 'paymentTransfer'])->name('payment.transfer');
 Route::get('/payment/success/{order_id?}',  [MainController::class, 'paymentSuccess'])->name('payment.success');
+
+// ─── User Protected Routes (Wajib Login) ────────────────────────────────────
+Route::middleware(['auth'])->group(function () {
+    Route::get('/orders',              [MainController::class, 'myOrders'])->name('orders.history');
+});
 
 // ─── Admin Routes ─────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -91,6 +91,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/detail/{order}', 'show')->name('detail');
         Route::get('/{order}',        'show')->name('show');
         Route::put('/{order}',        'update')->name('update');
+        Route::patch('/{order}/status','updateStatus')->name('updateStatus');
+        Route::post('/{order}/cancel','cancelOrder')->name('cancel');
         Route::delete('/{order}',     'destroy')->name('destroy');
     });
     Route::redirect('/orders', '/admin/order');
@@ -103,6 +105,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::delete('/{payment}',   'destroy')->name('destroy');
     });
     Route::redirect('/payments', '/admin/payment');
+
+    // Payment Methods (Management khusus metode dari admin)
+    Route::prefix('payment-method')->name('payment-method.')->controller(PaymentMethodController::class)->group(function () {
+        Route::get('/',                           'index')->name('index');
+        Route::post('/',                          'store')->name('store');
+        Route::patch('/{paymentMethod}',          'update')->name('update');
+        Route::patch('/{paymentMethod}/toggle-status', 'toggleStatus')->name('toggleStatus');
+        Route::delete('/{paymentMethod}',         'destroy')->name('destroy');
+    });
+    Route::redirect('/payment-methods', '/admin/payment-method');
 
     // User Management
     Route::prefix('user')->name('user.')->controller(UserController::class)->group(function () {

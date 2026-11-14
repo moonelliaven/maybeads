@@ -3,6 +3,12 @@
    Handles Filter Toggle, Sorting, Modal, Cart Drawer, and Popover
    ========================================================================== */
 
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
+import '../../css/common/sweetalert-theme.css';
+
+window.Swal = Swal;
+
 document.addEventListener('DOMContentLoaded', () => {
 
   /* ==========================================================================
@@ -152,6 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         image: data.image,
         color: data.color || 'Biru, Kuning',
         qty: 1,
+        checked: true,
         addedAt: Date.now()
       });
     }
@@ -318,6 +325,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Submit trigger (Tambahkan ke Keranjang)
   if (btnCartModalSubmit) {
     btnCartModalSubmit.addEventListener('click', () => {
+      if (window.isUserLoggedIn === false) {
+        closeCartModal();
+        openLoginPromptModal();
+        return;
+      }
+
       if (!currentModalProduct) return;
 
       const rawUnitPrice = parseFloat(currentModalProduct.price) || 0;
@@ -343,6 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
           color: selectedColor,
           size: selectedSize,
           qty: currentModalQty,
+          checked: true,
           addedAt: Date.now()
         });
       }
@@ -408,11 +422,80 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   /* ==========================================================================
-     7. ESC KEY LISTENER (Closes Modals)
+     7. POP UP LOGIN DIPERLUKAN ("Silahkan login terlebih dahulu" - Kembali / Login)
+     ========================================================================== */
+  const loginPromptModal = document.getElementById('loginPromptModal');
+  const btnCancelLoginPrompt = document.getElementById('btnCancelLoginPrompt');
+
+  function openLoginPromptModal() {
+    if (typeof Swal !== 'undefined') {
+      Swal.fire({
+        title: 'Silahkan Login Terlebih Dahulu',
+        text: 'Anda perlu masuk ke akun untuk dapat menggunakan fitur ini.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#244173',
+        cancelButtonColor: '#5c5656',
+        confirmButtonText: 'Login',
+        cancelButtonText: 'Kembali',
+        reverseButtons: true,
+        customClass: {
+          popup: 'maybeads-swal-popup',
+          confirmButton: 'swal-btn-navy'
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = '/login';
+        }
+      });
+      return;
+    }
+
+    if (loginPromptModal) {
+      loginPromptModal.removeAttribute('hidden');
+      document.body.style.overflow = 'hidden';
+    } else {
+      if (confirm('Silahkan login terlebih dahulu\n\nKlik OK untuk Login, atau Cancel untuk Kembali.')) {
+        window.location.href = '/login';
+      }
+    }
+  }
+
+  function closeLoginPromptModal() {
+    if (loginPromptModal) {
+      loginPromptModal.setAttribute('hidden', '');
+      document.body.style.overflow = '';
+    }
+  }
+
+  if (btnCancelLoginPrompt) {
+    btnCancelLoginPrompt.addEventListener('click', closeLoginPromptModal);
+  }
+
+  if (loginPromptModal) {
+    loginPromptModal.addEventListener('click', (e) => {
+      if (e.target === loginPromptModal) {
+        closeLoginPromptModal();
+      }
+    });
+  }
+
+  // Delegasi klik semua tombol bertanda .btn-trigger-login-prompt
+  document.querySelectorAll('.btn-trigger-login-prompt').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openLoginPromptModal();
+    });
+  });
+
+  /* ==========================================================================
+     8. ESC KEY LISTENER (Closes Modals)
      ========================================================================== */
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       closeCartModal();
+      closeLoginPromptModal();
       if (accountMenuPopover) accountMenuPopover.classList.remove('show');
     }
   });

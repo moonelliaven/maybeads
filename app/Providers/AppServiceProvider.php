@@ -22,5 +22,7 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->environment('production')) {
             \URL::forceScheme('https');
         }
+
+        \Illuminate\Support\Facades\View::share('errors', session()->get('errors') ?? new \Illuminate\Support\ViewErrorBag());
     }
 }
