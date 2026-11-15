@@ -69,7 +69,7 @@
           </a>
         </li>
         <li>
-          <a href="{{ route('admin.payment.index') }}" data-label="Pembayaran" class="nav-item {{ in_array($active ?? '', ['pembayaran', 'payments']) ? 'active' : '' }}">
+          <a href="/admin/payments" data-label="Pembayaran" class="nav-item {{ ($active ?? '') === 'pembayaran' ? 'active' : '' }}">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <rect x="2" y="5" width="20" height="14" rx="2"></rect>
               <line x1="2" y1="10" x2="22" y2="10"></line>
@@ -93,6 +93,17 @@
               <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
             </svg>
             <span class="nav-text">User</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ route('admin.payment-method.index') }}" data-label="Metode Pembayaran" class="nav-item {{ ($active ?? '') === 'payment-method' ? 'active' : '' }}">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+              <line x1="2" y1="10" x2="22" y2="10"></line>
+              <path d="M7 15h.01"></path>
+              <path d="M11 15h2"></path>
+            </svg>
+            <span class="nav-text">Metode Pembayaran</span>
           </a>
         </li>
       </ul>
@@ -160,9 +171,9 @@
         </li>
         <li class="sidebar-user-menu-divider" role="separator"></li>
         <li>
-          <form method="POST" action="{{ route('logout') }}" class="sidebar-logout-form" style="margin: 0;">
+          <form method="POST" action="{{ route('logout') }}" id="adminSidebarLogoutForm" class="sidebar-logout-form" style="margin: 0;">
             @csrf
-            <button type="submit" class="sidebar-user-menu-item danger" role="menuitem">
+            <button type="button" id="btnAdminSidebarLogout" class="sidebar-user-menu-item danger" role="menuitem">
               <svg class="menu-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                 <polyline points="16 17 21 12 16 7"></polyline>
@@ -195,3 +206,122 @@
     </div>
   </div>
 </aside>
+
+{{-- MODAL KONFIRMASI LOGOUT ADMIN --}}
+<div class="modal-backdrop-logout" id="adminLogoutModal" style="display: none;">
+  <div class="modal-card-logout">
+    <div class="modal-logout-header">
+      <h3 class="modal-logout-title">Konfirmasi Keluar (Logout)</h3>
+      <button type="button" class="btn-logout-modal-close" id="btnCloseAdminLogoutModal" aria-label="Tutup">&times;</button>
+    </div>
+    <div class="modal-logout-body">
+      <div class="logout-icon-circle admin-icon-circle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+      </div>
+      <div class="logout-text-desc">
+        <h4>Keluar dari Admin Dashboard?</h4>
+        <p>Apakah Anda yakin ingin keluar dari sesi Admin Maybeads? Anda harus login kembali untuk mengakses panel administrasi.</p>
+      </div>
+    </div>
+    <div class="modal-logout-footer">
+      <button type="button" class="btn-logout-cancel" id="btnCancelAdminLogout">Kembali</button>
+      <button type="button" class="btn-logout-confirm admin-btn-danger" id="btnConfirmAdminLogout">Ya, Keluar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    function initAdminLogout() {
+      const logoutBtn = document.getElementById('btnAdminSidebarLogout');
+      const defaultLogoutForm = document.getElementById('adminSidebarLogoutForm');
+      const modal = document.getElementById('adminLogoutModal');
+      const btnClose = document.getElementById('btnCloseAdminLogoutModal');
+      const btnCancel = document.getElementById('btnCancelAdminLogout');
+      const btnConfirm = document.getElementById('btnConfirmAdminLogout');
+
+      if (!modal && typeof Swal === 'undefined') return;
+
+      let pendingAdminLogoutForm = null;
+
+      function openModal(form) {
+        pendingAdminLogoutForm = form || defaultLogoutForm;
+        if (typeof Swal !== 'undefined') {
+          Swal.fire({
+            title: 'Keluar dari Akun Admin',
+            text: 'Apakah Anda yakin ingin keluar dari Admin Dashboard Maybeads?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d9383a',
+            cancelButtonColor: '#5c5656',
+            confirmButtonText: 'Ya, Keluar',
+            cancelButtonText: 'Kembali',
+            reverseButtons: true,
+            customClass: { popup: 'maybeads-swal-popup' }
+          }).then(function(result) {
+            if (result.isConfirmed && pendingAdminLogoutForm) {
+              pendingAdminLogoutForm.submit();
+            }
+          });
+          return;
+        }
+        if (modal) modal.style.display = 'flex';
+      }
+
+      function closeModal() {
+        modal.style.display = 'none';
+        pendingAdminLogoutForm = null;
+      }
+
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          openModal(defaultLogoutForm);
+        });
+      }
+
+      // Intercept any logout forms across the admin page (e.g. topbar dropdowns)
+      document.querySelectorAll('form[action*="logout"]').forEach(form => {
+        form.addEventListener('submit', function (e) {
+          if (!pendingAdminLogoutForm) {
+            e.preventDefault();
+            e.stopPropagation();
+            openModal(this);
+          }
+        });
+      });
+
+      if (btnClose) btnClose.addEventListener('click', closeModal);
+      if (btnCancel) btnCancel.addEventListener('click', closeModal);
+
+      if (btnConfirm) {
+        btnConfirm.addEventListener('click', function() {
+          if (pendingAdminLogoutForm) {
+            pendingAdminLogoutForm.submit();
+          } else if (defaultLogoutForm) {
+            defaultLogoutForm.submit();
+          }
+        });
+      }
+
+      window.addEventListener('click', function(e) {
+        if (e.target === modal) closeModal();
+      });
+
+      window.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initAdminLogout);
+    } else {
+      initAdminLogout();
+    }
+  })();
+</script>

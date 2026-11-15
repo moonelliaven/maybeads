@@ -1,3 +1,5 @@
+@import '../common/sweetalert-theme.css';
+
 /* ==========================================================================
    Admin Sidebar Stylesheet - Maybead.s
    ========================================================================== */
@@ -446,4 +448,149 @@ body.sidebar-collapsed {
 
 @media (prefers-reduced-motion: reduce) {
   .admin-sidebar, .nav-item, .nav-external-arrow { transition: none; }
+}
+
+/* ==========================================================================
+   Admin Logout Confirmation Modal
+   ========================================================================== */
+.modal-backdrop-logout {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-card-logout {
+  background-color: #ffffff;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  animation: modalFadeInLogout 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: var(--font-sans);
+}
+
+@keyframes modalFadeInLogout {
+  from { opacity: 0; transform: scale(0.96) translateY(-8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-logout-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.modal-logout-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.btn-logout-modal-close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  line-height: 1;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+.btn-logout-modal-close:hover {
+  color: #0f172a;
+  background-color: #f1f5f9;
+}
+
+.modal-logout-body {
+  padding: 22px 20px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.logout-icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.logout-icon-circle svg {
+  width: 22px;
+  height: 22px;
+}
+
+.admin-icon-circle {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.logout-text-desc h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+
+.logout-text-desc p {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.modal-logout-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 20px;
+  background-color: #f8fafc;
+  border-top: 1px solid #f1f5f9;
+}
+
+.btn-logout-cancel {
+  padding: 9px 16px;
+  background-color: #ffffff;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-logout-cancel:hover {
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.btn-logout-confirm {
+  padding: 9px 18px;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.admin-btn-danger {
+  background-color: #dc2626;
+}
+.admin-btn-danger:hover {
+  background-color: #b91c1c;
 }

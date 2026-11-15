@@ -13,6 +13,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   @vite(['resources/css/main/dashboard.css'])
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
     /* ==========================================================================
@@ -236,13 +237,13 @@
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
     }
 
-    /* Table Grid Columns: Checkbox (36px), Produk (1fr), Total (150px), Harga Akhir (180px), Aksi (90px) */
+    /* Table Grid Columns: Checkbox (36px), Produk (1fr), Harga Asli (130px), Jumlah (130px), Total (140px), Aksi (80px) */
     .cart-grid-thead {
       background-color: #2a2c32;
       color: #ffffff;
       padding: 14px 24px;
       display: grid;
-      grid-template-columns: 36px 1fr 150px 180px 80px;
+      grid-template-columns: 36px 1fr 130px 130px 140px 80px;
       align-items: center;
       gap: 16px;
       font-size: 13.5px;
@@ -252,12 +253,14 @@
       display: flex;
       align-items: center;
     }
-    .cart-grid-thead .col-total {
+    .cart-grid-thead .col-unit-price {
       text-align: center;
     }
-    .cart-grid-thead .col-price {
-      text-align: left;
-      padding-left: 12px;
+    .cart-grid-thead .col-qty {
+      text-align: center;
+    }
+    .cart-grid-thead .col-total {
+      text-align: center;
     }
     .cart-grid-thead .col-action {
       text-align: right;
@@ -270,7 +273,7 @@
     .cart-grid-row {
       padding: 18px 24px;
       display: grid;
-      grid-template-columns: 36px 1fr 150px 180px 80px;
+      grid-template-columns: 36px 1fr 130px 130px 140px 80px;
       align-items: center;
       gap: 16px;
       border-bottom: 1px solid #eaecee;
@@ -370,7 +373,21 @@
       text-align: center;
     }
 
-    /* Price Column */
+    /* Unit Price Column (Harga Asli) */
+    .cart-unit-price-cell {
+      font-size: 14px;
+      font-weight: 600;
+      color: #475569;
+      text-align: center;
+    }
+
+    /* Total Price Column (Harga Akhir: rawPrice * qty) */
+    .cart-total-price-cell {
+      font-size: 15px;
+      font-weight: 700;
+      color: #141418;
+      text-align: center;
+    }
     .cart-price-cell {
       font-size: 14.5px;
       font-weight: 700;
@@ -623,12 +640,28 @@
       }
       .cart-grid-row {
         grid-template-columns: 30px 1fr;
-        gap: 14px;
+        gap: 12px;
       }
-      .cart-stepper-cell, .cart-price-cell, .cart-action-cell {
+      .cart-unit-price-cell,
+      .cart-stepper-cell,
+      .cart-total-price-cell,
+      .cart-action-cell {
         grid-column: 2 / -1;
         justify-content: flex-start;
+        text-align: left;
         padding-left: 0;
+      }
+      .cart-unit-price-cell::before {
+        content: "Harga Asli: ";
+        font-weight: 600;
+        color: #64748b;
+        font-size: 12.5px;
+      }
+      .cart-total-price-cell::before {
+        content: "Total: ";
+        font-weight: 600;
+        color: #64748b;
+        font-size: 12.5px;
       }
       .cart-action-cell {
         justify-content: flex-start;
@@ -702,12 +735,17 @@
 
   <!-- Main Content -->
   <main class="cart-main-container">
-    <!-- Header: < Dashboard & Search -->
+    <!-- Header: Back to Home & Search -->
     <div class="cart-header-row">
       <div class="cart-header-left">
-        <a href="{{ route('main.dashboard') }}" class="cart-back-breadcrumb">
-          <span>&lt; Dashboard</span>
-        </a>
+        <div style="margin-bottom: 8px;">
+          <a href="{{ route('main.dashboard') }}" class="btn-back-to-home" style="display: inline-flex; align-items: center; gap: 7px; background: #ffffff; border: 1.5px solid #23477d; color: #23477d; font-weight: 700; font-size: 13px; padding: 6px 16px; border-radius: 9999px; text-decoration: none; transition: all 0.2s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 15px; height: 15px;">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            <span>Kembali ke Halaman Utama</span>
+          </a>
+        </div>
         <h1 class="cart-header-title">Data Lengkap Keranjang</h1>
       </div>
 
@@ -725,9 +763,10 @@
         <div class="col-check">
           <input type="checkbox" id="headerSelectAll" class="custom-cart-checkbox" title="Pilih Semua">
         </div>
-        <div>Nama Produk</div>
+        <div class="col-product">Nama Produk</div>
+        <div class="col-unit-price">Harga Asli</div>
+        <div class="col-qty">Jumlah</div>
         <div class="col-total">Total</div>
-        <div class="col-price">Harga Akhir</div>
         <div class="col-action">Aksi</div>
       </div>
 
@@ -754,10 +793,16 @@
         <div class="cart-subtotal-display">
           Subtotal: <strong id="cartSubtotalText">Rp. 0</strong>
         </div>
-        <a href="{{ route('checkout') }}" class="btn-checkout-action" id="btnCheckoutAction">
-          <span>Checkout</span>
-          <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-        </a>
+        @auth
+          <a href="{{ route('order.checkout.detail') }}" class="btn-checkout-action" id="btnCheckoutAction">
+            <span>Checkout</span>
+            <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </a>
+        @else
+          <a href="{{ route('login') }}" class="btn-checkout-action">
+            <span>Masuk untuk Checkout</span>
+          </a>
+        @endauth
       </div>
     </div>
   </footer>
@@ -829,13 +874,13 @@
       let rawCart = localStorage.getItem('maybeads_cart');
       let cart = rawCart !== null ? JSON.parse(rawCart) : sampleDefaultItems;
 
-      // Ensure every item has a checked state (default to true)
-      cart = cart.map((it) => {
+      // Ensure every item has a checked state (default to true if not set)
+      cart = cart.map((it, idx) => {
         if (typeof it.checked === 'undefined') {
           it.checked = true;
         }
         if (!it.rawPrice) {
-          it.rawPrice = parseInt((it.price || '').replace(/[^0-9]/g, ''), 10) || 92000;
+          it.rawPrice = parseInt((it.price || '').replace(/[^0-9]/g, ''), 10) || 24000;
         }
         return it;
       });
@@ -873,15 +918,26 @@
         const checkedCount = checkedItems.length;
         const allChecked   = cart.length > 0 && checkedCount === cart.length;
 
-        if (headerSelectAll) headerSelectAll.checked = allChecked;
-        if (footerSelectAll) footerSelectAll.checked = allChecked;
+        if (headerSelectAll) {
+          headerSelectAll.checked = allChecked;
+          headerSelectAll.indeterminate = checkedCount > 0 && checkedCount < cart.length;
+        }
+        if (footerSelectAll) {
+          footerSelectAll.checked = allChecked;
+          footerSelectAll.indeterminate = checkedCount > 0 && checkedCount < cart.length;
+        }
 
         if (selectedCountText) {
           selectedCountText.textContent = `(${checkedCount}) Pilih Semua`;
         }
 
         // Subtotal = sum of (rawPrice * qty) for checked items
-        const subtotal = checkedItems.reduce((sum, it) => sum + ((it.rawPrice || 24000) * (it.qty || 1)), 0);
+        const subtotal = checkedItems.reduce((sum, it) => {
+          const unit = Number(it.rawPrice) || 0;
+          const count = Number(it.qty) || 1;
+          return sum + (unit * count);
+        }, 0);
+
         if (subtotalText) {
           subtotalText.textContent = 'Rp. ' + subtotal.toLocaleString('id-ID');
         }
@@ -912,9 +968,11 @@
         }
 
         rowsContainer.innerHTML = filtered.map(({ item, originalIdx }) => {
-          const rawPrice = item.rawPrice || 24000;
-          const qty = item.qty || 1;
-          const displayPrice = 'Rp ' + rawPrice.toLocaleString('id-ID');
+          const rawPrice = Number(item.rawPrice) || 24000;
+          const qty = parseInt(item.qty, 10) || 1;
+          const rowTotal = rawPrice * qty;
+          const displayUnitPrice = 'Rp ' + rawPrice.toLocaleString('id-ID');
+          const displayRowTotal = 'Rp ' + rowTotal.toLocaleString('id-ID');
           const variantText = item.color || 'Merah, XL';
           const imgSrc = item.image || '/images/products/sample-hub.jpg';
 
@@ -937,18 +995,23 @@
                 </div>
               </div>
 
-              <!-- Stepper -->
+              <!-- Harga Asli (Unit Price) -->
+              <div class="cart-unit-price-cell">
+                <span>${displayUnitPrice}</span>
+              </div>
+
+              <!-- Stepper (Jumlah / Quantity) -->
               <div class="cart-stepper-cell">
                 <div class="stepper-pill-box">
-                  <button type="button" class="stepper-btn btn-minus" data-idx="${originalIdx}">-</button>
-                  <span class="stepper-value">${qty}</span>
-                  <button type="button" class="stepper-btn btn-plus" data-idx="${originalIdx}">+</button>
+                  <button type="button" class="stepper-btn btn-minus" data-idx="${originalIdx}" title="Kurangi">-</button>
+                  <span class="stepper-value" id="qty-val-${originalIdx}">${qty}</span>
+                  <button type="button" class="stepper-btn btn-plus" data-idx="${originalIdx}" title="Tambah">+</button>
                 </div>
               </div>
 
-              <!-- Price -->
-              <div class="cart-price-cell">
-                ${displayPrice}
+              <!-- Total Harga Produk (rawPrice * qty) -->
+              <div class="cart-total-price-cell">
+                <span id="row-total-${originalIdx}">${displayRowTotal}</span>
               </div>
 
               <!-- Action Icons (Trash & Edit) -->
@@ -973,9 +1036,11 @@
         rowsContainer.querySelectorAll('.row-checkbox').forEach(chk => {
           chk.addEventListener('change', () => {
             const idx = parseInt(chk.dataset.idx, 10);
-            cart[idx].checked = chk.checked;
-            saveCart();
-            updateCalculations();
+            if (cart[idx]) {
+              cart[idx].checked = chk.checked;
+              saveCart();
+              updateCalculations();
+            }
           });
         });
 
@@ -983,16 +1048,19 @@
         rowsContainer.querySelectorAll('.btn-minus').forEach(btn => {
           btn.addEventListener('click', () => {
             const idx = parseInt(btn.dataset.idx, 10);
+            if (!cart[idx]) return;
             if (cart[idx].qty > 1) {
               cart[idx].qty--;
+              saveCart();
+              renderCartRows();
             } else {
               const confirmRemove = confirm('Hapus produk ini dari keranjang?');
               if (confirmRemove) {
                 cart.splice(idx, 1);
+                saveCart();
+                renderCartRows();
               }
             }
-            saveCart();
-            renderCartRows();
           });
         });
 
@@ -1000,7 +1068,8 @@
         rowsContainer.querySelectorAll('.btn-plus').forEach(btn => {
           btn.addEventListener('click', () => {
             const idx = parseInt(btn.dataset.idx, 10);
-            cart[idx].qty = (cart[idx].qty || 1) + 1;
+            if (!cart[idx]) return;
+            cart[idx].qty = (parseInt(cart[idx].qty, 10) || 1) + 1;
             saveCart();
             renderCartRows();
           });
@@ -1010,9 +1079,32 @@
         rowsContainer.querySelectorAll('.btn-action-delete').forEach(btn => {
           btn.addEventListener('click', () => {
             const idx = parseInt(btn.dataset.idx, 10);
-            cart.splice(idx, 1);
-            saveCart();
-            renderCartRows();
+            if (typeof Swal !== 'undefined') {
+              Swal.fire({
+                title: 'Hapus Produk',
+                text: 'Produk yang dihapus tidak dapat dikembalikan.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d9383a',
+                cancelButtonColor: '#5c5656',
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Kembali',
+                reverseButtons: true,
+                customClass: { popup: 'maybeads-swal-popup' }
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  cart.splice(idx, 1);
+                  saveCart();
+                  renderCartRows();
+                }
+              });
+            } else {
+              if (confirm('Hapus produk ini dari keranjang?')) {
+                cart.splice(idx, 1);
+                saveCart();
+                renderCartRows();
+              }
+            }
           });
         });
 
@@ -1056,13 +1148,46 @@
         btnDeleteSelected.addEventListener('click', () => {
           const checkedCount = cart.filter(it => it.checked).length;
           if (checkedCount === 0) {
-            alert('Silakan pilih produk yang ingin dihapus terlebih dahulu.');
+            if (typeof Swal !== 'undefined') {
+              Swal.fire({
+                title: 'Pilih Produk',
+                text: 'Silakan centang produk yang ingin dihapus terlebih dahulu.',
+                icon: 'warning',
+                confirmButtonText: 'Kembali',
+                confirmButtonColor: '#5c5656',
+                customClass: { popup: 'maybeads-swal-popup' }
+              });
+            } else {
+              alert('Silakan pilih produk yang ingin dihapus terlebih dahulu.');
+            }
             return;
           }
-          if (confirm(`Hapus ${checkedCount} produk yang dipilih dari keranjang?`)) {
-            cart = cart.filter(it => !it.checked);
-            saveCart();
-            renderCartRows();
+
+          if (typeof Swal !== 'undefined') {
+            Swal.fire({
+              title: 'Hapus Produk Terpilih',
+              text: `Hapus ${checkedCount} produk yang dipilih dari keranjang belanja?`,
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#d9383a',
+              cancelButtonColor: '#5c5656',
+              confirmButtonText: 'Ya, Hapus',
+              cancelButtonText: 'Kembali',
+              reverseButtons: true,
+              customClass: { popup: 'maybeads-swal-popup' }
+            }).then((result) => {
+              if (result.isConfirmed) {
+                cart = cart.filter(it => !it.checked);
+                saveCart();
+                renderCartRows();
+              }
+            });
+          } else {
+            if (confirm(`Hapus ${checkedCount} produk yang dipilih dari keranjang?`)) {
+              cart = cart.filter(it => !it.checked);
+              saveCart();
+              renderCartRows();
+            }
           }
         });
       }
@@ -1106,15 +1231,13 @@
       if (btnCheckoutAction) {
         btnCheckoutAction.addEventListener('click', (e) => {
           e.preventDefault();
-          let checkedItems = cart.filter(it => it.checked);
+          const checkedItems = cart.filter(it => it.checked);
           if (checkedItems.length === 0) {
-            cart.forEach(it => it.checked = true);
-            checkedItems = cart;
+            alert('Silakan pilih setidaknya 1 produk untuk checkout.');
+            return;
           }
-          const subtotal = checkedItems.reduce((sum, it) => sum + ((it.rawPrice || 92000) * (it.qty || 1)), 0);
-          localStorage.setItem('maybeads_cart', JSON.stringify(cart));
-          localStorage.setItem('maybeads_subtotal', subtotal);
-          window.location.href = "{{ route('checkout') }}";
+          const subtotal = checkedItems.reduce((sum, it) => sum + ((it.rawPrice || 24000) * (it.qty || 1)), 0);
+          alert(`Melanjutkan ke proses pembayaran...\nTotal Item: ${checkedItems.length}\nSubtotal: Rp. ${subtotal.toLocaleString('id-ID')}`);
         });
       }
 

@@ -77,16 +77,92 @@ class Order extends Model
 
     public function getDeliveryFeeAttribute(): float
     {
-        return $this->delivery_type === 'Ambil Ditempat' ? 0.00 : 15000.00;
+        if ($this->payment && $this->payment->deliveryMethod) {
+            return (float)$this->payment->deliveryMethod->price;
+        }
+        return $this->delivery_type === 'Ambil Ditempat' ? 200.00 : 15000.00;
     }
 
     public function getAdminFeeAttribute(): float
     {
-        return 2000.00;
+        if ($this->payment && $this->payment->paymentMethod) {
+            return (float)$this->payment->paymentMethod->price;
+        }
+        return 500.00;
     }
 
     public function getGrandTotalAttribute(): float
     {
         return (float)$this->subtotal + $this->delivery_fee + $this->admin_fee;
+    }
+
+    public function getPaymentIdAttribute(): ?string
+    {
+        return $this->payment?->formatted_id ?? ('IDP' . str_pad((string)$this->id, 4, '0', STR_PAD_LEFT));
+    }
+
+    public function getPaymentMethodNameAttribute(): string
+    {
+        return $this->payment?->payment_method
+            ?? $this->payment?->paymentMethod?->name
+            ?? 'QRIS';
+    }
+
+    public function getDeliveryMethodNameAttribute(): string
+    {
+        return $this->payment?->deliveryMethod?->name
+            ?? $this->delivery_type;
+    }
+
+    public function getIsDeliveryToHomeAttribute(): bool
+    {
+        $type = strtolower($this->delivery_method_name);
+        return str_contains($type, 'antar') || str_contains($type, 'rumah') || (str_contains($type, 'tempat') && !str_contains($type, 'ambil'));
+    }
+
+    public function getDeadlineAtAttribute(): ?\Illuminate\Support\Carbon
+    {
+        return $this->order_at ? $this->order_at->copy()->addDays(5) : null;
+    }
+
+    public function getIsExpiredAttribute(): bool
+    {
+        if (!$this->deadline_at) return false;
+        // Expired jika lebih dari 5 hari dan belum selesai/sukses
+        $isFinished = in_array(strtolower($this->order_status), ['selesai', 'sukses']);
+        return !$isFinished && now()->greaterThan($this->deadline_at);
+    }
+
+    public function getCanCancelByAdminAttribute(): bool
+    {
+        $statusLower = strtolower($this->order_status);
+        $isFinished = in_array($statusLower, ['selesai', 'sukses', 'dibatalkan']);
+        $hasPayment = $this->payment !== null || !empty($this->payment_status);
+        // Bisa dibatalkan admin jika ada pembayaran, belum selesai/batal, dan masih dalam jangka waktu 5 hari
+        return $hasPayment && !$isFinished && !$this->is_expired;
+    }
+
+    public function getRemainingTimeTextAttribute(): string
+    {
+        if (!$this->deadline_at) return '-';
+        if ($this->is_expired || strtolower($this->order_status) === 'dibatalkan') {
+            return 'Waktu Habis (Otomatis Dibatalkan)';
+        }
+        if (in_array(strtolower($this->order_status), ['selesai', 'sukses'])) {
+            return 'Pesanan Telah Selesai';
+        }
+
+        $diffHours = now()->diffInHours($this->deadline_at, false);
+        if ($diffHours <= 0) {
+            return 'Waktu Habis';
+        }
+
+        $days = floor($diffHours / 24);
+        $hours = $diffHours % 24;
+
+        if ($days > 0) {
+            return "Sisa {$days} Hari {$hours} Jam";
+        }
+        return "Sisa {$hours} Jam";
     }
 }

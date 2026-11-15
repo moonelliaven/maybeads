@@ -28,6 +28,7 @@ class Product extends Model
         'description',
         'price',
         'stock',
+        'order_count',
         'status',
     ];
 
@@ -47,12 +48,39 @@ class Product extends Model
         return $this->hasMany(ProductVariant::class, 'product_id');
     }
 
-    public function getVariantsAttribute()
+    public function orders(): HasMany
     {
-        if (! $this->relationLoaded('variants')) {
-            $this->setRelation('variants', $this->variants()->get());
-        }
+        return $this->hasMany(Order::class, 'product_id');
+    }
 
-        return $this->getRelation('variants');
+    public function testimonials(): HasMany
+    {
+        return $this->hasMany(Testimonial::class, 'product_id');
+    }
+
+    public function getAvgRatingAttribute(): float
+    {
+        try {
+            if ($this->relationLoaded('testimonials')) {
+                $avg = $this->testimonials->avg('rating');
+            } else {
+                $avg = $this->testimonials()->avg('rating');
+            }
+            return $avg ? round((float)$avg, 1) : 5.0;
+        } catch (\Throwable $e) {
+            return 5.0;
+        }
+    }
+
+    public function getReviewCountAttribute(): int
+    {
+        try {
+            if ($this->relationLoaded('testimonials')) {
+                return $this->testimonials->count();
+            }
+            return $this->testimonials()->count();
+        } catch (\Throwable $e) {
+            return 0;
+        }
     }
 }

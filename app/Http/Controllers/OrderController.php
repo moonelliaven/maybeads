@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -76,7 +75,18 @@ class OrderController extends Controller
      */
     public function show($id)
     {
-        $order = Order::with(['user', 'product.category', 'payment'])->findOrFail($id);
+        $order = $id instanceof Order
+            ? $id->load(['user', 'product.category', 'payment.paymentMethod', 'payment.deliveryMethod'])
+            : Order::with(['user', 'product.category', 'payment.paymentMethod', 'payment.deliveryMethod'])->findOrFail($id);
+
+        // 1. Cek batas waktu 5 hari: Jika sudah lewat 5 hari dan pesanan belum selesai/dibatalkan, otomatis batalkan pesanan
+        if ($order->is_expired && !in_array(strtolower($order->order_status), ['selesai', 'sukses', 'dibatalkan'])) {
+            $order->update(['order_status' => 'Dibatalkan']);
+            if ($order->payment && strtolower($order->payment->payment_status) !== 'dibatalkan') {
+                $order->payment->update(['payment_status' => 'Dibatalkan']);
+            }
+            $order->refresh();
+        }
 
         // Siapkan daftar item produk
         $items = collect();
@@ -135,22 +145,86 @@ class OrderController extends Controller
             'grand_total'  => $grandTotal,
         ];
 
-        // Status Timeline untuk kartu kanan bawah
+        // Status Timeline untuk kartu status pesanan
         $orderDateStr = $order->order_at ? $order->order_at->format('d-m-Y H.i') : now()->format('d-m-Y H.i');
         $sendDateStr = $order->send_at ? $order->send_at->format('d-m-Y H.i') : $orderDateStr;
+        $statusLower = strtolower($order->order_status);
 
-        $timeline = [
-            ['title' => 'Pending',  'date' => $orderDateStr, 'active' => true],
-            ['title' => 'Diterima', 'date' => $orderDateStr, 'active' => in_array(strtolower($order->order_status), ['proses', 'diproses', 'sukses', 'selesai'])],
-            ['title' => 'Diproses', 'date' => $orderDateStr, 'active' => in_array(strtolower($order->order_status), ['proses', 'diproses', 'sukses', 'selesai'])],
-            ['title' => 'Selesai',  'date' => $sendDateStr,  'active' => in_array(strtolower($order->order_status), ['sukses', 'selesai'])],
-        ];
+        if ($statusLower === 'dibatalkan' || $statusLower === 'batal') {
+            $timeline = [
+                ['title' => 'Pending', 'date' => $orderDateStr, 'active' => true, 'is_batal' => false],
+                ['title' => 'Dibatalkan', 'date' => $sendDateStr, 'active' => true, 'is_batal' => true],
+            ];
+        } else {
+            $step3Title = $order->is_delivery_to_home ? 'Sedang Perjalanan' : 'Siap Diambil';
+            $step3Active = in_array($statusLower, ['sedang perjalanan', 'siap diambil', 'selesai', 'sukses']);
+
+            $timeline = [
+                ['title' => 'Pending', 'date' => $orderDateStr, 'active' => true, 'is_batal' => false],
+                ['title' => 'Diproses', 'date' => $orderDateStr, 'active' => in_array($statusLower, ['proses', 'diproses', 'sedang perjalanan', 'siap diambil', 'selesai', 'sukses']), 'is_batal' => false],
+                ['title' => $step3Title, 'date' => $orderDateStr, 'active' => $step3Active, 'is_batal' => false],
+                ['title' => 'Selesai', 'date' => $sendDateStr, 'active' => in_array($statusLower, ['selesai', 'sukses']), 'is_batal' => false],
+            ];
+        }
 
         return view('admin.order.detail', compact('order', 'items', 'summary', 'timeline'));
     }
 
-    public function update(Request $request, Order $order)
+    /**
+     * Update status pesanan secara manual oleh admin
+     */
+    public function updateStatus(Request $request, $id)
     {
+        $order = $id instanceof Order ? $id : Order::with('payment')->findOrFail($id);
+
+        $validated = $request->validate([
+            'order_status' => 'required|string|in:Pending,Diproses,Sedang Perjalanan,Siap Diambil,Selesai,Dibatalkan',
+        ]);
+
+        $newStatus = $validated['order_status'];
+        $updateData = ['order_status' => $newStatus];
+
+        if ($newStatus === 'Selesai' && !$order->send_at) {
+            $updateData['send_at'] = now();
+            if ($order->payment && in_array(strtolower($order->payment->payment_status), ['pending', 'proses'])) {
+                $order->payment->update(['payment_status' => 'Sukses']);
+            }
+        } elseif ($newStatus === 'Dibatalkan') {
+            if ($order->payment) {
+                $order->payment->update(['payment_status' => 'Dibatalkan']);
+            }
+        }
+
+        $order->update($updateData);
+
+        return redirect()->back()->with('success', "Status pesanan berhasil diperbarui menjadi: {$newStatus}");
+    }
+
+    /**
+     * Batalkan pesanan oleh admin jika memenuhi syarat (dalam 5 hari & ada pembayaran)
+     */
+    public function cancelOrder(Request $request, $id)
+    {
+        $order = $id instanceof Order ? $id : Order::with('payment')->findOrFail($id);
+
+        if (!$order->can_cancel_by_admin) {
+            return redirect()->back()->with('error', 'Pesanan tidak dapat dibatalkan (sudah selesai atau melebihi batas waktu 5 hari).');
+        }
+
+        $order->update([
+            'order_status' => 'Dibatalkan',
+        ]);
+
+        if ($order->payment) {
+            $order->payment->update([
+                'payment_status' => 'Dibatalkan',
+            ]);
+        }
+
+        return redirect()->back()->with('success', "Pesanan #{$order->order_code} berhasil dibatalkan oleh Admin.");
+    }
+
+    public function update(Request $request, Order $order){
         $validated = $request->validate([
             'order_status'   => ['required', 'string'],
             'payment_status' => ['required', 'string'],

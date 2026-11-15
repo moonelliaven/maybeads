@@ -20,7 +20,7 @@ class UserSeeder extends Seeder
         );
 
         User::firstOrCreate(
-            ['email' => 'hlccntauni@gmail.com'],
+            ['email' => 'hlccntayuni@gmail.com'],
             [
                 'name' => 'Hilya',
                 'password' => Hash::make('Hilya12345'),
@@ -39,6 +39,9 @@ class UserSeeder extends Seeder
             ['name' => 'bachdangthang', 'email' => 'bachdangthang@example.com', 'role' => 'user'],
             ['name' => 'nguyenminhkhoa101', 'email' => 'nguyenminhkhoa@example.com', 'role' => 'user'],
             ['name' => 'phamquynh88', 'email' => 'phamquynh@example.com', 'role' => 'user'],
+            ['name' => 'lequocviet101', 'email' => 'lequocviet101@example.com', 'role' => 'user'],
+            ['name' => 'dinhhoangyen88', 'email' => 'dinhhoangyen88@example.com', 'role' => 'user'],
+            ['name' => 'lethihoa99', 'email' => 'lethihoa99@example.com', 'role' => 'user'],
         ];
 
         foreach ($dummyUsers as $u) {
