@@ -31,7 +31,7 @@
     .top-dark-bar {
       background-color: #1a2232;
       color: #ffffff;
-      padding: 14px 40px;
+      padding: 14px 48px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -47,7 +47,7 @@
 
     .top-menu-links {
       display: flex;
-      gap: 28px;
+      gap: 32px;
       list-style: none;
       font-size: 11px;
       font-weight: 700;
@@ -69,7 +69,7 @@
     .sub-nav-bar {
       background: #ffffff;
       border-bottom: 1px solid #e5e7eb;
-      padding: 12px 40px;
+      padding: 12px 48px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -78,42 +78,52 @@
     .sub-nav-brand {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
       text-decoration: none;
-      color: #355389;
-      font-size: 18px;
+    }
+
+    .brand-title {
+      color: #2b4570;
+      font-size: 19px;
       font-weight: 800;
+      letter-spacing: -0.02em;
     }
 
     .sub-nav-crumb {
-      font-size: 11px;
-      color: #94a3b8;
+      font-size: 12px;
+      color: #8c96a4;
       font-weight: 500;
     }
 
     .sub-nav-actions {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
 
     .sub-btn-pill {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
+      gap: 7px;
+      padding: 7px 16px;
       border-radius: 999px;
       border: 1px solid #cbd5e1;
       background: #ffffff;
       color: #334155;
-      font-size: 11.5px;
+      font-size: 12px;
       font-weight: 600;
       text-decoration: none;
+      transition: all 0.15s ease;
+    }
+
+    .sub-btn-pill:hover {
+      background-color: #f8fafc;
+      border-color: #94a3b8;
     }
 
     /* Main Container */
     .order-checkout-main {
-      max-width: 1120px;
+      max-width: 1160px;
       width: 100%;
       margin: 28px auto 140px;
       padding: 0 24px;
@@ -121,15 +131,25 @@
     }
 
     .breadcrumb-text {
-      font-size: 11px;
-      color: #94a3b8;
-      margin-bottom: 4px;
+      display: inline-block;
+      font-size: 12px;
+      color: #8c96a4;
+      font-weight: 500;
+      text-decoration: none;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+
+    .breadcrumb-text:hover {
+      color: #2b4570;
     }
 
     .page-title-main {
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 800;
       color: #141418;
+      letter-spacing: -0.01em;
       margin-bottom: 24px;
     }
 
@@ -163,7 +183,7 @@
       border-radius: 6px;
       padding: 10px 16px;
       display: grid;
-      grid-template-columns: 2fr 1.2fr 0.8fr 1.2fr;
+      grid-template-columns: 2.2fr 1.2fr 0.8fr 1.2fr;
       font-size: 11px;
       font-weight: 700;
       margin-bottom: 12px;
@@ -171,11 +191,11 @@
 
     .items-table-row {
       display: grid;
-      grid-template-columns: 2fr 1.2fr 0.8fr 1.2fr;
+      grid-template-columns: 2.2fr 1.2fr 0.8fr 1.2fr;
       align-items: center;
       padding: 12px 16px;
       border-bottom: 1px solid #f1f5f9;
-      font-size: 11px;
+      font-size: 11.5px;
     }
 
     .prod-cell {
@@ -185,23 +205,25 @@
     }
 
     .prod-thumb-box {
-      width: 38px;
-      height: 38px;
+      width: 40px;
+      height: 40px;
       border-radius: 6px;
       background: #d4d4d8;
       object-fit: cover;
+      flex-shrink: 0;
     }
 
     .prod-name-title {
-      font-size: 11.5px;
+      font-size: 12px;
       font-weight: 700;
       color: #141418;
       margin-bottom: 2px;
+      line-height: 1.3;
     }
 
     .prod-cat-sub {
-      font-size: 9.5px;
-      color: #94a3b8;
+      font-size: 10px;
+      color: #8c96a4;
     }
 
     /* Total Harga Summary in Left Card */
@@ -231,7 +253,14 @@
     .final-row-item {
       display: flex;
       justify-content: space-between;
-      font-size: 14px;
+      align-items: baseline;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #141418;
+    }
+
+    .final-price-bold {
+      font-size: 18px;
       font-weight: 800;
       color: #141418;
     }
@@ -242,19 +271,22 @@
       justify-content: space-between;
       align-items: center;
       font-size: 12px;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
       cursor: pointer;
+      user-select: none;
     }
 
     .radio-left-label {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 9px;
       font-weight: 600;
       color: #141418;
     }
 
-    .radio-left-label input {
+    .radio-left-label input[type="radio"] {
+      width: 15px;
+      height: 15px;
       accent-color: #141418;
       cursor: pointer;
     }
@@ -266,39 +298,54 @@
 
     .address-input-wrapper {
       position: relative;
-      margin-top: 10px;
-      margin-bottom: 20px;
+      margin-top: 12px;
+      margin-bottom: 22px;
     }
 
     .address-field {
       width: 100%;
-      padding: 9px 120px 9px 12px;
+      padding: 10px 120px 10px 14px;
       border: 1px solid #cbd5e1;
-      border-radius: 6px;
+      border-radius: 7px;
       font-size: 11.5px;
       color: #141418;
       outline: none;
+      background: #ffffff;
+      font-family: inherit;
+      transition: border-color 0.15s;
+    }
+
+    .address-field:focus {
+      border-color: #2b4570;
     }
 
     .btn-default-addr {
       position: absolute;
-      right: 4px;
-      top: 4px;
-      bottom: 4px;
-      padding: 0 10px;
+      right: 5px;
+      top: 5px;
+      bottom: 5px;
+      padding: 0 12px;
       background: #ffffff;
       border: 1px solid #cbd5e1;
-      border-radius: 4px;
-      font-size: 10px;
+      border-radius: 5px;
+      font-size: 10.5px;
       font-weight: 600;
-      color: #475569;
+      color: #334155;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+
+    .btn-default-addr:hover {
+      background: #f1f5f9;
     }
 
     .section-divider {
       height: 1px;
       background-color: #e5e7eb;
-      margin: 20px 0;
+      margin: 22px 0 20px 0;
     }
 
     /* Sticky Bottom Bar */
@@ -309,13 +356,13 @@
       right: 0;
       background: #ffffff;
       border-top: 1px solid #e2e8f0;
-      padding: 14px 40px;
+      padding: 14px 48px;
       display: flex;
       justify-content: flex-end;
       align-items: center;
-      gap: 20px;
+      gap: 18px;
       z-index: 100;
-      box-shadow: 0 -4px 12px rgba(0,0,0,0.03);
+      box-shadow: 0 -4px 14px rgba(0,0,0,0.03);
     }
 
     .total-footer-label {
@@ -324,14 +371,14 @@
     }
 
     .total-footer-val {
-      font-size: 16px;
+      font-size: 16.5px;
       font-weight: 800;
       color: #141418;
       margin-right: 12px;
     }
 
     .btn-footer-cancel {
-      padding: 9px 24px;
+      padding: 9px 26px;
       border: 1.5px solid #cbd5e1;
       background: #ffffff;
       border-radius: 6px;
@@ -340,6 +387,12 @@
       color: #141418;
       text-decoration: none;
       cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-footer-cancel:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
     }
 
     .btn-footer-proceed {
@@ -353,7 +406,7 @@
       text-decoration: none;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 7px;
       cursor: pointer;
       transition: background 0.15s;
     }
@@ -386,10 +439,10 @@
 
   <!-- Sub Navbar -->
   <div class="sub-nav-bar">
-    <div class="sub-nav-brand">
-      <span>Maybeads</span>
+    <a href="{{ route('main.dashboard') }}" class="sub-nav-brand">
+      <span class="brand-title">Maybeads</span>
       <span class="sub-nav-crumb">/ Katalog Belanja</span>
-    </div>
+    </a>
     <div class="sub-nav-actions">
       <a href="{{ route('cart.index') }}" class="sub-btn-pill">
         <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
@@ -405,7 +458,7 @@
 
   <!-- Main Content -->
   <main class="order-checkout-main">
-    <div class="breadcrumb-text">&lt; Dashboard / Keranjang</div>
+    <a href="{{ route('cart.index') }}" class="breadcrumb-text">&lt; Dashboard / Keranjang</a>
     <h1 class="page-title-main">Detail Data Pesanan</h1>
 
     <div class="checkout-two-cols">
@@ -422,7 +475,7 @@
         </div>
 
         <div id="checkoutItemsList">
-          <!-- Item 1 -->
+          <!-- Item 1 Default Sample matching Mockup -->
           <div class="items-table-row">
             <div class="prod-cell">
               <div class="prod-thumb-box"></div>
@@ -436,7 +489,7 @@
             <div style="text-align: right; font-weight: 600;">Rp 42.000,00</div>
           </div>
 
-          <!-- Item 2 -->
+          <!-- Item 2 Default Sample matching Mockup -->
           <div class="items-table-row">
             <div class="prod-cell">
               <div class="prod-thumb-box"></div>
@@ -450,7 +503,7 @@
             <div style="text-align: right; font-weight: 600;">Rp 42.000,00</div>
           </div>
 
-          <!-- Item 3 -->
+          <!-- Item 3 Default Sample matching Mockup -->
           <div class="items-table-row">
             <div class="prod-cell">
               <div class="prod-thumb-box"></div>
@@ -467,7 +520,7 @@
 
         <!-- Total Harga Summary -->
         <div class="total-calc-wrap">
-          <h2 class="box-card-title" style="margin-bottom: 12px;">Total Harga</h2>
+          <h2 class="box-card-title" style="margin-bottom: 14px;">Total Harga</h2>
 
           <div class="calc-row-item">
             <span>Subtotal</span>
@@ -476,24 +529,24 @@
 
           <div class="calc-row-item">
             <span>Biaya Pengantaran</span>
-            <span>Rp. 42.000,00</span>
+            <span id="pengantaranVal">Rp. 42.000,00</span>
           </div>
 
           <div class="calc-row-item">
             <span>Biaya Admin</span>
-            <span>Rp. 42.000,00</span>
+            <span id="adminVal">Rp. 42.000,00</span>
           </div>
 
           <div class="calc-row-item">
             <span>Pengambilan</span>
-            <span>Rp. 42.000,00</span>
+            <span id="pengambilanVal">Rp. 42.000,00</span>
           </div>
 
           <div class="calc-divider"></div>
 
           <div class="final-row-item">
             <span>Harga Akhir</span>
-            <span id="finalPriceVal">42.000,00</span>
+            <span class="final-price-bold" id="finalPriceVal">42.000,00</span>
           </div>
         </div>
 
@@ -505,7 +558,7 @@
 
         <label class="radio-option-item">
           <span class="radio-left-label">
-            <input type="radio" name="pickup_type" value="pickup" checked>
+            <input type="radio" name="pickup_type" value="pickup" checked id="radioPickup">
             <span>Ambil Ditempat</span>
           </span>
           <span class="radio-cost-text">+ Rp 1.000</span>
@@ -513,15 +566,15 @@
 
         <label class="radio-option-item">
           <span class="radio-left-label">
-            <input type="radio" name="pickup_type" value="delivery">
+            <input type="radio" name="pickup_type" value="delivery" id="radioDelivery">
             <span>Diantar</span>
           </span>
-          <span class="radio-cost-text">Menghitung...</span>
+          <span class="radio-cost-text" id="deliveryHintText">Menghitung...</span>
         </label>
 
         <div class="address-input-wrapper">
-          <input type="text" class="address-field" placeholder="Isi Alamat..." value="Jl. Pangeran Suriansyah, Loktabat Utara, Banjarbaru">
-          <button type="button" class="btn-default-addr">Alamat Default</button>
+          <input type="text" class="address-field" id="addressField" placeholder="Isi Alamat..." value="Jl. Pangeran Suriansyah, Loktabat Utara, Banjarbaru">
+          <button type="button" class="btn-default-addr" id="btnDefaultAddress">Alamat Default</button>
         </div>
 
         <div class="section-divider"></div>
@@ -530,7 +583,7 @@
 
         <label class="radio-option-item">
           <span class="radio-left-label">
-            <input type="radio" name="pay_type" value="qris" checked>
+            <input type="radio" name="pay_type" value="qris" checked id="radioQris">
             <span>QRIS</span>
           </span>
           <span class="radio-cost-text">+ Rp 200</span>
@@ -538,7 +591,7 @@
 
         <label class="radio-option-item">
           <span class="radio-left-label">
-            <input type="radio" name="pay_type" value="ewallet">
+            <input type="radio" name="pay_type" value="ewallet" id="radioEwallet">
             <span>E-Wallet</span>
           </span>
           <span class="radio-cost-text">+ Rp 200</span>
@@ -561,32 +614,48 @@
   </footer>
 
   <script>
-    // Read cart items from localStorage if available to populate
-    try {
-      const raw = localStorage.getItem('maybeads_cart');
-      if (raw) {
-        const cart = JSON.parse(raw);
-        const checked = cart.filter(c => c.checked !== false);
-        if (checked.length > 0) {
+    document.addEventListener('DOMContentLoaded', () => {
+      let currentSubtotal = 42000;
+      let hasCustomCart = false;
+
+      // Populate Cart Items if available in localStorage
+      try {
+        const rawCheckout = localStorage.getItem('maybeads_checkout_items');
+        const rawCart = localStorage.getItem('maybeads_cart');
+        let items = null;
+
+        if (rawCheckout) {
+          items = JSON.parse(rawCheckout);
+        } else if (rawCart) {
+          const parsed = JSON.parse(rawCart);
+          items = parsed.filter(c => c.checked !== false);
+        }
+
+        if (items && items.length > 0) {
+          hasCustomCart = true;
           const container = document.getElementById('checkoutItemsList');
           container.innerHTML = '';
           let sum = 0;
 
-          checked.forEach(item => {
+          items.forEach(item => {
             let price = Number(item.rawPrice) || 42000;
             if (price < 1000) price *= 1000;
-            const q = item.qty || 1;
+            const q = Number(item.qty) || 1;
             const lineTotal = price * q;
             sum += lineTotal;
 
             const row = document.createElement('div');
             row.className = 'items-table-row';
+            const imgHtml = item.image
+              ? `<img src="${item.image}" alt="${item.name}" class="prod-thumb-box">`
+              : `<div class="prod-thumb-box"></div>`;
+
             row.innerHTML = `
               <div class="prod-cell">
-                <img src="${item.image || '/images/products/sample-hub.jpg'}" alt="${item.name}" class="prod-thumb-box">
+                ${imgHtml}
                 <div>
-                  <div class="prod-name-title">${item.name}</div>
-                  <div class="prod-cat-sub">Aksesoris</div>
+                  <div class="prod-name-title">${item.name || 'Deskripsi Nama Produk'}</div>
+                  <div class="prod-cat-sub">${item.color || 'Aksesoris'}</div>
                 </div>
               </div>
               <div>Rp ${price.toLocaleString('id-ID')},00</div>
@@ -596,12 +665,73 @@
             container.appendChild(row);
           });
 
-          document.getElementById('subtotalVal').textContent = 'Rp. ' + sum.toLocaleString('id-ID') + ',00';
-          document.getElementById('finalPriceVal').textContent = sum.toLocaleString('id-ID') + ',00';
-          document.getElementById('footerTotalDisplay').textContent = 'Rp. ' + (sum + 1000 + 200).toLocaleString('id-ID');
+          currentSubtotal = sum;
+        }
+      } catch(e) {
+        console.error('Error loading cart items:', e);
+      }
+
+      function updateCalculation() {
+        const isDelivery = document.getElementById('radioDelivery').checked;
+        const pengantaranCost = isDelivery ? 5000 : 0;
+        const pengambilanCost = isDelivery ? 0 : 1000;
+        const adminCost = 200;
+
+        if (hasCustomCart) {
+          const totalFinal = currentSubtotal + pengantaranCost + pengambilanCost + adminCost;
+          
+          document.getElementById('subtotalVal').textContent = 'Rp. ' + currentSubtotal.toLocaleString('id-ID') + ',00';
+          document.getElementById('pengantaranVal').textContent = isDelivery ? 'Rp. 5.000,00' : 'Rp. 0,00';
+          document.getElementById('adminVal').textContent = 'Rp. 200,00';
+          document.getElementById('pengambilanVal').textContent = isDelivery ? 'Rp. 0,00' : 'Rp. 1.000,00';
+          
+          document.getElementById('finalPriceVal').textContent = totalFinal.toLocaleString('id-ID') + ',00';
+          document.getElementById('footerTotalDisplay').textContent = 'Rp. ' + totalFinal.toLocaleString('id-ID');
+        } else {
+          // If no custom cart, display exact mockup values
+          document.getElementById('subtotalVal').textContent = 'Rp. 42.000,00';
+          document.getElementById('pengantaranVal').textContent = 'Rp. 42.000,00';
+          document.getElementById('adminVal').textContent = 'Rp. 42.000,00';
+          document.getElementById('pengambilanVal').textContent = 'Rp. 42.000,00';
+          document.getElementById('finalPriceVal').textContent = '42.000,00';
+          document.getElementById('footerTotalDisplay').textContent = 'Rp. 48.000';
         }
       }
-    } catch(e) {}
+
+      // Radio Listeners
+      const radios = document.querySelectorAll('input[name="pickup_type"], input[name="pay_type"]');
+      radios.forEach(r => r.addEventListener('change', updateCalculation));
+
+      // Default Address Button
+      const btnDefaultAddress = document.getElementById('btnDefaultAddress');
+      const addressField = document.getElementById('addressField');
+      if (btnDefaultAddress && addressField) {
+        btnDefaultAddress.addEventListener('click', () => {
+          addressField.value = 'Jl. Pangeran Suriansyah, Loktabat Utara, Banjarbaru';
+          addressField.focus();
+        });
+      }
+
+      // Proceed to Payment Button
+      const btnGoToPayment = document.getElementById('btnGoToPayment');
+      if (btnGoToPayment) {
+        btnGoToPayment.addEventListener('click', (e) => {
+          e.preventDefault();
+          const isQris = document.getElementById('radioQris').checked;
+          const address = addressField ? addressField.value.trim() : '';
+          
+          // Store order details in localStorage for payment screen
+          localStorage.setItem('maybeads_order_address', address);
+          localStorage.setItem('maybeads_order_pickup', document.querySelector('input[name="pickup_type"]:checked').value);
+          localStorage.setItem('maybeads_order_payment_method', isQris ? 'qris' : 'ewallet');
+
+          window.location.href = "{{ route('payment.qris') }}";
+        });
+      }
+
+      // Initial calculation
+      updateCalculation();
+    });
   </script>
 </body>
 </html>

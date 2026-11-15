@@ -794,13 +794,14 @@
           Subtotal: <strong id="cartSubtotalText">Rp. 0</strong>
         </div>
         @auth
-          <a href="{{ route('order.checkout.detail') }}" class="btn-checkout-action" id="btnCheckoutAction">
+          <a href="{{ route('checkout') }}" class="btn-checkout-action" id="btnCheckoutAction">
             <span>Checkout</span>
             <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
           </a>
         @else
-          <a href="{{ route('login') }}" class="btn-checkout-action">
-            <span>Masuk untuk Checkout</span>
+          <a href="{{ route('checkout') }}" class="btn-checkout-action" id="btnCheckoutAction">
+            <span>Checkout</span>
+            <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
           </a>
         @endauth
       </div>
@@ -1232,7 +1233,7 @@
         });
       }
 
-      // Checkout Button: Langsung buka halaman checkout dengan menyimpan subtotal
+      // Checkout Button: Simpan data dan navigasi ke halaman checkout
       if (btnCheckoutAction) {
         btnCheckoutAction.addEventListener('click', (e) => {
           e.preventDefault();
@@ -1241,8 +1242,11 @@
             alert('Silakan pilih setidaknya 1 produk untuk checkout.');
             return;
           }
-          const subtotal = checkedItems.reduce((sum, it) => sum + ((it.rawPrice || 24000) * (it.qty || 1)), 0);
-          alert(`Melanjutkan ke proses pembayaran...\nTotal Item: ${checkedItems.length}\nSubtotal: Rp. ${subtotal.toLocaleString('id-ID')}`);
+          const subtotal = checkedItems.reduce((sum, it) => sum + ((it.rawPrice || 42000) * (it.qty || 1)), 0);
+          localStorage.setItem('maybeads_cart', JSON.stringify(cart));
+          localStorage.setItem('maybeads_checkout_items', JSON.stringify(checkedItems));
+          localStorage.setItem('maybeads_subtotal', String(subtotal));
+          window.location.href = "{{ route('checkout') }}";
         });
       }
 
