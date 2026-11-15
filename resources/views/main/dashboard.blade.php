@@ -320,7 +320,7 @@
         <div class="products-grid-wrapper" id="productsGridWrapper">
           @forelse($products as $index => $product)
             @php
-              $rawPrice = (float)$product->price;
+              $rawPrice = (float)$product->price < 1000 ? (float)$product->price * 1000 : (float)$product->price;
               $originalPrice = $rawPrice * 1.15;
               $formattedPrice = number_format($rawPrice, 0, ',', '.');
               $formattedOriginalPrice = 'Rp ' . number_format($originalPrice, 0, ',', '.');
@@ -364,7 +364,8 @@
                 <img src="{{ $productImg }}"
                      alt="{{ $product->product_name }}"
                      class="card-product-img"
-                     loading="lazy">
+                     loading="lazy"
+                     onerror="this.onerror=null;this.src='{{ asset('images/landing/prod-keychain.jpg') }}'">
               </div>
 
               <!-- Card Body -->

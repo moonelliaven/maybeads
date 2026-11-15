@@ -190,7 +190,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const data = detailBox.dataset;
     const qty  = parseInt(qtyInput?.value, 10) || 1;
-    const rawPrice = parseInt(data.rawPrice, 10) || 0;
+    let rawPrice = parseInt(data.productPrice || data.rawPrice, 10) || 89000;
+    if (rawPrice < 1000) rawPrice *= 1000;
 
     let variantLabel = [];
     if (selectedColor) variantLabel.push(selectedColor);

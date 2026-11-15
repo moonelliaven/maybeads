@@ -144,7 +144,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Helper: Add product to cart and redirect directly to cart detail
   function addItemToCart(data) {
     if (!data) return;
-    const rawNum = parseInt((data.price || '').replace(/[^0-9]/g, ''), 10) || 50000;
+    let rawNum = parseInt(String(data.price || '').replace(/[^0-9]/g, ''), 10) || 42000;
+    if (rawNum < 1000) rawNum *= 1000;
     const existing = localCart.find(it => String(it.id) === String(data.id));
     if (existing) {
       existing.qty = (existing.qty || 1) + 1;
@@ -333,7 +334,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!currentModalProduct) return;
 
-      const rawUnitPrice = parseFloat(currentModalProduct.price) || 0;
+      let rawUnitPrice = parseFloat(currentModalProduct.price) || 0;
+      if (rawUnitPrice < 1000) rawUnitPrice *= 1000;
       const formattedUnitPrice = 'Rp ' + Math.round(rawUnitPrice).toLocaleString('id-ID');
 
       // Cek apakah item serupa (id, warna, ukuran) sudah ada di keranjang

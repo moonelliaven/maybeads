@@ -874,20 +874,24 @@
       let rawCart = localStorage.getItem('maybeads_cart');
       let cart = rawCart !== null ? JSON.parse(rawCart) : sampleDefaultItems;
 
-      // Ensure every item has a checked state (default to true if not set)
+      // Ensure every item has a checked state & reasonable Rupiah price (min Rp 1.000)
       cart = cart.map((it, idx) => {
         if (typeof it.checked === 'undefined') {
           it.checked = true;
         }
         if (!it.rawPrice) {
-          it.rawPrice = parseInt((it.price || '').replace(/[^0-9]/g, ''), 10) || 24000;
+          it.rawPrice = parseInt(String(it.price || '').replace(/[^0-9]/g, ''), 10) || 42000;
         }
+        it.rawPrice = Number(it.rawPrice);
+        if (it.rawPrice < 1000) {
+          it.rawPrice = it.rawPrice * 1000;
+        }
+        it.price = 'Rp ' + it.rawPrice.toLocaleString('id-ID');
         return it;
       });
 
-      if (rawCart === null) {
-        localStorage.setItem('maybeads_cart', JSON.stringify(cart));
-      }
+      // Always save back sanitized reasonable prices to localStorage
+      localStorage.setItem('maybeads_cart', JSON.stringify(cart));
 
       const rowsContainer      = document.getElementById('cartTableRowsContainer');
       const headerSelectAll    = document.getElementById('headerSelectAll');
@@ -968,13 +972,14 @@
         }
 
         rowsContainer.innerHTML = filtered.map(({ item, originalIdx }) => {
-          const rawPrice = Number(item.rawPrice) || 24000;
+          let rawPrice = Number(item.rawPrice) || 42000;
+          if (rawPrice < 1000) rawPrice *= 1000;
           const qty = parseInt(item.qty, 10) || 1;
           const rowTotal = rawPrice * qty;
           const displayUnitPrice = 'Rp ' + rawPrice.toLocaleString('id-ID');
           const displayRowTotal = 'Rp ' + rowTotal.toLocaleString('id-ID');
-          const variantText = item.color || 'Merah, XL';
-          const imgSrc = item.image || '/images/products/sample-hub.jpg';
+          const variantText = item.color || 'Standar';
+          const imgSrc = item.image || '/images/products/keychain-01.jpg';
 
           return `
             <div class="cart-grid-row" data-idx="${originalIdx}">
@@ -988,7 +993,7 @@
 
               <!-- Product Info -->
               <div class="cart-product-cell">
-                <img src="${imgSrc}" alt="${item.name}" class="cart-thumb-img">
+                <img src="${imgSrc}" alt="${item.name}" class="cart-thumb-img" onerror="this.onerror=null;this.src='/images/landing/prod-keychain.jpg'">
                 <div class="cart-info-texts">
                   <h4 class="cart-item-title" title="${item.name}">${item.name}</h4>
                   <span class="cart-item-variant">Jenis: ${variantText}</span>

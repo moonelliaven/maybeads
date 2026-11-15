@@ -573,7 +573,8 @@
           let sum = 0;
 
           checked.forEach(item => {
-            const price = item.rawPrice || 42000;
+            let price = Number(item.rawPrice) || 42000;
+            if (price < 1000) price *= 1000;
             const q = item.qty || 1;
             const lineTotal = price * q;
             sum += lineTotal;
