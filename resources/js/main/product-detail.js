@@ -261,32 +261,36 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* 7. Related products Add to Cart button delegation */
-  document.querySelectorAll('.btn-related-add-cart').forEach(btn => {
+  document.querySelectorAll('.btn-related-add-cart, .btn-quick-cart').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       if (window.isUserLoggedIn === false) {
         openLoginPromptModal();
         return;
       }
-      const card = btn.closest('.product-card-item');
+      const card = btn.closest('.product-card-item, .related-product-card');
       if (!card) return;
       const data = card.dataset;
-      const rawPrice = parseInt((data.price || '').replace(/[^0-9]/g, ''), 10) || 50000;
+      const id = btn.dataset.id || data.id || '1';
+      const name = card.querySelector('.rel-title-text')?.textContent || data.name || 'Produk Maybeads';
+      const priceText = card.querySelector('.rel-current-price')?.textContent || data.price || 'Rp 18.500';
+      const rawPrice = parseInt(priceText.replace(/[^0-9]/g, ''), 10) || 18500;
+      const img = card.querySelector('img')?.src || '';
 
       const cart = getLocalCart();
-      const existing = cart.find(it => String(it.id) === String(data.id));
+      const existing = cart.find(it => String(it.id) === String(id));
 
       if (existing) {
         existing.qty = (existing.qty || 1) + 1;
         existing.addedAt = Date.now();
       } else {
         cart.unshift({
-          id: data.id,
-          name: data.name,
-          price: data.price,
+          id: id,
+          name: name,
+          price: priceText,
           rawPrice: rawPrice,
-          image: data.image,
-          color: data.color || 'Biru, Kuning',
+          image: img,
+          color: 'Standar',
           qty: 1,
           checked: true,
           addedAt: Date.now()
@@ -295,9 +299,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       saveLocalCart(cart);
 
-      btn.textContent = '✓ Ditambahkan';
+      const origHtml = btn.innerHTML;
+      btn.innerHTML = `<span style="font-size:10px; font-weight:700; color:#16a34a;">✓</span>`;
       setTimeout(() => {
-        btn.textContent = '+ Keranjang';
+        btn.innerHTML = origHtml;
       }, 1200);
     });
   });

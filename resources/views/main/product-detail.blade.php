@@ -32,20 +32,20 @@
   $formattedPrice = 'Rp ' . number_format($rawPrice, 0, ',', '.');
   $productCode = 'IDP' . str_pad($product->id, 4, '0', STR_PAD_LEFT);
   $catName = $product->category ? $product->category->category_name : 'Aksesoris';
-  $desc = $product->description ?: 'Set perhiasan elegan dengan manik berkualitas tinggi, dirangkai dengan teliti untuk memberikan sentuhan manis pada setiap penampilan Anda.';
+  $desc = $product->description ?: 'Set perhiasan elegan dengan hiasan kristal berkualitas tinggi. Cocok dipakai ke pesta, acara formal, maupun harian.';
 
   // Variants from database
   $colors = $product->variants ? $product->variants->pluck('color')->filter()->unique()->values() : collect();
   $sizes  = $product->variants ? $product->variants->pluck('size')->filter()->unique()->values() : collect();
   if ($colors->isEmpty()) {
-      $colors = collect(['Silver Chrome', 'Black Onyx', 'Pastel Pink']);
+      $colors = collect(['Pink', 'Ungu', 'Putih']);
   }
   if ($sizes->isEmpty()) {
-      $sizes = collect(['Standard', 'Large (Custom)']);
+      $sizes = collect(['Kalung + Anting', 'Kalung', 'Anting']);
   }
-  $defaultVariantStr = $colors->first() ?: ($sizes->first() ?: 'Standard');
+  $defaultVariantStr = $colors->first() . ' - ' . $sizes->first();
 
-  // Secondary images if available, with rich fallbacks so gallery is always full
+  // 5 Gallery images for thumbnail showcase matching design
   $galleryImages = [];
   $galleryImages[] = $mainProductImg;
   $secImages = is_string($product->secondary_images) ? json_decode($product->secondary_images, true) : $product->secondary_images;
@@ -54,14 +54,12 @@
           $galleryImages[] = $resolveImg($sImg, $idx + 1);
       }
   }
-  if (count($galleryImages) < 3) {
-      $extraFallbacks = ['prod-ring.jpg', 'prod-butterfly.jpg', 'prod-keychain.jpg', 'prod-hairclip.jpg'];
-      foreach ($extraFallbacks as $fb) {
-          if (count($galleryImages) >= 3) break;
-          $u = $resolveImg($fb, count($galleryImages));
-          if (!in_array($u, $galleryImages)) {
-              $galleryImages[] = $u;
-          }
+  $extraFallbacks = ['prod-ring.jpg', 'prod-butterfly.jpg', 'prod-keychain.jpg', 'prod-hairclip.jpg', 'hero-main.jpg', 'keychain-01.jpg'];
+  foreach ($extraFallbacks as $fb) {
+      if (count($galleryImages) >= 5) break;
+      $u = $resolveImg($fb, count($galleryImages));
+      if (!in_array($u, $galleryImages)) {
+          $galleryImages[] = $u;
       }
   }
 @endphp
@@ -75,90 +73,112 @@
   <title>{{ $product->product_name }} — Maybeads</title>
   <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}">
 
+  <!-- Google Fonts: Plus Jakarta Sans & Playfair Display -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-  @vite(['resources/css/main/product-detail.css', 'resources/js/main/product-detail.js'])
+  @vite(['resources/css/main/dashboard.css', 'resources/css/main/product-detail.css', 'resources/js/main/product-detail.js'])
+  <script>
+    window.isUserLoggedIn = {{ Auth::check() ? 'true' : 'false' }};
+  </script>
 </head>
 <body class="product-detail-page">
 
-  {{-- 1. Top Navbar (Maybead.s Brand & Links) --}}
-  <header class="detail-top-navbar">
-    <div class="top-nav-inner">
-      <a href="{{ route('home') }}" class="brand-title">
-        Maybead.s
-      </a>
+  <!-- ========================================================================
+       1. TOP BAR (Dark Slate Header - Maybead.s)
+       ======================================================================== -->
+  <header class="top-nav-bar">
+    <div class="top-nav-container">
+      <div class="top-nav-left">
+        <a href="{{ route('home') }}" class="top-nav-brand-logo">
+          Maybead.s
+        </a>
+      </div>
 
-      <nav class="top-nav-links" aria-label="Main Navigation">
-        <a href="{{ route('home') }}" class="nav-link">BERANDA</a>
-        <a href="{{ route('contact') }}" class="nav-link">KONTAK</a>
-        <a href="{{ route('main.dashboard') }}" class="nav-link active">PRODUK</a>
+      <nav class="top-nav-right" aria-label="Navigasi Utama">
+        <ul class="top-nav-menu-links">
+          <li><a href="{{ route('home') }}" class="top-menu-link">BERANDA</a></li>
+          <li><a href="{{ route('contact') }}" class="top-menu-link">KONTAK</a></li>
+          <li><a href="{{ route('main.dashboard') }}" class="top-menu-link active">PRODUK</a></li>
+        </ul>
       </nav>
     </div>
   </header>
 
-  {{-- 2. Sub-Navbar --}}
-  <nav class="detail-sub-navbar">
-    <div class="sub-nav-inner">
+  <!-- ========================================================================
+       2. HERO BANNER SECTION (Blue Textured Backdrop)
+       ======================================================================== -->
+  <section class="catalog-hero-section">
+    <div class="hero-bg-layer">
+      <img src="{{ asset('images/landing/banner-accessories.jpg') }}" alt="Aksesoris Manik Maybeads" class="hero-bg-image" loading="eager">
+      <div class="hero-gradient-overlay"></div>
+    </div>
+    <div class="hero-container">
+      <h1 class="hero-main-title">Temukan Gaya Favoritmu</h1>
+      <p class="hero-main-desc">
+        Jelajahi koleksi pilihan Maybeads dan temukan berbagai aksesori serta<br>
+        produk unik yang melengkapi gayamu.
+      </p>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       3. SUB-NAVBAR (White Bar with Logo, Breadcrumb, Cart, and Account)
+       ======================================================================== -->
+  <nav class="sub-navbar-bar" id="subNavbar">
+    <div class="sub-navbar-container">
+      <!-- Left: Brand Logo + Breadcrumb -->
       <div class="sub-nav-left">
-        <a href="{{ route('main.dashboard') }}" class="sub-brand">Maybeads</a>
-        <span class="sub-crumb">/ Detail Produk</span>
+        <a href="{{ route('main.dashboard') }}" class="sub-nav-brand">
+          Maybead.s
+        </a>
+        <span class="sub-nav-crumb" style="font-size: 11px; color: #94a3b8; font-weight: 500;">Detail Produk</span>
       </div>
 
+      <!-- Right: Keranjang and Akun buttons -->
       <div class="sub-nav-right">
         @auth
-          <a href="{{ route('cart.index') }}" class="action-pill-btn" title="Lihat Keranjang Belanja">
-            <svg class="pill-icon" viewBox="0 0 24 24">
-              <circle cx="9" cy="21" r="1"></circle>
-              <circle cx="20" cy="21" r="1"></circle>
-              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-            </svg>
+          <a href="{{ route('cart.index') }}" class="sub-btn-pill">
+            <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
             <span>Keranjang</span>
-            <span class="cart-count-badge" id="cartCountBadge" style="{{ ($cartCount ?? 0) > 0 ? '' : 'display:none;' }}">
-              {{ $cartCount ?? 0 }}
-            </span>
+            @if(($cartCount ?? 0) > 0)
+              <span class="cart-count-badge" id="cartCountBadge" style="background:#2b4570; color:#fff; font-size:10px; font-weight:700; padding:1px 6px; border-radius:999px;">{{ $cartCount }}</span>
+            @endif
+          </a>
+          <a href="{{ route('orders.history') }}" class="sub-btn-pill">
+            <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span>Akun</span>
+            <svg viewBox="0 0 24 24" style="width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2.5;"><polyline points="6 9 12 15 18 9"></polyline></svg>
           </a>
         @else
-          <button type="button" class="action-pill-btn btn-trigger-login-prompt" title="Lihat Keranjang Belanja">
-            <svg class="pill-icon" viewBox="0 0 24 24">
-              <circle cx="9" cy="21" r="1"></circle>
-              <circle cx="20" cy="21" r="1"></circle>
-              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-            </svg>
+          <button type="button" class="sub-btn-pill btn-trigger-login-prompt">
+            <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
             <span>Keranjang</span>
           </button>
+          <a href="{{ route('login') }}" class="sub-btn-pill">
+            <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span>Akun</span>
+            <svg viewBox="0 0 24 24" style="width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2.5;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </a>
         @endauth
       </div>
     </div>
   </nav>
 
-  {{-- 3. Main Detail Container --}}
+  <!-- ========================================================================
+       4. MAIN PRODUCT DETAIL CONTENT
+       ======================================================================== -->
   <main class="detail-main-wrapper">
 
-    {{-- Tombol Kembali & Breadcrumb --}}
-    <div class="detail-back-bar" style="margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-      <a href="{{ route('main.dashboard') }}" class="btn-back-to-home" style="display: inline-flex; align-items: center; gap: 8px; background: #ffffff; border: 1.5px solid #23477d; color: #23477d; font-weight: 700; font-size: 13px; padding: 7px 18px; border-radius: 9999px; text-decoration: none; transition: all 0.2s ease; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 15px; height: 15px;">
-          <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
-        <span>Kembali ke Halaman Utama</span>
-      </a>
-
-      {{-- Breadcrumb Trail --}}
-      <div class="breadcrumb-trail" style="margin: 0;">
-        <a href="{{ route('home') }}">Beranda</a>
-        <span class="sep">&gt;</span>
-        <a href="{{ route('main.dashboard') }}">Katalog Produk</a>
-        <span class="sep">&gt;</span>
-        <a href="{{ route('main.dashboard', ['category' => $product->category_id]) }}">{{ $catName }}</a>
-        <span class="sep">&gt;</span>
-        <span class="active-crumb">{{ $product->product_name }}</span>
-      </div>
+    <!-- Breadcrumb Heading -->
+    <div class="detail-header-block">
+      <div class="detail-crumb-line">Dashboard &gt; Produk</div>
+      <h1 class="detail-page-title">Detail Produk</h1>
     </div>
 
-    {{-- Product Showcase Grid --}}
-    <section class="product-showcase-grid"
+    <!-- CARD 1: Main Product Showcase Card -->
+    <section class="detail-card-box"
              id="productDetailCard"
              data-product-id="{{ $product->id }}"
              data-product-name="{{ $product->product_name }}"
@@ -167,355 +187,198 @@
              data-product-img="{{ $mainProductImg }}"
              data-default-variant="{{ $defaultVariantStr }}">
 
-      {{-- Left: Gallery --}}
-      <div class="showcase-gallery-col">
-        <div class="main-preview-frame">
-          <img src="{{ $mainProductImg }}"
-               alt="{{ $product->product_name }}"
-               id="mainProductImage"
-               class="main-preview-img">
-        </div>
+      <div class="showcase-grid-layout">
+        
+        <!-- Left: Image & 5 Thumbnails -->
+        <div class="gallery-column">
+          <div class="main-image-display-frame">
+            <img src="{{ $mainProductImg }}"
+                 id="mainProductImage"
+                 alt="{{ $product->product_name }}">
+          </div>
 
-        @if(count($galleryImages) > 1)
-          <div class="gallery-thumbs-row">
+          <div class="thumbs-horizontal-row">
             @foreach($galleryImages as $tIdx => $tImg)
               <button type="button"
-                      class="thumb-item-btn {{ $tIdx === 0 ? 'active' : '' }}"
+                      class="thumb-item-btn thumb-select-btn {{ $tIdx === 0 ? 'active' : '' }}"
                       data-src="{{ $tImg }}"
                       aria-label="Thumbnail {{ $tIdx + 1 }}">
                 <img src="{{ $tImg }}" alt="{{ $product->product_name }} {{ $tIdx + 1 }}">
               </button>
             @endforeach
           </div>
-        @endif
-      </div>
-
-      {{-- Right: Product Details & Purchase Actions --}}
-      <div class="showcase-info-col">
-        <span class="product-cat-pill">{{ $catName }}</span>
-
-        <h1 class="product-main-heading">{{ $product->product_name }}</h1>
-
-        <div class="product-price-stock-row">
-          <div class="product-main-price">{{ $formattedPrice }}</div>
-
-          @if($product->stock > 0)
-            <span class="stock-status-pill in-stock">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              Stok Tersedia ({{ $product->stock }} pcs)
-            </span>
-          @else
-            <span class="stock-status-pill out-of-stock">
-              Stok Habis
-            </span>
-          @endif
         </div>
 
-        <div class="product-desc-box">
-          {{ $desc }}
-        </div>
+        <!-- Right: Product Info & Actions -->
+        <div class="info-details-column">
+          <div class="product-cat-name">{{ $catName }}</div>
+          <h2 class="product-title-text">{{ $product->product_name }}</h2>
+          <div class="product-price-highlight">{{ $formattedPrice }}</div>
+          <p class="product-desc-paragraph">{{ $desc }}</p>
 
-        {{-- Dynamic Variants Section from Database --}}
-        @if($colors->count() > 0 || $sizes->count() > 0)
-          <div class="variants-selection-wrap">
-            {{-- Pilihan Warna --}}
-            @if($colors->count() > 0)
-              <div>
-                <div class="variant-group-title">
-                  <span>PILIHAN WARNA:</span>
-                </div>
-                <div class="variant-options-row">
-                  @foreach($colors as $idx => $color)
-                    <button type="button"
-                            class="variant-choice-pill {{ $idx === 0 ? 'selected' : '' }}"
-                            data-variant-type="color"
-                            data-variant-value="{{ $color }}">
-                      {{ $color }}
-                    </button>
-                  @endforeach
-                </div>
-              </div>
-            @endif
-
-            {{-- Pilihan Ukuran --}}
-            @if($sizes->count() > 0)
-              <div>
-                <div class="variant-group-title">
-                  <span>PILIHAN UKURAN:</span>
-                </div>
-                <div class="variant-options-row">
-                  @foreach($sizes as $idx => $size)
-                    <button type="button"
-                            class="variant-choice-pill {{ $idx === 0 ? 'selected' : '' }}"
-                            data-variant-type="size"
-                            data-variant-value="{{ $size }}">
-                      {{ $size }}
-                    </button>
-                  @endforeach
-                </div>
-              </div>
-            @endif
-          </div>
-        @endif
-
-        {{-- Quantity Stepper & CTA Buttons --}}
-        <div class="purchase-controls-row">
-          <div class="qty-stepper-box">
-            <button type="button" class="qty-btn" id="btnQtyMinus" aria-label="Kurangi jumlah">&minus;</button>
-            <input type="number"
-                   id="productQtyInput"
-                   class="qty-input"
-                   value="1"
-                   min="1"
-                   max="{{ max(1, (int)$product->stock) }}"
-                   data-max-stock="{{ max(1, (int)$product->stock) }}"
-                   readonly>
-            <button type="button" class="qty-btn" id="btnQtyPlus" aria-label="Tambah jumlah">&plus;</button>
-          </div>
-
-          @auth
-            <button type="button"
-                    class="btn-add-to-cart-large"
-                    id="btnAddToCartMain"
-                    {{ $product->stock <= 0 ? 'disabled' : '' }}>
-              <svg viewBox="0 0 24 24">
-                <circle cx="9" cy="21" r="1"></circle>
-                <circle cx="20" cy="21" r="1"></circle>
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-              </svg>
-              <span>Tambah ke Keranjang</span>
-            </button>
-
-            <button type="button"
-                    class="btn-buy-now"
-                    id="btnBuyNow"
-                    {{ $product->stock <= 0 ? 'disabled' : '' }}>
-              Beli Sekarang
-            </button>
-          @else
-            <button type="button"
-                    class="btn-add-to-cart-large btn-trigger-login-prompt"
-                    title="Tambah ke Keranjang">
-              <svg viewBox="0 0 24 24">
-                <circle cx="9" cy="21" r="1"></circle>
-                <circle cx="20" cy="21" r="1"></circle>
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-              </svg>
-              <span>Tambah ke Keranjang</span>
-            </button>
-
-            <button type="button"
-                    class="btn-buy-now btn-trigger-login-prompt"
-                    title="Beli Sekarang">
-              Beli Sekarang
-            </button>
-          @endauth
-        </div>
-
-        {{-- Quality Trust Badges --}}
-        <div class="trust-features-grid">
-          <div class="trust-feature-item">
-            <div class="trust-feature-icon">
-              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
-            </div>
-            <div>
-              <div class="trust-feature-title">100% Handmade</div>
-              <div class="trust-feature-desc">Kualitas manik rapi</div>
+          <!-- Pilihan Warna -->
+          <div class="variant-block">
+            <div class="variant-title-caption">Warna</div>
+            <div class="variant-buttons-row">
+              @foreach($colors as $cIdx => $color)
+                <button type="button"
+                        class="variant-choice-pill pill-variant-btn {{ $cIdx === 0 ? 'selected' : '' }}"
+                        data-variant-type="color"
+                        data-variant-value="{{ $color }}">
+                  {{ $color }}
+                </button>
+              @endforeach
             </div>
           </div>
 
-          <div class="trust-feature-item">
-            <div class="trust-feature-icon">
-              <svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-            </div>
-            <div>
-              <div class="trust-feature-title">Pengiriman Aman</div>
-              <div class="trust-feature-desc">Kemasan bubble wrap</div>
+          <!-- Pilihan Jenis -->
+          <div class="variant-block" style="margin-top: 14px;">
+            <div class="variant-title-caption">Pilihan Jenis:</div>
+            <div class="variant-buttons-row">
+              @foreach($sizes as $sIdx => $size)
+                <button type="button"
+                        class="variant-choice-pill pill-variant-btn {{ $sIdx === 0 ? 'selected' : '' }}"
+                        data-variant-type="size"
+                        data-variant-value="{{ $size }}">
+                  {{ $size }}
+                </button>
+              @endforeach
             </div>
           </div>
 
-          <div class="trust-feature-item">
-            <div class="trust-feature-icon">
-              <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          <!-- Stepper, Tambah Keranjang, Pesan Sekarang -->
+          <div class="purchase-action-group">
+            <div class="stepper-quantity-wrap">
+              <button type="button" class="stepper-arrow-btn" id="btnQtyMinus" aria-label="Kurangi">&minus;</button>
+              <input type="number"
+                     id="productQtyInput"
+                     class="stepper-number-val"
+                     value="1"
+                     min="1"
+                     max="{{ max(1, (int)$product->stock) }}"
+                     data-max-stock="{{ max(1, (int)$product->stock) }}"
+                     readonly>
+              <button type="button" class="stepper-arrow-btn" id="btnQtyPlus" aria-label="Tambah">&plus;</button>
             </div>
-            <div>
-              <div class="trust-feature-title">Garansi Sesuai</div>
-              <div class="trust-feature-desc">Produk sesuai foto</div>
-            </div>
+
+            @auth
+              <button type="button"
+                      class="btn-cart-outline-style"
+                      id="btnAddToCartMain"
+                      {{ $product->stock <= 0 ? 'disabled' : '' }}>
+                Tambahkan ke keranjang
+              </button>
+
+              <button type="button"
+                      class="btn-buy-solid-style"
+                      id="btnBuyNow"
+                      {{ $product->stock <= 0 ? 'disabled' : '' }}>
+                Pesan Sekarang
+              </button>
+            @else
+              <button type="button"
+                      class="btn-cart-outline-style btn-trigger-login-prompt">
+                Tambahkan ke keranjang
+              </button>
+
+              <button type="button"
+                      class="btn-buy-solid-style btn-trigger-login-prompt">
+                Pesan Sekarang
+              </button>
+            @endauth
+          </div>
+
+          <!-- Stock note -->
+          <div class="stock-counter-caption">
+            Stok Tersedia : {{ $product->stock > 0 ? $product->stock : 30 }}
           </div>
         </div>
 
       </div>
     </section>
 
-    {{-- 4. Product Technical Specifications (Database Table) --}}
-    <section class="product-specs-section">
-      <h2 class="section-subheading">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-          <polyline points="14 2 14 8 20 8"></polyline>
-          <line x1="16" y1="13" x2="8" y2="13"></line>
-          <line x1="16" y1="17" x2="8" y2="17"></line>
-        </svg>
-        Spesifikasi Produk
-      </h2>
-
-      <table class="specs-table">
-        <tbody>
-          <tr>
-            <th>Kode Produk</th>
-            <td>{{ $productCode }}</td>
-          </tr>
-          <tr>
-            <th>Nama Produk</th>
-            <td>{{ $product->product_name }}</td>
-          </tr>
-          <tr>
-            <th>Kategori Utama</th>
-            <td>{{ $catName }}</td>
-          </tr>
-          <tr>
-            <th>Ketersediaan Stok</th>
-            <td>{{ $product->stock }} unit tersedia</td>
-          </tr>
-          <tr>
-            <th>Status Produk</th>
-            <td>
-              <span style="color: #16a34a; font-weight: 700;">
-                {{ ucfirst($product->status ?? 'Aktif') }}
-              </span>
-            </td>
-          </tr>
-          @if($product->variants && $product->variants->count() > 0)
-            <tr>
-              <th>Varian Tersedia</th>
-              <td>
-                {{ $product->variants->map(fn($v) => trim(($v->color ?? '') . ' ' . ($v->size ?? '')))->filter()->implode(', ') }}
-              </td>
-            </tr>
-          @endif
-        </tbody>
-      </table>
-    </section>
-
-    {{-- 5. Testimoni Pembeli (Ulasan Asli Dari Pengguna) --}}
-    <section class="product-testimonials-section" style="margin-top: 36px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 28px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
-      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #f1f5f9;">
-        <div>
-          <h2 class="section-subheading" style="margin: 0 0 6px 0; display: flex; align-items: center; gap: 8px;">
-            <svg viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" style="width:20px;height:20px;">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-            </svg>
-            <span>Ulasan &amp; Testimoni Pembeli</span>
-          </h2>
-          <p style="font-size: 13px; color: #64748b; margin: 0;">Pengalaman asli dari pelanggan yang telah memesan produk ini</p>
+    <!-- CARD 2: Spesifikasi Produk -->
+    <section class="detail-card-box">
+      <h3 class="card-inner-heading">Spesifikasi Produk</h3>
+      <div class="specs-keyvalue-list">
+        <div class="spec-pair-item">
+          <span class="spec-prop-key">Deskripsi</span>
+          <span class="spec-prop-val">{{ $catName }}</span>
         </div>
-
-        <div style="display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 8px 16px; border-radius: 12px; border: 1px solid #e2e8f0;">
-          <div style="font-size: 24px; font-weight: 800; color: #0f172a; line-height: 1;">
-            {{ number_format($product->avg_rating, 1, ',', '.') }}
-          </div>
-          <div style="display: flex; flex-direction: column;">
-            <div style="display: flex; gap: 2px;">
-              @for($s = 1; $s <= 5; $s++)
-                <svg viewBox="0 0 24 24" fill="{{ $s <= round($product->avg_rating) ? '#f59e0b' : '#cbd5e1' }}" stroke="none" style="width:14px;height:14px;">
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                </svg>
-              @endfor
-            </div>
-            <span style="font-size: 11px; color: #64748b; font-weight: 600;">
-              Total {{ $product->review_count }} Ulasan
-            </span>
-          </div>
+        <div class="spec-pair-item">
+          <span class="spec-prop-key">Deskripsi</span>
+          <span class="spec-prop-val">{{ $productCode }}</span>
+        </div>
+        <div class="spec-pair-item">
+          <span class="spec-prop-key">Deskripsi</span>
+          <span class="spec-prop-val">{{ $product->product_name }}</span>
+        </div>
+        <div class="spec-pair-item">
+          <span class="spec-prop-key">Deskripsi</span>
+          <span class="spec-prop-val">100% Original Handmade</span>
+        </div>
+        <div class="spec-pair-item">
+          <span class="spec-prop-key">Deskripsi</span>
+          <span class="spec-prop-val">{{ $product->stock > 0 ? $product->stock : 30 }} pcs</span>
         </div>
       </div>
+    </section>
 
+    <!-- CARD 3: Ulasan dan Testimoni Pembeli -->
+    <section class="detail-card-box">
+      <h3 class="card-inner-heading">Ulasan dan Testimoni Pembeli</h3>
       @if(isset($testimonials) && $testimonials->count() > 0)
-        <div class="testimonials-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px;">
+        <div class="reviews-container-grid">
           @foreach($testimonials as $testi)
-            @php
-              $initial = strtoupper(substr($testi->user->name ?? 'U', 0, 1));
-              $colorsList = ['#2563eb', '#7c3aed', '#059669', '#ea580c', '#db2777', '#0891b2'];
-              $avatarBg = $colorsList[($testi->user_id ?? 1) % count($colorsList)];
-            @endphp
-            <div class="testi-card-box" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between;">
-              <div>
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                  <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="width: 36px; height: 36px; border-radius: 50%; background: {{ $avatarBg }}; color: #ffffff; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 14px;">
-                      {{ $initial }}
-                    </div>
-                    <div>
-                      <div style="font-size: 13.5px; font-weight: 700; color: #0f172a; line-height: 1.2;">
-                        {{ $testi->user->name ?? 'Pelanggan' }}
-                      </div>
-                      <span style="font-size: 11px; color: #059669; font-weight: 600; display: inline-flex; align-items: center; gap: 3px;">
-                        ✓ Pembeli Terverifikasi
-                      </span>
-                    </div>
-                  </div>
-
-                  <div style="display: flex; gap: 1px;">
-                    @for($star = 1; $star <= 5; $star++)
-                      <svg viewBox="0 0 24 24" fill="{{ $star <= $testi->rating ? '#f59e0b' : '#cbd5e1' }}" stroke="none" style="width:13px;height:13px;">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                      </svg>
-                    @endfor
-                  </div>
+            <div class="review-single-card">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                <div style="font-weight: 700; font-size: 13px; color: #141418;">{{ $testi->user->name ?? 'Pelanggan' }}</div>
+                <div style="display: flex; gap: 2px;">
+                  @for($star = 1; $star <= 5; $star++)
+                    <svg viewBox="0 0 24 24" fill="{{ $star <= $testi->rating ? '#f59e0b' : '#cbd5e1' }}" style="width:12px;height:12px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                  @endfor
                 </div>
-
-                <p style="font-size: 13.5px; color: #334155; line-height: 1.55; margin: 0; font-style: italic;">
-                  &ldquo;{{ $testi->message }}&rdquo;
-                </p>
               </div>
-
-              <div style="margin-top: 14px; padding-top: 8px; border-top: 1px solid #edf2f7; font-size: 11px; color: #94a3b8; text-align: right;">
-                {{ $testi->created_at ? $testi->created_at->diffForHumans() : 'Baru saja' }}
-              </div>
+              <p style="font-size: 12px; color: #475569; margin: 0; line-height: 1.5;">&ldquo;{{ $testi->message }}&rdquo;</p>
+              <div style="font-size: 10px; color: #94a3b8; margin-top: 8px; text-align: right;">{{ $testi->created_at ? $testi->created_at->diffForHumans() : 'Baru saja' }}</div>
             </div>
           @endforeach
         </div>
       @else
-        <div style="text-align: center; padding: 32px 16px; color: #64748b;">
-          <p style="margin: 0; font-size: 14px;">Belum ada ulasan khusus untuk produk ini. Jadilah yang pertama memberikan ulasan!</p>
-        </div>
+        <div class="empty-review-caption">Ulasan dan Testimoni Pembeli</div>
       @endif
     </section>
 
-    {{-- 6. Related Products Section (Rekomendasi Terkait) --}}
+    <!-- CARD 4: Produk Terkait Lainnya -->
     @if(isset($relatedProducts) && $relatedProducts->count() > 0)
-      <section class="related-products-section" style="margin-top: 36px;">
-        <h2 class="related-section-title">Produk Terkait Lainnya</h2>
+      <section class="related-section-wrap">
+        <h3 class="related-section-header">Produk Terkait Lainnya</h3>
 
-        <div class="related-grid">
-          @foreach($relatedProducts as $rIdx => $rProduct)
+        <div class="related-cards-grid">
+          @foreach($relatedProducts->take(4) as $rIdx => $rProduct)
             @php
               $rRawPrice = (float)$rProduct->price < 1000 ? (float)$rProduct->price * 1000 : (float)$rProduct->price;
               if ($rRawPrice <= 0) $rRawPrice = 18500;
               $rPriceFmt = number_format($rRawPrice, 0, ',', '.');
               $rStrikeFmt = number_format($rRawPrice * 1.15, 0, ',', '.');
-              $rImg = asset('images/landing/' . $fallbacks[($rIdx + 2) % count($fallbacks)]);
-              if ($rProduct->image && file_exists(storage_path('app/public/product/' . $rProduct->image))) {
-                  $rImg = asset('storage/product/' . $rProduct->image);
-              } elseif ($rProduct->image && file_exists(public_path('images/products/' . $rProduct->image))) {
-                  $rImg = asset('images/products/' . $rProduct->image);
-              } elseif ($rProduct->image && file_exists(public_path('images/landing/' . $rProduct->image))) {
-                  $rImg = asset('images/landing/' . $rProduct->image);
-              }
+              $rImg = $resolveImg($rProduct->image, $rIdx + 1);
             @endphp
-            <div class="rel-card">
-              <span class="rel-badge">BEST SELLER #{{ str_pad($rIdx + 1, 2, '0', STR_PAD_LEFT) }}</span>
-              <div class="rel-img-box">
-                <img src="{{ $rImg }}" alt="{{ $rProduct->product_name }}" style="width:100%;height:100%;object-fit:cover;">
+            <div class="related-product-card">
+              <span class="rel-seller-badge">BEST SELLER #01</span>
+              <div class="rel-image-box">
+                <img src="{{ $rImg }}" alt="{{ $rProduct->product_name }}">
               </div>
-              <div class="rel-cat-text">{{ $rProduct->category ? $rProduct->category->category_name : 'Kategori' }}</div>
-              <div class="rel-name-text">{{ $rProduct->product_name }}</div>
+              <div class="rel-category-text">{{ $rProduct->category ? $rProduct->category->category_name : 'Kategori' }}</div>
+              <div class="rel-title-text" title="{{ $rProduct->product_name }}">{{ $rProduct->product_name }}</div>
               <div class="rel-price-row">
-                <span class="rel-price-bold">Rp{{ $rPriceFmt }}</span>
-                <span class="rel-price-strike">Rp {{ $rStrikeFmt }}</span>
+                <span class="rel-current-price">Rp{{ $rPriceFmt }}</span>
+                <span class="rel-old-price">Rp {{ $rStrikeFmt }}</span>
               </div>
               <div class="rel-actions-row">
-                <a href="{{ route('product.detail', $rProduct->id) }}" class="btn-rel-detail">Detail</a>
+                <a href="{{ route('product.detail', $rProduct->id) }}" class="btn-card-detail">Detail</a>
+                <button type="button" class="btn-card-cart btn-quick-cart" data-id="{{ $rProduct->id }}" title="Tambah ke keranjang">
+                  <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                </button>
               </div>
             </div>
           @endforeach
@@ -525,7 +388,9 @@
 
   </main>
 
-  <!-- Footer -->
+  <!-- ========================================================================
+       5. FOOTER (Dark Navy Footer)
+       ======================================================================== -->
   <footer class="site-dark-footer">
     <div class="site-footer-columns">
       <div>
@@ -570,9 +435,7 @@
     </div>
   </footer>
 
-  <!-- ========================================================================
-       MODAL: POP UP LOGIN DIPERLUKAN (Guest Restriction)
-       ======================================================================== -->
+  <!-- Modal Pop Up Login Diperlukan -->
   <div class="login-prompt-backdrop" id="loginPromptModal" role="dialog" aria-modal="true" aria-labelledby="loginPromptTitle" hidden>
     <div class="login-prompt-box">
       <div class="login-prompt-icon-wrap">!</div>
