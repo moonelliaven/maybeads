@@ -130,21 +130,6 @@
       flex: 1;
     }
 
-    .breadcrumb-text {
-      display: inline-block;
-      font-size: 12px;
-      color: #8c96a4;
-      font-weight: 500;
-      text-decoration: none;
-      margin-bottom: 8px;
-      cursor: pointer;
-      transition: color 0.15s;
-    }
-
-    .breadcrumb-text:hover {
-      color: #2b4570;
-    }
-
     .page-title-main {
       font-size: 20px;
       font-weight: 800;
@@ -294,58 +279,108 @@
     .radio-cost-text {
       color: #64748b;
       font-size: 11px;
+      font-weight: 600;
     }
 
+    /* Address Input Wrapper with Integrated Button */
     .address-input-wrapper {
-      position: relative;
-      margin-top: 12px;
-      margin-bottom: 22px;
+      display: flex;
+      align-items: center;
+      border: 1px solid #cbd5e1;
+      border-radius: 7px;
+      background: #ffffff;
+      padding: 4px 5px 4px 12px;
+      margin-top: 10px;
+      margin-bottom: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .address-input-wrapper:focus-within {
+      border-color: #2b4570;
+      box-shadow: 0 0 0 2px rgba(43, 69, 112, 0.1);
+    }
+
+    .address-input-wrapper.error {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15);
     }
 
     .address-field {
-      width: 100%;
-      padding: 10px 120px 10px 14px;
-      border: 1px solid #cbd5e1;
-      border-radius: 7px;
+      flex: 1;
+      border: none;
+      outline: none;
       font-size: 11.5px;
       color: #141418;
-      outline: none;
-      background: #ffffff;
+      background: transparent;
+      padding: 6px 8px 6px 0;
       font-family: inherit;
-      transition: border-color 0.15s;
-    }
-
-    .address-field:focus {
-      border-color: #2b4570;
+      width: 100%;
+      min-width: 0;
     }
 
     .btn-default-addr {
-      position: absolute;
-      right: 5px;
-      top: 5px;
-      bottom: 5px;
-      padding: 0 12px;
-      background: #ffffff;
+      flex-shrink: 0;
+      padding: 5px 12px;
+      background: #f8fafc;
       border: 1px solid #cbd5e1;
       border-radius: 5px;
       font-size: 10.5px;
-      font-weight: 600;
+      font-weight: 700;
       color: #334155;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.15s;
+      white-space: nowrap;
+      transition: all 0.15s;
     }
 
     .btn-default-addr:hover {
-      background: #f1f5f9;
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .btn-default-addr:active {
+      transform: scale(0.98);
+    }
+
+    /* Address Status and Quick Action Below Box */
+    .address-helper-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      font-size: 10.5px;
+      padding: 0 2px;
+    }
+
+    .address-badge-status {
+      color: #64748b;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-change-address {
+      background: none;
+      border: none;
+      color: #2b4570;
+      font-size: 10.5px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
+    }
+
+    .btn-change-address:hover {
+      color: #1e3355;
     }
 
     .section-divider {
       height: 1px;
       background-color: #e5e7eb;
-      margin: 22px 0 20px 0;
+      margin: 18px 0 20px 0;
     }
 
     /* Sticky Bottom Bar */
@@ -413,6 +448,183 @@
 
     .btn-footer-proceed:hover {
       background: #1e3355;
+    }
+
+    /* Toast Notification */
+    .address-toast {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      background: #10b981;
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+      z-index: 9999;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: all 0.25s ease;
+      pointer-events: none;
+    }
+
+    .address-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Address Selection Modal */
+    .address-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(2px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .address-modal-backdrop.show {
+      display: flex;
+    }
+
+    .address-modal-card {
+      background: #ffffff;
+      border-radius: 12px;
+      max-width: 480px;
+      width: 100%;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      animation: modalFadeIn 0.2s ease;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .address-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .address-modal-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .btn-close-modal {
+      background: none;
+      border: none;
+      font-size: 20px;
+      line-height: 1;
+      color: #94a3b8;
+      cursor: pointer;
+    }
+
+    .saved-addr-card {
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .saved-addr-card:hover {
+      border-color: #2b4570;
+      background: #f8fafc;
+    }
+
+    .saved-addr-card.selected {
+      border-color: #2b4570;
+      background: #eff6ff;
+    }
+
+    .saved-addr-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .saved-addr-tag {
+      font-size: 11px;
+      font-weight: 700;
+      color: #2b4570;
+    }
+
+    .saved-addr-detail {
+      font-size: 11.5px;
+      color: #334155;
+      line-height: 1.4;
+    }
+
+    .custom-addr-wrap {
+      margin-top: 14px;
+    }
+
+    .custom-addr-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 6px;
+    }
+
+    .custom-addr-textarea {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 11.5px;
+      font-family: inherit;
+      color: #141418;
+      outline: none;
+      resize: vertical;
+    }
+
+    .custom-addr-textarea:focus {
+      border-color: #2b4570;
+    }
+
+    .address-modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+      padding-top: 14px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .btn-modal-cancel {
+      padding: 8px 16px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #475569;
+      cursor: pointer;
+    }
+
+    .btn-modal-apply {
+      padding: 8px 18px;
+      border: none;
+      background: #2b4570;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #ffffff;
+      cursor: pointer;
     }
 
     @media (max-width: 860px) {
@@ -528,24 +740,24 @@
 
           <div class="calc-row-item">
             <span>Biaya Pengantaran</span>
-            <span id="pengantaranVal">Rp. 42.000,00</span>
+            <span id="pengantaranVal">Rp. 0,00</span>
           </div>
 
           <div class="calc-row-item">
             <span>Biaya Admin</span>
-            <span id="adminVal">Rp. 42.000,00</span>
+            <span id="adminVal">Rp. 200,00</span>
           </div>
 
           <div class="calc-row-item">
             <span>Pengambilan</span>
-            <span id="pengambilanVal">Rp. 42.000,00</span>
+            <span id="pengambilanVal">Rp. 1.000,00</span>
           </div>
 
           <div class="calc-divider"></div>
 
           <div class="final-row-item">
             <span>Harga Akhir</span>
-            <span class="final-price-bold" id="finalPriceVal">42.000,00</span>
+            <span class="final-price-bold" id="finalPriceVal">43.200,00</span>
           </div>
         </div>
 
@@ -571,9 +783,19 @@
           <span class="radio-cost-text" id="deliveryHintText">Menghitung...</span>
         </label>
 
-        <div class="address-input-wrapper">
-          <input type="text" class="address-field" id="addressField" placeholder="Isi Alamat..." value="Jl. Pangeran Suriansyah, Loktabat Utara, Banjarbaru">
-          <button type="button" class="btn-default-addr" id="btnDefaultAddress">Alamat Default</button>
+        <!-- Address Box with Integrated Button -->
+        <div class="address-input-wrapper" id="addressInputWrapper">
+          <input type="text"
+                 class="address-field"
+                 id="addressField"
+                 placeholder="Isi Alamat Lengkap..."
+                 value="{{ $user?->address ?? 'Jl. Pangeran Suriansyah, Loktabat Utara, Banjarbaru' }}">
+          <button type="button" class="btn-default-addr" id="btnDefaultAddress" title="Gunakan Alamat Default">Alamat Default</button>
+        </div>
+
+        <div class="address-helper-row">
+          <span class="address-badge-status" id="addressStatusBadge">📍 Toko: Store Maybeads Banjarbaru</span>
+          <button type="button" class="btn-change-address" id="btnOpenAddressModal">Pilih Alamat Lain</button>
         </div>
 
         <div class="section-divider"></div>
@@ -612,10 +834,88 @@
     </a>
   </footer>
 
+  <!-- Modal Pilih Alamat -->
+  <div class="address-modal-backdrop" id="addressModalBackdrop">
+    <div class="address-modal-card">
+      <div class="address-modal-header">
+        <h3 class="address-modal-title">Pilih Alamat Pengiriman</h3>
+        <button type="button" class="btn-close-modal" id="btnCloseAddressModal">&times;</button>
+      </div>
+
+      <div class="saved-addr-card selected" data-address="Jl. Pangeran Suriansyah, Loktabat Utara, Banjarbaru">
+        <div class="saved-addr-top">
+          <span class="saved-addr-tag">🏠 Rumah (Default)</span>
+          <span style="font-size:10px; color:#10b981; font-weight:700;">✓ Aktif</span>
+        </div>
+        <div class="saved-addr-detail">Jl. Pangeran Suriansyah, Loktabat Utara, Banjarbaru, Kalimantan Selatan</div>
+      </div>
+
+      <div class="saved-addr-card" data-address="Gedung Menara Banjarbaru Lt. 3, Jl. A. Yani Km. 34, Banjarbaru Selatan">
+        <div class="saved-addr-top">
+          <span class="saved-addr-tag">🏢 Kantor</span>
+        </div>
+        <div class="saved-addr-detail">Gedung Menara Banjarbaru Lt. 3, Jl. A. Yani Km. 34, Banjarbaru Selatan</div>
+      </div>
+
+      <div class="saved-addr-card" data-address="Store Maybeads, Jl. Panglima Batur No. 12, Banjarbaru">
+        <div class="saved-addr-top">
+          <span class="saved-addr-tag">🏪 Store Maybeads</span>
+        </div>
+        <div class="saved-addr-detail">Store Maybeads, Jl. Panglima Batur No. 12, Loktabat Utara, Banjarbaru</div>
+      </div>
+
+      <div class="custom-addr-wrap">
+        <label class="custom-addr-label" for="customAddressInput">Ketik Alamat Baru:</label>
+        <textarea id="customAddressInput" class="custom-addr-textarea" rows="2" placeholder="Nama jalan, nomor rumah, RT/RW, kelurahan..."></textarea>
+      </div>
+
+      <div class="address-modal-footer">
+        <button type="button" class="btn-modal-cancel" id="btnCancelAddressModal">Tutup</button>
+        <button type="button" class="btn-modal-apply" id="btnApplyAddress">Gunakan Alamat Ini</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Feedback -->
+  <div class="address-toast" id="addressToast">✓ Alamat default diterapkan</div>
+
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       let currentSubtotal = 42000;
       let hasCustomCart = false;
+
+      const defaultAddressHome = 'Jl. Pangeran Suriansyah, Loktabat Utara, Banjarbaru';
+      const storeAddress = 'Store Maybeads — Jl. Panglima Batur No. 12, Banjarbaru';
+
+      const addressField = document.getElementById('addressField');
+      const addressInputWrapper = document.getElementById('addressInputWrapper');
+      const btnDefaultAddress = document.getElementById('btnDefaultAddress');
+      const addressStatusBadge = document.getElementById('addressStatusBadge');
+      const addressToast = document.getElementById('addressToast');
+      const deliveryHintText = document.getElementById('deliveryHintText');
+
+      const addressModalBackdrop = document.getElementById('addressModalBackdrop');
+      const btnOpenAddressModal = document.getElementById('btnOpenAddressModal');
+      const btnCloseAddressModal = document.getElementById('btnCloseAddressModal');
+      const btnCancelAddressModal = document.getElementById('btnCancelAddressModal');
+      const btnApplyAddress = document.getElementById('btnApplyAddress');
+      const customAddressInput = document.getElementById('customAddressInput');
+      const savedAddrCards = document.querySelectorAll('.saved-addr-card');
+
+      function showToast(msg) {
+        if (!addressToast) return;
+        addressToast.textContent = msg || '✓ Alamat berhasil diterapkan';
+        addressToast.classList.add('show');
+        setTimeout(() => {
+          addressToast.classList.remove('show');
+        }, 2200);
+      }
+
+      // Restore saved address from localStorage if exists
+      const savedAddr = localStorage.getItem('maybeads_order_address');
+      if (savedAddr && addressField) {
+        addressField.value = savedAddr;
+      }
 
       // Populate Cart Items if available in localStorage
       try {
@@ -672,42 +972,116 @@
 
       function updateCalculation() {
         const isDelivery = document.getElementById('radioDelivery').checked;
-        const pengantaranCost = isDelivery ? 5000 : 0;
+        const pengantaranCost = isDelivery ? 15000 : 0;
         const pengambilanCost = isDelivery ? 0 : 1000;
         const adminCost = 200;
+
+        // Update delivery hint text on right card
+        if (isDelivery) {
+          deliveryHintText.textContent = '+ Rp 15.000';
+          deliveryHintText.style.color = '#2b4570';
+          addressStatusBadge.textContent = '🚚 Pengantaran Kurir ke Alamat Anda';
+        } else {
+          deliveryHintText.textContent = 'Menghitung...';
+          deliveryHintText.style.color = '#64748b';
+          addressStatusBadge.textContent = '📍 Toko: Store Maybeads Banjarbaru';
+        }
 
         if (hasCustomCart) {
           const totalFinal = currentSubtotal + pengantaranCost + pengambilanCost + adminCost;
           
           document.getElementById('subtotalVal').textContent = 'Rp. ' + currentSubtotal.toLocaleString('id-ID') + ',00';
-          document.getElementById('pengantaranVal').textContent = isDelivery ? 'Rp. 5.000,00' : 'Rp. 0,00';
+          document.getElementById('pengantaranVal').textContent = isDelivery ? 'Rp. 15.000,00' : 'Rp. 0,00';
           document.getElementById('adminVal').textContent = 'Rp. 200,00';
           document.getElementById('pengambilanVal').textContent = isDelivery ? 'Rp. 0,00' : 'Rp. 1.000,00';
           
           document.getElementById('finalPriceVal').textContent = totalFinal.toLocaleString('id-ID') + ',00';
           document.getElementById('footerTotalDisplay').textContent = 'Rp. ' + totalFinal.toLocaleString('id-ID');
         } else {
-          // If no custom cart, display exact mockup values
+          // Fallback mockup calculation
+          const totalFinal = currentSubtotal + pengantaranCost + pengambilanCost + adminCost;
           document.getElementById('subtotalVal').textContent = 'Rp. 42.000,00';
-          document.getElementById('pengantaranVal').textContent = 'Rp. 42.000,00';
-          document.getElementById('adminVal').textContent = 'Rp. 42.000,00';
-          document.getElementById('pengambilanVal').textContent = 'Rp. 42.000,00';
-          document.getElementById('finalPriceVal').textContent = '42.000,00';
-          document.getElementById('footerTotalDisplay').textContent = 'Rp. 48.000';
+          document.getElementById('pengantaranVal').textContent = isDelivery ? 'Rp. 15.000,00' : 'Rp. 0,00';
+          document.getElementById('adminVal').textContent = 'Rp. 200,00';
+          document.getElementById('pengambilanVal').textContent = isDelivery ? 'Rp. 0,00' : 'Rp. 1.000,00';
+          document.getElementById('finalPriceVal').textContent = totalFinal.toLocaleString('id-ID') + ',00';
+          document.getElementById('footerTotalDisplay').textContent = 'Rp. ' + totalFinal.toLocaleString('id-ID');
         }
       }
 
       // Radio Listeners
       const radios = document.querySelectorAll('input[name="pickup_type"], input[name="pay_type"]');
-      radios.forEach(r => r.addEventListener('change', updateCalculation));
+      radios.forEach(r => r.addEventListener('change', () => {
+        updateCalculation();
+        addressInputWrapper.classList.remove('error');
+      }));
 
-      // Default Address Button
-      const btnDefaultAddress = document.getElementById('btnDefaultAddress');
-      const addressField = document.getElementById('addressField');
+      // Default Address Button: Instantly sets to default and gives feedback
       if (btnDefaultAddress && addressField) {
         btnDefaultAddress.addEventListener('click', () => {
-          addressField.value = 'Jl. Pangeran Suriansyah, Loktabat Utara, Banjarbaru';
+          const isPickup = document.getElementById('radioPickup').checked;
+          const targetAddr = isPickup ? defaultAddressHome : defaultAddressHome;
+          addressField.value = targetAddr;
+          localStorage.setItem('maybeads_order_address', targetAddr);
+          addressInputWrapper.classList.remove('error');
+          showToast('✓ Alamat default diterapkan');
           addressField.focus();
+        });
+      }
+
+      // Input change listener: persists address typing
+      if (addressField) {
+        addressField.addEventListener('input', () => {
+          addressInputWrapper.classList.remove('error');
+          localStorage.setItem('maybeads_order_address', addressField.value.trim());
+        });
+      }
+
+      // Open Modal
+      if (btnOpenAddressModal) {
+        btnOpenAddressModal.addEventListener('click', () => {
+          addressModalBackdrop.classList.add('show');
+        });
+      }
+
+      // Close Modal
+      function closeModal() {
+        if (addressModalBackdrop) addressModalBackdrop.classList.remove('show');
+      }
+
+      if (btnCloseAddressModal) btnCloseAddressModal.addEventListener('click', closeModal);
+      if (btnCancelAddressModal) btnCancelAddressModal.addEventListener('click', closeModal);
+      if (addressModalBackdrop) {
+        addressModalBackdrop.addEventListener('click', (e) => {
+          if (e.target === addressModalBackdrop) closeModal();
+        });
+      }
+
+      // Card selection in modal
+      let selectedModalAddr = defaultAddressHome;
+      savedAddrCards.forEach(card => {
+        card.addEventListener('click', () => {
+          savedAddrCards.forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          selectedModalAddr = card.dataset.address;
+          if (customAddressInput) customAddressInput.value = '';
+        });
+      });
+
+      // Apply address from modal
+      if (btnApplyAddress) {
+        btnApplyAddress.addEventListener('click', () => {
+          let chosen = selectedModalAddr;
+          if (customAddressInput && customAddressInput.value.trim() !== '') {
+            chosen = customAddressInput.value.trim();
+          }
+          if (addressField) {
+            addressField.value = chosen;
+            localStorage.setItem('maybeads_order_address', chosen);
+            addressInputWrapper.classList.remove('error');
+          }
+          closeModal();
+          showToast('✓ Alamat pengiriman diperbarui');
         });
       }
 
@@ -716,12 +1090,19 @@
       if (btnGoToPayment) {
         btnGoToPayment.addEventListener('click', (e) => {
           e.preventDefault();
-          const isQris = document.getElementById('radioQris').checked;
+          const isDelivery = document.getElementById('radioDelivery').checked;
           const address = addressField ? addressField.value.trim() : '';
           
-          // Store order details in localStorage for payment screen
-          localStorage.setItem('maybeads_order_address', address);
-          localStorage.setItem('maybeads_order_pickup', document.querySelector('input[name="pickup_type"]:checked').value);
+          if (isDelivery && !address) {
+            addressInputWrapper.classList.add('error');
+            addressField.focus();
+            showToast('⚠️ Silakan masukkan alamat pengantaran!');
+            return;
+          }
+
+          const isQris = document.getElementById('radioQris').checked;
+          localStorage.setItem('maybeads_order_address', address || storeAddress);
+          localStorage.setItem('maybeads_order_pickup', isDelivery ? 'delivery' : 'pickup');
           localStorage.setItem('maybeads_order_payment_method', isQris ? 'qris' : 'ewallet');
 
           window.location.href = "{{ route('payment.qris') }}";

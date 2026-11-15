@@ -235,6 +235,7 @@ class MainController extends Controller
 
     public function checkout(Request $request)
     {
+        $user = Auth::user();
         $cartCount = Auth::check()
             ? Cart::where('user_id', Auth::id())->sum('quantity')
             : count(session()->get('cart', []));
@@ -242,7 +243,7 @@ class MainController extends Controller
         // Sample product fallback if cart empty
         $sampleProduct = Product::with('category')->first();
 
-        return view('main.checkout', compact('cartCount', 'sampleProduct'));
+        return view('main.checkout', compact('cartCount', 'sampleProduct', 'user'));
     }
 
     public function processCheckout(Request $request)
