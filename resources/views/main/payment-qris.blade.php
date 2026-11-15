@@ -621,11 +621,6 @@
               </div>
             </div>
 
-            <div class="qr-title-bold">SATU QRIS UNTUK SEMUA</div>
-            <div class="qr-desc-small">
-              Bisa dipakai oleh semua orang melalui: BCA, Mandiri, BRI, BNI, GoPay, OVO, DANA, ShopeePay, LinkAja, AstraPay, Seabank, dan seluruh aplikasi m-banking / e-wallet berlogo QRIS.
-            </div>
-
             <div class="qris-copy-nmid-row">
               <span class="nmid-label">NMID: <strong>ID1025444490185</strong></span>
               <button type="button" class="btn-copy-nmid" onclick="copyNmid('ID1025444490185')" title="Salin NMID">
@@ -637,7 +632,7 @@
 
           <a href="{{ asset('images/payment/qris-maybeads.jpg') }}" download="QRIS-Maybeads-ID1025444490185.jpg" class="btn-download-black" id="btnDownloadQris">
             <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            <span>Unduh QRIS (Bisa Dipakai Semua Orang)</span>
+            <span>Unduh QRIS</span>
           </a>
         </div>
 
@@ -784,10 +779,7 @@
       <button type="button" class="btn-close-qr-modal" onclick="closeQrModal()">&times;</button>
       <img src="{{ asset('images/payment/qris-maybeads.jpg') }}" alt="QRIS Maybeads Full" class="qr-modal-full-img">
       <div class="qr-modal-caption">
-        <strong>maybeads</strong> &bull; NMID: ID1025444490185 &bull; A01<br>
-        <span style="font-size: 11.5px; color: #64748b; margin-top: 4px; display: inline-block;">
-          SATU QRIS UNTUK SEMUA &bull; Bisa di-scan dengan seluruh aplikasi bank & e-wallet berlogo QRIS
-        </span>
+        <strong>maybeads</strong> &bull; NMID: ID1025444490185 &bull; A01
       </div>
     </div>
   </div>
