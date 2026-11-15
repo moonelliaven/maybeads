@@ -458,7 +458,6 @@
 
   <!-- Main Content -->
   <main class="order-checkout-main">
-    <a href="{{ route('cart.index') }}" class="breadcrumb-text">&lt; Dashboard / Keranjang</a>
     <h1 class="page-title-main">Detail Data Pesanan</h1>
 
     <div class="checkout-two-cols">
