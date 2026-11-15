@@ -191,48 +191,208 @@
     .qr-frame-box {
       border: 1px solid #e2e8f0;
       border-radius: 12px;
-      padding: 16px;
+      padding: 18px 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
       margin-bottom: 18px;
+      background: #fafafb;
     }
 
-    .qr-svg-view {
-      width: 170px;
-      height: 170px;
+    .qris-merchant-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .qris-merchant-name {
+      font-size: 16px;
+      font-weight: 800;
+      color: #141418;
+      text-transform: lowercase;
+      letter-spacing: -0.01em;
+    }
+
+    .qris-nmid-text {
+      font-size: 11px;
+      color: #64748b;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      margin-top: 2px;
+    }
+
+    .qr-image-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 270px;
+      background: #ffffff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e2e8f0;
+      margin-bottom: 14px;
+      cursor: zoom-in;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .qr-image-wrapper:hover {
+      transform: scale(1.02);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .qr-poster-img {
+      width: 100%;
+      height: auto;
       display: block;
+      object-fit: contain;
+    }
+
+    .qr-zoom-hint {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(20, 20, 24, 0.75);
+      backdrop-filter: blur(4px);
+      color: #ffffff;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 9.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      pointer-events: none;
     }
 
     .qr-title-bold {
       font-size: 13.5px;
       font-weight: 800;
       color: #141418;
-      margin-top: 10px;
+      margin-top: 4px;
+      letter-spacing: 0.04em;
     }
 
     .qr-desc-small {
-      font-size: 8.5px;
+      font-size: 10.5px;
       color: #64748b;
-      margin-top: 2px;
+      margin-top: 4px;
       text-align: center;
+      line-height: 1.45;
+      max-width: 290px;
+    }
+
+    .qris-copy-nmid-row {
+      margin-top: 12px;
+      padding: 6px 14px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      color: #475569;
+    }
+
+    .btn-copy-nmid {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #1e293b;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-copy-nmid:hover {
+      background: #e2e8f0;
+      border-color: #94a3b8;
     }
 
     .btn-download-black {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 8px;
       width: 100%;
-      padding: 10px 16px;
-      background: #232328;
+      padding: 11px 16px;
+      background: #141418;
       color: #ffffff;
       border: none;
       border-radius: 8px;
-      font-size: 11.5px;
+      font-size: 12px;
       font-weight: 700;
       cursor: pointer;
       text-decoration: none;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+    .btn-download-black:hover {
+      background: #27272a;
+      transform: translateY(-1px);
+    }
+
+    /* Modal Zoom QRIS */
+    .qr-modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .qr-modal-content {
+      position: relative;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 24px 20px 18px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .btn-close-qr-modal {
+      position: absolute;
+      top: 10px;
+      right: 14px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: #64748b;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .btn-close-qr-modal:hover {
+      color: #0f172a;
+    }
+
+    .qr-modal-full-img {
+      width: 100%;
+      max-width: 340px;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .qr-modal-caption {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 12px;
+      color: #334155;
     }
 
     /* Gopay View */
@@ -445,49 +605,40 @@
           <div class="card-head-sub">Scan kode QR di bawah untuk pembayaran</div>
 
           <div class="qr-frame-box">
-            <svg class="qr-svg-view" viewBox="0 0 160 160" fill="none">
-              <rect width="160" height="160" fill="#ffffff" rx="6"/>
-              <rect x="15" y="15" width="40" height="40" fill="#141418" rx="4"/>
-              <rect x="23" y="23" width="24" height="24" fill="#ffffff" rx="2"/>
-              <rect x="29" y="29" width="12" height="12" fill="#141418"/>
-              <rect x="105" y="15" width="40" height="40" fill="#141418" rx="4"/>
-              <rect x="113" y="23" width="24" height="24" fill="#ffffff" rx="2"/>
-              <rect x="119" y="29" width="12" height="12" fill="#141418"/>
-              <rect x="15" y="105" width="40" height="40" fill="#141418" rx="4"/>
-              <rect x="23" y="113" width="24" height="24" fill="#ffffff" rx="2"/>
-              <rect x="29" y="119" width="12" height="12" fill="#141418"/>
-              <rect x="65" y="20" width="8" height="8" fill="#141418"/>
-              <rect x="80" y="20" width="12" height="8" fill="#141418"/>
-              <rect x="65" y="35" width="14" height="8" fill="#141418"/>
-              <rect x="85" y="35" width="8" height="8" fill="#141418"/>
-              <rect x="20" y="65" width="8" height="14" fill="#141418"/>
-              <rect x="35" y="65" width="14" height="8" fill="#141418"/>
-              <rect x="20" y="85" width="12" height="8" fill="#141418"/>
-              <rect x="38" y="80" width="8" height="14" fill="#141418"/>
-              <rect x="65" y="65" width="16" height="16" fill="#141418"/>
-              <rect x="88" y="65" width="8" height="8" fill="#141418"/>
-              <rect x="88" y="80" width="14" height="8" fill="#141418"/>
-              <rect x="110" y="65" width="8" height="12" fill="#141418"/>
-              <rect x="125" y="65" width="15" height="8" fill="#141418"/>
-              <rect x="110" y="85" width="18" height="8" fill="#141418"/>
-              <rect x="135" y="80" width="8" height="14" fill="#141418"/>
-              <rect x="65" y="110" width="10" height="10" fill="#141418"/>
-              <rect x="82" y="110" width="16" height="8" fill="#141418"/>
-              <rect x="65" y="128" width="18" height="8" fill="#141418"/>
-              <rect x="90" y="125" width="8" height="14" fill="#141418"/>
-              <rect x="110" y="110" width="12" height="12" fill="#141418"/>
-              <rect x="130" y="110" width="10" height="10" fill="#141418"/>
-              <rect x="115" y="130" width="22" height="8" fill="#141418"/>
-            </svg>
+            <div class="qris-merchant-badge">
+              <span class="qris-merchant-name">maybeads</span>
+              <span class="qris-nmid-text">NMID: ID1025444490185 &bull; A01</span>
+            </div>
 
-            <div class="qr-title-bold">QRIS</div>
-            <div class="qr-desc-small">Shopeepay, Gopay, Dana, OVO, LinkAja, dan Transferbank Lainnya</div>
+            <div class="qr-image-wrapper" onclick="openQrModal()" title="Klik untuk memperbesar QRIS">
+              <img src="{{ asset('images/payment/qris-maybeads.jpg') }}"
+                   alt="QRIS maybeads NMID ID1025444490185"
+                   class="qr-poster-img"
+                   id="qrisImgPreview">
+              <div class="qr-zoom-hint">
+                <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+                <span>Perbesar</span>
+              </div>
+            </div>
+
+            <div class="qr-title-bold">SATU QRIS UNTUK SEMUA</div>
+            <div class="qr-desc-small">
+              Bisa dipakai oleh semua orang melalui: BCA, Mandiri, BRI, BNI, GoPay, OVO, DANA, ShopeePay, LinkAja, AstraPay, Seabank, dan seluruh aplikasi m-banking / e-wallet berlogo QRIS.
+            </div>
+
+            <div class="qris-copy-nmid-row">
+              <span class="nmid-label">NMID: <strong>ID1025444490185</strong></span>
+              <button type="button" class="btn-copy-nmid" onclick="copyNmid('ID1025444490185')" title="Salin NMID">
+                <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <span id="copyNmidText">Salin</span>
+              </button>
+            </div>
           </div>
 
-          <button type="button" class="btn-download-black" onclick="alert('Mengunduh QRIS Maybeads...');">
-            <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            <span>Unduh QR</span>
-          </button>
+          <a href="{{ asset('images/payment/qris-maybeads.jpg') }}" download="QRIS-Maybeads-ID1025444490185.jpg" class="btn-download-black" id="btnDownloadQris">
+            <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span>Unduh QRIS (Bisa Dipakai Semua Orang)</span>
+          </a>
         </div>
 
         <!-- View 2: Gopay -->
@@ -601,6 +752,44 @@
         document.getElementById('sumFinal').textContent = finalTotal.toLocaleString('id-ID') + ',00';
       }
     } catch(e) {}
+    // Modal Zoom QRIS
+    function openQrModal() {
+      document.getElementById('qrModalBackdrop').style.display = 'flex';
+    }
+    function closeQrModal() {
+      document.getElementById('qrModalBackdrop').style.display = 'none';
+    }
+
+    // Salin NMID
+    function copyNmid(val) {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(val).then(() => {
+          const t = document.getElementById('copyNmidText');
+          if (t) {
+            t.textContent = 'Tersalin!';
+            setTimeout(() => { t.textContent = 'Salin'; }, 2000);
+          }
+        }).catch(() => {
+          prompt('NMID maybeads:', val);
+        });
+      } else {
+        prompt('NMID maybeads:', val);
+      }
+    }
   </script>
+
+  <!-- Modal Zoom QRIS Full Preview -->
+  <div class="qr-modal-backdrop" id="qrModalBackdrop" onclick="closeQrModal()">
+    <div class="qr-modal-content" onclick="event.stopPropagation()">
+      <button type="button" class="btn-close-qr-modal" onclick="closeQrModal()">&times;</button>
+      <img src="{{ asset('images/payment/qris-maybeads.jpg') }}" alt="QRIS Maybeads Full" class="qr-modal-full-img">
+      <div class="qr-modal-caption">
+        <strong>maybeads</strong> &bull; NMID: ID1025444490185 &bull; A01<br>
+        <span style="font-size: 11.5px; color: #64748b; margin-top: 4px; display: inline-block;">
+          SATU QRIS UNTUK SEMUA &bull; Bisa di-scan dengan seluruh aplikasi bank & e-wallet berlogo QRIS
+        </span>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
