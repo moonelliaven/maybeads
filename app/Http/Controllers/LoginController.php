@@ -7,8 +7,14 @@ use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
-    public function showLogin()
+    public function showLogin(Request $request)
     {
+        if ($request->has('redirect')) {
+            $redirect = $request->query('redirect');
+            if ($redirect && !str_contains($redirect, '/login') && !str_contains($redirect, '/logout')) {
+                session()->put('url.intended', $redirect);
+            }
+        }
         return view('auth.login');
     }
 
@@ -57,7 +63,8 @@ class LoginController extends Controller
             return redirect()->intended($redirectUrl);
         }
 
-        $redirectUrl = route('main.dashboard');
+        $intended = $request->session()->pull('url.intended');
+        $redirectUrl = $intended ?: route('main.dashboard');
 
         if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
             return response()->json([

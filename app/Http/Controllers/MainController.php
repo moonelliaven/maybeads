@@ -235,10 +235,13 @@ class MainController extends Controller
 
     public function checkout(Request $request)
     {
+        if (!Auth::check()) {
+            session()->put('url.intended', route('checkout'));
+            return redirect()->route('login')->with('warning', 'Silahkan login terlebih dahulu untuk melanjutkan pemesanan.');
+        }
+
         $user = Auth::user();
-        $cartCount = Auth::check()
-            ? Cart::where('user_id', Auth::id())->sum('quantity')
-            : count(session()->get('cart', []));
+        $cartCount = Cart::where('user_id', Auth::id())->sum('quantity');
 
         // Sample product fallback if cart empty
         $sampleProduct = Product::with('category')->first();
@@ -248,6 +251,10 @@ class MainController extends Controller
 
     public function processCheckout(Request $request)
     {
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('warning', 'Silahkan login terlebih dahulu untuk melanjutkan pemesanan.');
+        }
+
         $method = $request->input('payment_method', 'qris');
         $address = $request->input('address', 'Banjarbaru, Kalimantan Selatan');
         $totalAmount = (float) $request->input('total_amount', 98000);

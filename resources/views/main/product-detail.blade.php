@@ -376,7 +376,7 @@
               </div>
               <div class="rel-actions-row">
                 <a href="{{ route('product.detail', $rProduct->id) }}" class="btn-card-detail">Detail</a>
-                <button type="button" class="btn-card-cart btn-quick-cart" data-id="{{ $rProduct->id }}" title="Tambah ke keranjang">
+                <button type="button" class="btn-card-cart btn-quick-cart {{ Auth::check() ? '' : 'btn-trigger-login-prompt' }}" data-id="{{ $rProduct->id }}" title="Tambah ke keranjang">
                   <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                 </button>
               </div>
@@ -435,19 +435,7 @@
     </div>
   </footer>
 
-  <!-- Modal Pop Up Login Diperlukan -->
-  <div class="login-prompt-backdrop" id="loginPromptModal" role="dialog" aria-modal="true" aria-labelledby="loginPromptTitle" hidden>
-    <div class="login-prompt-box">
-      <div class="login-prompt-icon-wrap">!</div>
-      <h3 class="login-prompt-title" id="loginPromptTitle">Silahkan Login Terlebih Dahulu</h3>
-      <p class="login-prompt-desc">Anda perlu masuk ke akun untuk dapat menggunakan fitur ini.</p>
-      <div class="login-prompt-actions">
-        <button type="button" class="btn-prompt-cancel" id="btnCancelLoginPrompt">Kembali</button>
-        <a href="{{ route('login') }}" class="btn-prompt-login" id="btnProceedLogin">Login Sekarang</a>
-      </div>
-    </div>
-  </div>
-
+  @include('partials.login-required-modal')
   @include('partials.user-logout-modal')
 
 </body>

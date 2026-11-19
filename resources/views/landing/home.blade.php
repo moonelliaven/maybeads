@@ -109,7 +109,11 @@
           Siluet modern yang tajam bertemu dengan rilisan terbatas aksesoris krom Y2K. Karakter kuat dari cincin berani dan kalung tengkorak pilihan.
         </p>
         <div class="hero-cta" data-fade>
-          <a class="btn btn-primary" href="#produk" id="hero-order">PESAN SEKARANG</a>
+          @auth
+            <a class="btn btn-primary" href="#produk" id="hero-order">PESAN SEKARANG</a>
+          @else
+            <button type="button" class="btn btn-primary btn-trigger-login-prompt" id="hero-order">PESAN SEKARANG</button>
+          @endauth
           <a class="btn btn-outline" href="#produk" id="hero-new">PRODUK TERBARU</a>
         </div>
       </div>
@@ -269,5 +273,6 @@
   </footer>
 
   @vite(['resources/js/landing/home.js'])
+  @include('partials.login-required-modal')
 </body>
 </html>

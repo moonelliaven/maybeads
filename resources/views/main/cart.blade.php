@@ -834,6 +834,7 @@
 
   <!-- Interactive Cart Management Script -->
   <script>
+    window.isUserLoggedIn = {{ Auth::check() ? 'true' : 'false' }};
     document.addEventListener('DOMContentLoaded', () => {
       // Default sample items matching mockup exactly
       const sampleDefaultItems = [
@@ -1237,6 +1238,11 @@
       if (btnCheckoutAction) {
         btnCheckoutAction.addEventListener('click', (e) => {
           e.preventDefault();
+          if (!window.isUserLoggedIn) {
+            window.openLoginRequiredModal("{{ route('checkout') }}");
+            return;
+          }
+
           const checkedItems = cart.filter(it => it.checked);
           if (checkedItems.length === 0) {
             alert('Silakan pilih setidaknya 1 produk untuk checkout.');
@@ -1254,5 +1260,7 @@
       renderCartRows();
     });
   </script>
+
+  @include('partials.login-required-modal')
 </body>
 </html>

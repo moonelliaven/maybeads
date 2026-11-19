@@ -40,7 +40,11 @@
           Login
         </a>
       @endauth
-      <a class="btn btn-primary btn-sm" href="{{ $navBase }}#produk" id="nav-order">PESAN SEKARANG</a>
+      @auth
+        <a class="btn btn-primary btn-sm" href="{{ $navBase }}#produk" id="nav-order">PESAN SEKARANG</a>
+      @else
+        <button type="button" class="btn btn-primary btn-sm btn-trigger-login-prompt" id="nav-order">PESAN SEKARANG</button>
+      @endauth
     </div>
   </div>
 </nav>

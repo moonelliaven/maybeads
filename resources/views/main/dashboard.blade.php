@@ -782,21 +782,7 @@
     </div>
   </div>
 
-  <!-- ========================================================================
-       MODAL 3: POP UP LOGIN DIPERLUKAN (Guest Restriction)
-       ======================================================================== -->
-  <div class="login-prompt-backdrop" id="loginPromptModal" role="dialog" aria-modal="true" aria-labelledby="loginPromptTitle" hidden>
-    <div class="login-prompt-box">
-      <div class="login-prompt-icon-wrap">!</div>
-      <h3 class="login-prompt-title" id="loginPromptTitle">Silahkan Login Terlebih Dahulu</h3>
-      <p class="login-prompt-desc">Anda perlu masuk ke akun untuk dapat menggunakan fitur ini.</p>
-      <div class="login-prompt-actions">
-        <button type="button" class="btn-prompt-cancel" id="btnCancelLoginPrompt">Kembali</button>
-        <a href="{{ route('login') }}" class="btn-prompt-login" id="btnProceedLogin">Login Sekarang</a>
-      </div>
-    </div>
-  </div>
-
+  @include('partials.login-required-modal')
   @include('partials.user-logout-modal')
 
   <script>

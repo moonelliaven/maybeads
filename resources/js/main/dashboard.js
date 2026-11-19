@@ -430,6 +430,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCancelLoginPrompt = document.getElementById('btnCancelLoginPrompt');
 
   function openLoginPromptModal() {
+    if (typeof window.openLoginRequiredModal === 'function') {
+      window.openLoginRequiredModal(window.location.href);
+      return;
+    }
+
     if (typeof Swal !== 'undefined') {
       Swal.fire({
         title: 'Silahkan Login Terlebih Dahulu',
