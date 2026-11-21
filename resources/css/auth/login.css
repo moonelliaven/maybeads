@@ -55,10 +55,12 @@ body.fullscreen-auth .auth-form {
   justify-content: space-between !important;
   align-items: center !important;
   height: 100vh !important;
+  max-height: 100vh !important;
   min-height: 100vh !important;
-  padding: 32px clamp(24px, 5vw, 64px) !important;
+  padding: clamp(14px, 2.5vh, 26px) clamp(20px, 4vw, 56px) !important;
   background: #ffffff !important;
-  overflow-y: auto !important;
+  overflow-y: hidden !important;
+  box-sizing: border-box !important;
 }
 
 .auth-top-bar {
@@ -67,15 +69,16 @@ body.fullscreen-auth .auth-form {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: auto;
-  padding-bottom: 12px;
+  margin-bottom: clamp(4px, 1vh, 12px);
+  padding-bottom: 0;
+  flex-shrink: 0;
 }
 
 .auth-back-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: #64748b;
   text-decoration: none;
@@ -88,8 +91,8 @@ body.fullscreen-auth .auth-form {
 }
 
 .auth-back-btn svg {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   stroke-width: 2.2;
 }
 
@@ -98,43 +101,49 @@ body.fullscreen-auth .auth-inner {
   width: 100% !important;
   max-width: 380px !important;
   margin: auto 0 !important;
-  padding: 16px 0 !important;
+  padding: 0 !important;
   text-align: center;
+  flex-shrink: 0;
 }
 
 body.fullscreen-auth .auth-brand {
-  font-size: 1.55rem !important;
+  font-size: 1.35rem !important;
   letter-spacing: -0.02em !important;
-  margin-bottom: 6px !important;
+  margin-bottom: 2px !important;
+  display: inline-block;
 }
 
 body.fullscreen-auth .auth-title {
-  font-size: clamp(1.6rem, 2.3vw, 1.95rem) !important;
-  margin-top: 4px !important;
+  font-size: clamp(1.4rem, 2vw, 1.75rem) !important;
+  margin-top: 2px !important;
+  margin-bottom: 2px !important;
   font-weight: 800 !important;
+  line-height: 1.25 !important;
 }
 
 body.fullscreen-auth .auth-sub {
-  font-size: 0.82rem !important;
-  margin-top: 6px !important;
+  font-size: 0.78rem !important;
+  margin-top: 4px !important;
+  margin-bottom: 0 !important;
   color: #64748b !important;
+  line-height: 1.35 !important;
 }
 
 body.fullscreen-auth .auth-fields {
-  margin-top: 24px !important;
-  gap: 15px !important;
+  margin-top: clamp(10px, 1.8vh, 18px) !important;
+  gap: clamp(8px, 1.3vh, 12px) !important;
 }
 
 body.fullscreen-auth .f label {
-  font-size: 0.82rem !important;
+  font-size: 0.78rem !important;
   font-weight: 600 !important;
   color: #334155 !important;
-  margin-bottom: 6px !important;
+  margin-bottom: 3px !important;
 }
 
 body.fullscreen-auth .inp {
-  height: 44px !important;
-  border-radius: 9px !important;
+  height: clamp(38px, 4.8vh, 42px) !important;
+  border-radius: 8px !important;
   border: 1px solid #cbd5e1 !important;
   background: #f8fafc !important;
   transition: all 0.2s ease !important;
@@ -147,18 +156,24 @@ body.fullscreen-auth .inp:focus-within {
 }
 
 body.fullscreen-auth .inp input {
-  font-size: 0.88rem !important;
+  font-size: 0.84rem !important;
+}
+
+body.fullscreen-auth .row {
+  font-size: 0.72rem !important;
+  margin-top: 1px !important;
+  margin-bottom: 1px !important;
 }
 
 body.fullscreen-auth .submit {
-  height: 44px !important;
-  border-radius: 9px !important;
-  font-size: 0.9rem !important;
+  height: clamp(38px, 4.8vh, 42px) !important;
+  border-radius: 8px !important;
+  font-size: 0.88rem !important;
   font-weight: 600 !important;
   background: #1a2232 !important;
   color: #ffffff !important;
   transition: all 0.2s ease !important;
-  margin-top: 10px !important;
+  margin-top: 4px !important;
 }
 
 body.fullscreen-auth .submit:hover {
@@ -167,10 +182,15 @@ body.fullscreen-auth .submit:hover {
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.25) !important;
 }
 
+body.fullscreen-auth .or {
+  margin: clamp(6px, 1.2vh, 12px) 10px !important;
+  font-size: 0.68rem !important;
+}
+
 body.fullscreen-auth .google {
-  height: 44px !important;
-  border-radius: 9px !important;
-  font-size: 0.86rem !important;
+  height: clamp(38px, 4.8vh, 42px) !important;
+  border-radius: 8px !important;
+  font-size: 0.82rem !important;
   border: 1px solid #e2e8f0 !important;
   background: #ffffff !important;
   transition: all 0.2s ease !important;
@@ -181,16 +201,22 @@ body.fullscreen-auth .google:hover {
   border-color: #cbd5e1 !important;
 }
 
+body.fullscreen-auth .alt {
+  margin-top: clamp(6px, 1.2vh, 12px) !important;
+  font-size: 0.8rem !important;
+}
+
 body.fullscreen-auth .auth-foot {
   margin-top: auto !important;
-  padding-top: 20px !important;
+  padding-top: clamp(6px, 1.2vh, 12px) !important;
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
   gap: 12px !important;
   list-style: none !important;
-  font-size: 0.74rem !important;
+  font-size: 0.7rem !important;
   color: #94a3b8 !important;
+  flex-shrink: 0;
 }
 
 body.fullscreen-auth .auth-foot a {
@@ -297,5 +323,14 @@ body.fullscreen-auth .auth-art::after {
     height: auto !important;
     min-height: 100vh !important;
     padding: 24px 20px !important;
+    overflow-y: auto !important;
+  }
+}
+
+@media (max-height: 540px) {
+  body.fullscreen-auth .auth-form {
+    overflow-y: auto !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
   }
 }
