@@ -17,11 +17,11 @@ div:where(.swal2-container).swal2-backdrop-show {
   backdrop-filter: blur(4px) !important;
 }
 
-/* Card Popup */
-div:where(.swal2-container) .swal2-popup,
-div:where(.swal2-container) .admin-swal-popup,
-div:where(.swal2-container) .maybeads-swal-popup,
-div:where(.swal2-container) .y2k-swal-popup {
+/* Card Popup (Modal non-toast) */
+div:where(.swal2-container) .swal2-popup:not(.swal2-toast),
+div:where(.swal2-container) .admin-swal-popup:not(.swal2-toast),
+div:where(.swal2-container) .maybeads-swal-popup:not(.swal2-toast),
+div:where(.swal2-container) .y2k-swal-popup:not(.swal2-toast) {
   background: #ffffff !important;
   border-radius: 16px !important;
   box-shadow: 0 25px 40px -10px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
@@ -37,7 +37,7 @@ div:where(.swal2-container) .y2k-swal-popup {
 /* 1. ICONS STYLING (Warning, Success, Error, Info, Question) */
 
 /* Warning Icon: Lingkaran amber dengan tanda seru (!) persis seperti foto template */
-div:where(.swal2-container) .swal2-icon.swal2-warning {
+div:where(.swal2-container) .swal2-popup:not(.swal2-toast) .swal2-icon.swal2-warning {
   border: 3.5px solid #fcaa30 !important;
   color: #fcaa30 !important;
   border-radius: 50% !important;
@@ -52,7 +52,7 @@ div:where(.swal2-container) .swal2-icon.swal2-warning {
   box-sizing: border-box !important;
 }
 
-div:where(.swal2-container) .swal2-icon.swal2-warning .swal2-icon-content {
+div:where(.swal2-container) .swal2-popup:not(.swal2-toast) .swal2-icon.swal2-warning .swal2-icon-content {
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
   font-size: 44px !important;
   font-weight: 700 !important;
@@ -65,7 +65,7 @@ div:where(.swal2-container) .swal2-icon.swal2-warning .swal2-icon-content {
 }
 
 /* Question Icon: Samakan ke style peringatan lingkaran amber */
-div:where(.swal2-container) .swal2-icon.swal2-question {
+div:where(.swal2-container) .swal2-popup:not(.swal2-toast) .swal2-icon.swal2-question {
   border: 3.5px solid #fcaa30 !important;
   color: #fcaa30 !important;
   border-radius: 50% !important;
@@ -79,7 +79,7 @@ div:where(.swal2-container) .swal2-icon.swal2-question {
   box-sizing: border-box !important;
 }
 
-div:where(.swal2-container) .swal2-icon.swal2-question .swal2-icon-content {
+div:where(.swal2-container) .swal2-popup:not(.swal2-toast) .swal2-icon.swal2-question .swal2-icon-content {
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
   font-size: 44px !important;
   font-weight: 700 !important;
@@ -88,10 +88,11 @@ div:where(.swal2-container) .swal2-icon.swal2-question .swal2-icon-content {
   margin-top: -2px !important;
 }
 
-/* Success Icon: Lingkaran hijau */
-div:where(.swal2-container) .swal2-icon.swal2-success {
+/* Success Icon: Lingkaran hijau dengan centang rapi dan presisi */
+div:where(.swal2-container) .swal2-popup:not(.swal2-toast) .swal2-icon.swal2-success {
+  position: relative !important;
   border: 3.5px solid #10b981 !important;
-  color: #10b981 !important;
+  background: #ecfdf5 url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAyNCAyNCcgZmlsbD0nbm9uZScgc3Ryb2tlPScjMTBiOTgxJyBzdHJva2Utd2lkdGg9JzMnIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcgc3Ryb2tlLWxpbmVqb2luPSdyb3VuZCc+PHBvbHlsaW5lIHBvaW50cz0nMjAgNiA5IDE3IDQgMTInPjwvcG9seWxpbmU+PC9zdmc+") no-repeat center / 38px 38px !important;
   border-radius: 50% !important;
   width: 76px !important;
   height: 76px !important;
@@ -99,18 +100,16 @@ div:where(.swal2-container) .swal2-icon.swal2-success {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  background: transparent !important;
   box-sizing: border-box !important;
 }
-div:where(.swal2-container) .swal2-icon.swal2-success .swal2-success-ring {
+
+/* Sembunyikan elemen internal animasi bawaan swal2 yang rentan rusak/cacat */
+div:where(.swal2-container) .swal2-icon.swal2-success * {
   display: none !important;
-}
-div:where(.swal2-container) .swal2-icon.swal2-success [class^='swal2-success-line'] {
-  background-color: #10b981 !important;
 }
 
 /* Error Icon: Lingkaran merah */
-div:where(.swal2-container) .swal2-icon.swal2-error {
+div:where(.swal2-container) .swal2-popup:not(.swal2-toast) .swal2-icon.swal2-error {
   border: 3.5px solid #ef4444 !important;
   color: #ef4444 !important;
   border-radius: 50% !important;
@@ -123,12 +122,12 @@ div:where(.swal2-container) .swal2-icon.swal2-error {
   background: transparent !important;
   box-sizing: border-box !important;
 }
-div:where(.swal2-container) .swal2-icon.swal2-error [class^='swal2-x-mark-line'] {
+div:where(.swal2-container) .swal2-popup:not(.swal2-toast) .swal2-icon.swal2-error [class^='swal2-x-mark-line'] {
   background-color: #ef4444 !important;
 }
 
 /* Info Icon: Lingkaran biru */
-div:where(.swal2-container) .swal2-icon.swal2-info {
+div:where(.swal2-container) .swal2-popup:not(.swal2-toast) .swal2-icon.swal2-info {
   border: 3.5px solid #3b82f6 !important;
   color: #3b82f6 !important;
   border-radius: 50% !important;
@@ -141,7 +140,7 @@ div:where(.swal2-container) .swal2-icon.swal2-info {
   background: transparent !important;
   box-sizing: border-box !important;
 }
-div:where(.swal2-container) .swal2-icon.swal2-info .swal2-icon-content {
+div:where(.swal2-container) .swal2-popup:not(.swal2-toast) .swal2-icon.swal2-info .swal2-icon-content {
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
   font-size: 40px !important;
   font-weight: 700 !important;
@@ -251,12 +250,123 @@ div:where(.swal2-container) .swal2-confirm.swal-btn-navy:hover {
   background-color: #1b3259 !important;
 }
 
-/* Toast styling support */
+/* ==========================================================================
+   TOAST NOTIFICATION STYLING (swal2-toast, top-end, etc.)
+   ========================================================================== */
+div:where(.swal2-container) .swal2-popup.swal2-toast,
+div:where(.swal2-container) .admin-swal-popup.swal2-toast,
+div:where(.swal2-container) .maybeads-swal-popup.swal2-toast,
+div:where(.swal2-container) .y2k-swal-popup.swal2-toast,
 div:where(.swal2-container).swal2-top-end .swal2-popup {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  width: auto !important;
+  max-width: 400px !important;
+  min-width: 260px !important;
   padding: 12px 18px !important;
   border-radius: 12px !important;
+  box-shadow: 0 12px 30px -4px rgba(15, 23, 42, 0.12), 0 4px 6px -2px rgba(15, 23, 42, 0.04) !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #ffffff !important;
+  text-align: left !important;
+  box-sizing: border-box !important;
+  margin: 12px !important;
+}
+
+div:where(.swal2-container) .swal2-popup.swal2-toast .swal2-title,
+div:where(.swal2-container) .admin-swal-popup.swal2-toast .swal2-title,
+div:where(.swal2-container) .maybeads-swal-popup.swal2-toast .swal2-title,
+div:where(.swal2-container).swal2-top-end .swal2-popup .swal2-title {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
   font-size: 13.5px !important;
-  width: auto !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15) !important;
+  font-weight: 600 !important;
+  color: #0f172a !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: left !important;
+  line-height: 1.4 !important;
+  flex: 1 !important;
+}
+
+/* Toast Success Icon (Centang Hijau Rapi, Presisi & Tajam) */
+div:where(.swal2-container) .swal2-popup.swal2-toast .swal2-icon.swal2-success,
+div:where(.swal2-container) .admin-swal-popup.swal2-toast .swal2-icon.swal2-success,
+div:where(.swal2-container).swal2-top-end .swal2-popup .swal2-icon.swal2-success {
+  position: relative !important;
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  max-width: 28px !important;
+  border: 2px solid #10b981 !important;
+  background: #ecfdf5 url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAyNCAyNCcgZmlsbD0nbm9uZScgc3Ryb2tlPScjMTBiOTgxJyBzdHJva2Utd2lkdGg9JzMnIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcgc3Ryb2tlLWxpbmVqb2luPSdyb3VuZCc+PHBvbHlsaW5lIHBvaW50cz0nMjAgNiA5IDE3IDQgMTInPjwvcG9seWxpbmU+PC9zdmc+") no-repeat center / 15px 15px !important;
+  border-radius: 50% !important;
+  margin: 0 12px 0 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+}
+
+/* Toast Error Icon */
+div:where(.swal2-container) .swal2-popup.swal2-toast .swal2-icon.swal2-error,
+div:where(.swal2-container) .admin-swal-popup.swal2-toast .swal2-icon.swal2-error,
+div:where(.swal2-container).swal2-top-end .swal2-popup .swal2-icon.swal2-error {
+  position: relative !important;
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  max-width: 28px !important;
+  border: 2px solid #ef4444 !important;
+  background: #fef2f2 url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAyNCAyNCcgZmlsbD0nbm9uZScgc3Ryb2tlPScjZWY0NDQ0JyBzdHJva2Utd2lkdGg9JzMnIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcgc3Ryb2tlLWxpbmVqb2luPSdyb3VuZCc+PGxpbmUgeDE9JzE4JyB5MT0nNicgeDI9JzYnIHkyPScxOCc+PC9saW5lPjxsaW5lIHgxPSc2JyB5MT0nNicgeDI9JzE4JyB5Mj0nMTgnPjwvbGluZT48L3N2Zz4=") no-repeat center / 13px 13px !important;
+  border-radius: 50% !important;
+  margin: 0 12px 0 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+}
+
+div:where(.swal2-container) .swal2-popup.swal2-toast .swal2-icon.swal2-error * {
+  display: none !important;
+}
+
+/* Toast Warning Icon */
+div:where(.swal2-container) .swal2-popup.swal2-toast .swal2-icon.swal2-warning,
+div:where(.swal2-container) .admin-swal-popup.swal2-toast .swal2-icon.swal2-warning,
+div:where(.swal2-container).swal2-top-end .swal2-popup .swal2-icon.swal2-warning {
+  position: relative !important;
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  max-width: 28px !important;
+  border: 2px solid #fcaa30 !important;
+  background: #fffbeb !important;
+  border-radius: 50% !important;
+  margin: 0 12px 0 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+}
+
+div:where(.swal2-container) .swal2-popup.swal2-toast .swal2-icon.swal2-warning .swal2-icon-content,
+div:where(.swal2-container).swal2-top-end .swal2-popup .swal2-icon.swal2-warning .swal2-icon-content {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: #fcaa30 !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+}
+
+/* Progress bar inside Toast */
+div:where(.swal2-container) .swal2-timer-progress-bar {
+  background: #10b981 !important;
+  height: 3px !important;
+  border-bottom-left-radius: 12px !important;
+  border-bottom-right-radius: 12px !important;
 }
 
