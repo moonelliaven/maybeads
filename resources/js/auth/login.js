@@ -22,22 +22,22 @@ import { animate, stagger, inView } from 'motion';
     }
 
     /* ========================================================================
-       Motion Graph Animations
+       Motion Graph Animations (identik dengan register)
        ======================================================================== */
     var easeOut = [0.16, 1, 0.3, 1];
     var easeBounce = [0.34, 1.56, 0.64, 1];
 
     if (!reduce) {
-      /* Auth card entrance — clean fade */
+      /* Auth card entrance — slide from right + fade */
       var authCard = $('.auth-card');
       if (authCard) {
         animate(authCard, 
-          { opacity: [0, 1] },
-          { duration: 0.6, ease: easeOut }
+          { opacity: [0, 1], x: [30, 0], scale: [0.97, 1] },
+          { duration: 0.9, ease: easeOut, delay: 0.1 }
         );
       }
 
-      /* Form elements staggered entrance */
+      /* Form elements staggered entrance — cascade from top */
       var authInner = $('.auth-inner');
       if (authInner) {
         var innerChildren = $$(
@@ -45,7 +45,6 @@ import { animate, stagger, inView } from 'motion';
         ).filter(function(el) { return authInner.contains(el); });
         
         if (innerChildren.length) {
-          // Set initial hidden state
           innerChildren.forEach(function(el) { 
             el.style.opacity = '0';
             el.style.transform = 'translateY(16px)';
@@ -53,52 +52,66 @@ import { animate, stagger, inView } from 'motion';
           
           animate(innerChildren, 
             { opacity: [0, 1], y: [16, 0] },
-            { duration: 0.7, ease: easeOut, delay: stagger(0.07, { startDelay: 0.3 }) }
+            { duration: 0.7, ease: easeOut, delay: stagger(0.06, { startDelay: 0.25 }) }
           );
         }
       }
 
-      /* Form fields individual entrance with slide */
+      /* Form fields entrance with alternating slide direction */
       var formFields = $$('.auth-fields .f');
       if (formFields.length) {
-        formFields.forEach(function(field) { 
+        formFields.forEach(function(field, index) { 
           field.style.opacity = '0';
-          field.style.transform = 'translateX(-12px)';
+          field.style.transform = index % 2 === 0 ? 'translateX(-14px)' : 'translateX(14px)';
         });
         
-        animate(formFields, 
-          { opacity: [0, 1], x: [-12, 0] },
-          { duration: 0.6, ease: easeOut, delay: stagger(0.08, { startDelay: 0.5 }) }
+        formFields.forEach(function(field, index) {
+          var fromX = index % 2 === 0 ? -14 : 14;
+          animate(field, 
+            { opacity: [0, 1], x: [fromX, 0] },
+            { duration: 0.6, ease: easeOut, delay: 0.45 + index * 0.08 }
+          );
+        });
+      }
+
+      /* Remember me row entrance */
+      var rowEl = $('.row');
+      if (rowEl) {
+        rowEl.style.opacity = '0';
+        rowEl.style.transform = 'translateY(8px)';
+        animate(rowEl,
+          { opacity: [0, 1], y: [8, 0] },
+          { duration: 0.5, ease: easeOut, delay: 0.7 }
         );
       }
 
-      /* Submit button bounce entrance */
+      /* Submit button spring entrance */
       var submitBtn = $('.submit');
       if (submitBtn) {
         submitBtn.style.opacity = '0';
-        submitBtn.style.transform = 'scale(0.9)';
+        submitBtn.style.transform = 'scale(0.88)';
         animate(submitBtn, 
-          { opacity: [0, 1], scale: [0.9, 1] },
-          { duration: 0.6, ease: easeBounce, delay: 0.85 }
+          { opacity: [0, 1], scale: [0.88, 1.03, 1] },
+          { duration: 0.7, ease: easeBounce, delay: 0.9 }
         );
       }
 
-      /* Auth art image zoom and fade */
+      /* Auth art image reveal with ken burns */
       var authArt = $('.auth-art img');
       if (authArt) {
         animate(authArt, 
-          { scale: [1.2, 1.09], filter: ['saturate(0.3) brightness(0.8)', 'saturate(1) brightness(1)'] },
-          { duration: 1.6, ease: easeOut, delay: 0.2 }
+          { scale: [1.25, 1.09], filter: ['saturate(0.2) brightness(0.7)', 'saturate(1) brightness(1)'] },
+          { duration: 1.8, ease: easeOut, delay: 0.15 }
         );
       }
 
-      /* Input focus glow animation */
+      /* Input focus animation with border glow */
       $$('.inp').forEach(function(inp) {
         var input = inp.querySelector('input');
         if (input) {
           input.addEventListener('focus', function() {
             animate(inp, 
-              { boxShadow: ['0 0 0 0px rgba(53,83,137,0)', '0 0 0 4px rgba(53,83,137,0.12)'] },
+              { boxShadow: ['0 0 0 0px rgba(53,83,137,0)', '0 0 0 4px rgba(53,83,137,0.12)'], borderColor: ['', 'var(--ink)'] },
               { duration: 0.3, ease: easeOut }
             );
           });
@@ -111,12 +124,12 @@ import { animate, stagger, inView } from 'motion';
         }
       });
 
-      /* Google button hover ripple */
+      /* Google button interactive hover */
       var googleBtn = $('.google');
       if (googleBtn) {
         googleBtn.addEventListener('mouseenter', function() {
           animate(googleBtn, 
-            { scale: [1, 1.02], boxShadow: ['0 0 0 0px rgba(53,83,137,0)', '0 8px 24px -8px rgba(53,83,137,0.15)'] },
+            { scale: [1, 1.02], boxShadow: '0 8px 24px -8px rgba(53,83,137,0.15)' },
             { duration: 0.3, ease: easeOut }
           );
         });
@@ -157,20 +170,21 @@ import { animate, stagger, inView } from 'motion';
     onScroll();
 
     /* Tampilkan / sembunyikan kata sandi */
-    var eye = $('#eye'), pw = $('#password');
-    if (eye && pw) {
-      eye.addEventListener('click', function () {
-        var show = pw.type === 'password';
-        pw.type = show ? 'text' : 'password';
-        eye.setAttribute('aria-pressed', show);
-        eye.setAttribute('aria-label', show ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
+    function toggleEye(eyeBtn, pwInput) {
+      if (!eyeBtn || !pwInput) return;
+      eyeBtn.addEventListener('click', function () {
+        var show = pwInput.type === 'password';
+        pwInput.type = show ? 'text' : 'password';
+        eyeBtn.setAttribute('aria-pressed', show);
+        eyeBtn.setAttribute('aria-label', show ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
         
         /* Animate eye toggle */
         if (!reduce) {
-          animate(eye, { scale: [0.8, 1.1, 1] }, { duration: 0.35, ease: easeOut });
+          animate(eyeBtn, { scale: [0.8, 1.1, 1], rotate: [0, show ? 180 : -180, 0] }, { duration: 0.4, ease: easeOut });
         }
       });
     }
+    toggleEye($('#eye'), $('#password'));
 
     /* Tombol magnetik */
     $$('[data-magnet]').forEach(function (b) {
@@ -215,9 +229,18 @@ import { animate, stagger, inView } from 'motion';
 
         // Validasi sederhana client-side
         if (!email || !password) {
+          /* Shake the empty fields */
+          if (!reduce) {
+            $$('.auth-fields .f').forEach(function(field) {
+              var input = field.querySelector('input');
+              if (input && !input.value.trim()) {
+                animate(field, { x: [0, -6, 6, -4, 4, -2, 2, 0] }, { duration: 0.45, ease: easeOut });
+              }
+            });
+          }
           Swal.fire({
             icon: 'warning',
-            title: 'Perhatian',
+            title: 'Data Belum Lengkap',
             text: 'Harap isi email dan kata sandi Anda.',
             confirmButtonColor: '#3a4f98',
             customClass: {
@@ -268,11 +291,11 @@ import { animate, stagger, inView } from 'motion';
           if (res.ok && res.data.success) {
             var isAdmin = res.data.role === 'admin';
             
-            /* Success animation on card */
+            /* Success animation — card pulse green */
             if (!reduce) {
               var card = $('.auth-card');
               if (card) {
-                animate(card, { scale: [1, 0.98, 1.01, 1], borderColor: ['rgba(20,20,24,0.55)', '#34a853'] }, { duration: 0.5, ease: easeOut });
+                animate(card, { scale: [1, 0.98, 1.02, 1], borderColor: ['rgba(20,20,24,0.55)', '#22c55e'] }, { duration: 0.6, ease: easeOut });
               }
             }
 
@@ -301,11 +324,11 @@ import { animate, stagger, inView } from 'motion';
               submitButton.style.opacity = '1';
             }
 
-            /* Error shake animation on card */
+            /* Error shake animation */
             if (!reduce) {
               var card = $('.auth-card');
               if (card) {
-                animate(card, { x: [0, -8, 8, -6, 6, -3, 3, 0] }, { duration: 0.5, ease: easeOut });
+                animate(card, { x: [0, -10, 10, -7, 7, -4, 4, 0] }, { duration: 0.5, ease: easeOut });
               }
             }
 

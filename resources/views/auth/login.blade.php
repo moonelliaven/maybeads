@@ -14,24 +14,16 @@
 
   @vite(['resources/css/lenis.css', 'resources/css/auth/login.css'])
 </head>
-<body class="fullscreen-auth">
+<body>
+
+  <!-- Navigation (sama dengan landing page & register) -->
+  @include('partials.nav')
 
   <main class="auth-page">
     <section class="auth-card">
 
-      <!-- Kolom form kiri -->
+      <!-- Kolom form -->
       <div class="auth-form">
-        <!-- Top bar tombol kembali -->
-        <div class="auth-top-bar">
-          <a class="auth-back-btn" href="{{ url('/') }}" onclick="if(window.history.length > 1 && document.referrer && document.referrer.includes(window.location.host)){window.history.back();return false;}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="19" y1="12" x2="5" y2="12"></line>
-              <polyline points="12 19 5 12 12 5"></polyline>
-            </svg>
-            Kembali ke Beranda
-          </a>
-        </div>
-
         <div class="auth-inner">
           <a class="auth-brand" href="{{ url('/') }}">Maybead<span>.</span>s</a>
           <h1 class="auth-title">Selamat Datang Kembali!</h1>
@@ -50,7 +42,7 @@
             <div class="f">
               <label for="email">Email</label>
               <div class="inp @error('email') err @enderror">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
                 <input id="email" name="email" type="email" value="{{ old('email') }}" placeholder="Masukkan email kamu" autocomplete="email" required autofocus>
               </div>
               @error('email')<p class="msg">{{ $message }}</p>@enderror
@@ -90,25 +82,18 @@
           </a>
 
           <p class="alt">Belum punya akun? <a href="{{ route('register') }}">Daftar</a></p>
-        </div>
 
-        <ul class="auth-foot">
-          <li><a href="{{ url('/') }}">Beranda</a></li>
-          <li>&bull;</li>
-          <li><a href="#">Ketentuan Layanan</a></li>
-          <li>&bull;</li>
-          <li><a href="#">Kebijakan Privasi</a></li>
-        </ul>
+          <ul class="auth-foot">
+            <li><a href="{{ url('/') }}">Beranda</a></li>
+            <li><a href="#">Ketentuan</a></li>
+            <li><a href="#">Privasi</a></li>
+          </ul>
+        </div>
       </div>
 
-      <!-- Kolom ilustrasi kanan fullscreen -->
+      <!-- Kolom ilustrasi -->
       <div class="auth-art" aria-hidden="true">
         <img src="{{ asset('images/auth/auth-illustration.jpg') }}" alt="" loading="eager">
-        <div class="auth-art-overlay">
-          <div class="auth-art-badge">Maybeads Y2K Aesthetic</div>
-          <h2 class="auth-art-title">Ekspresikan Gayamu Tanpa Batas</h2>
-          <p class="auth-art-desc">Koleksi aksesoris futuristik, streetwear, dan nostalgia 2000-an yang otentik untuk melengkapi penampilanmu setiap hari.</p>
-        </div>
       </div>
     </section>
   </main>
