@@ -324,4 +324,29 @@
       initAdminLogout();
     }
   })();
+
+  // Navigasi Kembali Cepat & Perlindungan Logout BFCache untuk Admin
+  (function() {
+    // 1. Jika tombol kembali dalam aplikasi diklik (btn-back, btn-back-link, btn-form-cancel)
+    document.addEventListener('click', function(e) {
+      var backBtn = e.target.closest('.btn-back, .btn-back-link, .btn-form-cancel, [data-action="back"]');
+      if (backBtn && window.history.length > 1 && document.referrer && document.referrer.includes(window.location.host)) {
+        e.preventDefault();
+        window.history.back();
+      }
+    });
+
+    // 2. Jika kembali dari riwayat (BFCache), periksa apakah sesi admin masih valid
+    window.addEventListener('pageshow', function(event) {
+      if (event.persisted) {
+        fetch('{{ route("admin.dashboard") }}', { method: 'HEAD', cache: 'no-store' })
+          .then(function(res) {
+            if (res.redirected || res.status === 401 || res.status === 403 || (res.url && res.url.includes('/login'))) {
+              window.location.replace('{{ route("login") }}');
+            }
+          })
+          .catch(function() {});
+      }
+    });
+  })();
 </script>

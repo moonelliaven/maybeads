@@ -250,5 +250,16 @@
       initUserLogout();
     }
   })();
+
+  // Navigasi Kembali Cepat untuk User
+  (function() {
+    document.addEventListener('click', function(e) {
+      var backBtn = e.target.closest('.btn-back, .btn-back-link, .btn-back-to-home, .back-home-link, [data-action="back"]');
+      if (backBtn && window.history.length > 1 && document.referrer && document.referrer.includes(window.location.host)) {
+        e.preventDefault();
+        window.history.back();
+      }
+    });
+  })();
 </script>
 

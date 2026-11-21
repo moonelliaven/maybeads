@@ -305,10 +305,16 @@
   </div>
 
   <script>
-    // Mencegah halaman ditampilkan dari memory cache (bfcache) jika admin sudah logout
+    // Verifikasi sesi latar belakang hanya jika dipulihkan dari memory cache setelah logout
     window.addEventListener('pageshow', function (e) {
-      if (e.persisted || (window.performance && window.performance.navigation && window.performance.navigation.type === 2)) {
-        window.location.reload();
+      if (e.persisted) {
+        fetch('{{ route("admin.dashboard") }}', { method: 'HEAD', cache: 'no-store' })
+          .then(function(res) {
+            if (res.redirected || res.status === 401 || res.status === 403 || (res.url && res.url.includes('/login'))) {
+              window.location.replace('{{ route("login") }}');
+            }
+          })
+          .catch(function() {});
       }
     });
   </script>

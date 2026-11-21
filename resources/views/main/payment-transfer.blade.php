@@ -182,7 +182,7 @@
   <header class="top-nav-bar">
     <div class="top-nav-container">
       <div class="top-nav-left">
-        <a href="{{ route('checkout') }}" class="back-home-link">
+        <a href="{{ route('checkout') }}" class="back-home-link" onclick="if(window.history.length > 1 && document.referrer && document.referrer.includes(window.location.host)){window.history.back();return false;}">
           <svg class="chevron-back" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
           <span>Kembali ke Checkout</span>
         </a>

@@ -173,7 +173,7 @@
 
     <!-- Breadcrumb Heading -->
     <div class="detail-header-block">
-      <div class="detail-crumb-line">Dashboard &gt; Produk</div>
+      <div class="detail-crumb-line"><a href="{{ route('main.dashboard') }}" class="btn-back-link" style="color:inherit;text-decoration:none;">Dashboard</a> &gt; <a href="{{ route('main.dashboard') }}#produk" class="btn-back-link" style="color:inherit;text-decoration:none;">Produk</a></div>
       <h1 class="detail-page-title">Detail Produk</h1>
     </div>
 

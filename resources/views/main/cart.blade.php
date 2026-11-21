@@ -13,7 +13,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   @vite(['resources/css/main/dashboard.css'])
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="{{ asset('vendor/sweetalert2/sweetalert2.all.min.js') }}"></script>
 
   <style>
     /* ==========================================================================
@@ -739,7 +739,7 @@
     <div class="cart-header-row">
       <div class="cart-header-left">
         <div style="margin-bottom: 8px;">
-          <a href="{{ route('main.dashboard') }}" class="btn-back-to-home" style="display: inline-flex; align-items: center; gap: 7px; background: #ffffff; border: 1.5px solid #23477d; color: #23477d; font-weight: 700; font-size: 13px; padding: 6px 16px; border-radius: 9999px; text-decoration: none; transition: all 0.2s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
+          <a href="{{ route('main.dashboard') }}" class="btn-back-to-home" onclick="if(window.history.length > 1 && document.referrer && document.referrer.includes(window.location.host)){window.history.back();return false;}" style="display: inline-flex; align-items: center; gap: 7px; background: #ffffff; border: 1.5px solid #23477d; color: #23477d; font-weight: 700; font-size: 13px; padding: 6px 16px; border-radius: 9999px; text-decoration: none; transition: all 0.2s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 15px; height: 15px;">
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>

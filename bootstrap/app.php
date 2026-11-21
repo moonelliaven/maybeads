@@ -13,15 +13,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Aliases middleware
         $middleware->alias([
             'admin'                => \App\Http\Middleware\AdminMiddleware::class,
             'user'                 => \App\Http\Middleware\UserMiddleware::class,
             'prevent-back-history' => \App\Http\Middleware\PreventBackHistory::class,
-        ]);
-
-        // Cegah back-history cache di semua route web
-        $middleware->appendToGroup('web', [
-            \App\Http\Middleware\PreventBackHistory::class,
         ]);
 
         // Arahkan guest yang belum login/sudah logout ke halaman login

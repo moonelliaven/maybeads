@@ -827,7 +827,7 @@
   <footer class="sticky-checkout-footer">
     <div class="total-footer-label">Total</div>
     <div class="total-footer-val" id="footerTotalDisplay">Rp. 48.000</div>
-    <a href="{{ route('cart.index') }}" class="btn-footer-cancel">Batal</a>
+    <a href="{{ route('cart.index') }}" class="btn-footer-cancel" onclick="if(window.history.length > 1 && document.referrer && document.referrer.includes(window.location.host)){window.history.back();return false;}">Batal</a>
     <a href="{{ route('payment.qris') }}" class="btn-footer-proceed" id="btnGoToPayment">
       <span>Lanjut Ke Pembayaran</span>
       <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
