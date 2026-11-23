@@ -3,12 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Proses Pembayaran — Maybeads</title>
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>Proses Pembayaran QRIS — Maybeads</title>
   <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="{{ asset('js/qrcode.min.js') }}"></script>
 
   <style>
     * {
@@ -150,30 +152,6 @@
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
     }
 
-    .method-switch-tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-
-    .method-tab-btn {
-      padding: 5px 12px;
-      border-radius: 6px;
-      border: 1px solid #e2e8f0;
-      background: #f8fafc;
-      font-size: 11px;
-      font-weight: 600;
-      color: #475569;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
-    .method-tab-btn.active {
-      background: #141418;
-      color: #ffffff;
-      border-color: #141418;
-    }
-
     /* QRIS View */
     .card-head-title {
       font-size: 15px;
@@ -200,13 +178,8 @@
       max-width: 270px;
       margin: 0 auto;
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
-      cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .qr-code-display-box:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+      position: relative;
+      user-select: none;
     }
 
     .qr-code-matrix-img {
@@ -215,37 +188,71 @@
       height: auto;
       aspect-ratio: 1 / 1;
       display: block;
-      image-rendering: pixelated;
+      image-rendering: auto;
     }
 
-    .qris-brand-title {
-      font-size: 15px;
-      font-weight: 700;
-      color: #141418;
-      text-align: center;
-      margin-top: 16px;
-      letter-spacing: 0.02em;
+    .qris-official-logo-box {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 18px;
+      margin-bottom: 6px;
+    }
+
+    .qris-official-logo {
+      height: 38px;
+      width: auto;
+      max-width: 170px;
+      display: block;
     }
 
     .qris-brand-sub {
-      font-size: 10.5px;
+      font-size: 11px;
       color: #64748b;
       text-align: center;
-      margin-top: 4px;
-      line-height: 1.45;
-      max-width: 280px;
+      margin-top: 6px;
+      line-height: 1.5;
+      max-width: 300px;
       margin-left: auto;
       margin-right: auto;
+    }
+
+    .qris-action-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn-refresh-qris {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      flex: 1;
+      padding: 10px 14px;
+      background: #ffffff;
+      color: #0f172a;
+      border: 1.5px solid #0f172a;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+
+    .btn-refresh-qris:hover {
+      background: #f1f5f9;
     }
 
     .btn-download-black {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      width: 100%;
-      padding: 11px 16px;
-      background: #232328;
+      gap: 7px;
+      flex: 1;
+      padding: 10px 14px;
+      background: #0f172a;
       color: #ffffff;
       border: none;
       border-radius: 8px;
@@ -253,95 +260,11 @@
       font-weight: 700;
       cursor: pointer;
       text-decoration: none;
-      margin-top: 22px;
-      transition: background 0.15s ease, transform 0.1s ease;
+      transition: background 0.15s ease;
     }
 
     .btn-download-black:hover {
-      background: #141418;
-      transform: translateY(-1px);
-    }
-
-    /* Modal Zoom QRIS */
-    .qr-modal-backdrop {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(4px);
-      z-index: 9999;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .qr-modal-content {
-      position: relative;
-      background: #ffffff;
-      border-radius: 12px;
-      padding: 24px 20px 18px;
-      max-width: 420px;
-      width: 100%;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .btn-close-qr-modal {
-      position: absolute;
-      top: 10px;
-      right: 14px;
-      background: none;
-      border: none;
-      font-size: 24px;
-      color: #64748b;
-      cursor: pointer;
-      line-height: 1;
-    }
-
-    .btn-close-qr-modal:hover {
-      color: #0f172a;
-    }
-
-    .qr-modal-full-img {
-      width: 100%;
-      max-width: 340px;
-      height: auto;
-      border-radius: 8px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    }
-
-    .qr-modal-caption {
-      margin-top: 14px;
-      text-align: center;
-      font-size: 12px;
-      color: #334155;
-    }
-
-    /* Gopay View */
-    .gopay-view-box {
-      display: none;
-      padding: 30px 10px;
-      text-align: center;
-    }
-
-    .btn-gopay-connect {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      width: 100%;
-      padding: 11px 16px;
-      background: #232328;
-      color: #ffffff;
-      border: none;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      text-decoration: none;
-      margin-top: 10px;
+      background: #1e293b;
     }
 
     /* Right Card: Summary */
@@ -356,13 +279,13 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 11.5px;
+      font-size: 12px;
       color: #475569;
       margin-bottom: 12px;
     }
 
     .summary-row-line .amount-val {
-      font-weight: 500;
+      font-weight: 600;
       color: #141418;
     }
 
@@ -386,7 +309,7 @@
     }
 
     .final-num {
-      font-size: 17px;
+      font-size: 18px;
       font-weight: 800;
       color: #141418;
     }
@@ -413,10 +336,11 @@
       line-height: 1.1;
       letter-spacing: 1px;
       margin-bottom: 4px;
+      font-variant-numeric: tabular-nums;
     }
 
     .timer-footer {
-      font-size: 9.5px;
+      font-size: 10px;
       color: #64748b;
     }
 
@@ -426,8 +350,8 @@
       border-radius: 6px;
       padding: 10px;
       text-align: center;
-      font-size: 11px;
-      font-weight: 600;
+      font-size: 11.5px;
+      font-weight: 700;
     }
 
     /* Bottom Bar */
@@ -440,24 +364,24 @@
     }
 
     .btn-cancel-pay {
-      padding: 9px 24px;
+      padding: 10px 24px;
       border-radius: 8px;
       border: 1.5px solid #cbd5e1;
       background: #ffffff;
       color: #141418;
-      font-size: 11.5px;
+      font-size: 12px;
       font-weight: 600;
       text-decoration: none;
       cursor: pointer;
     }
 
     .btn-already-paid {
-      padding: 9px 26px;
+      padding: 10px 26px;
       border-radius: 8px;
       border: none;
       background: #2b4570;
       color: #ffffff;
-      font-size: 11.5px;
+      font-size: 12px;
       font-weight: 600;
       text-decoration: none;
       cursor: pointer;
@@ -466,6 +390,11 @@
 
     .btn-already-paid:hover {
       background: #1e3355;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
 
     @media (max-width: 800px) {
@@ -504,7 +433,6 @@
       <a href="{{ route('orders.history') }}" class="sub-btn-pill">
         <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
         <span>Akun</span>
-        <svg viewBox="0 0 24 24" style="width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2.5;"><polyline points="6 9 12 15 18 9"></polyline></svg>
       </a>
     </div>
   </div>
@@ -512,167 +440,484 @@
   <!-- Main Content -->
   <main class="payment-process-main">
     <a href="{{ route('checkout') }}" class="breadcrumb-text">&lt; Dashboard / Keranjang / Order</a>
-    <h1 class="page-heading-title">Proses Pembayaran</h1>
+    <h1 class="page-heading-title">Proses Pembayaran QRIS</h1>
 
     <div class="payment-grid-layout">
       
-      <!-- Sisi Kiri: Scan QRIS -->
+      <!-- Sisi Kiri: Scan QRIS (Auto-Generated dari API Midtrans) -->
       <div class="payment-box-card">
         <div class="card-head-title">Scan QRIS</div>
-        <div class="card-head-sub">Scan kode QR di bawah untuk pembayaran</div>
+        <div class="card-head-sub">Pindai kode QR dinamis di bawah untuk menyelesaikan pembayaran</div>
 
-        <!-- Box Kode QR Murni -->
-        <div class="qr-code-display-box" onclick="openQrModal()" title="Klik untuk perbesar">
-          <img src="{{ asset('images/payment/qris-code.svg') }}"
-               alt="QRIS maybeads"
+        <!-- Box Kode QR Murni (Tanpa pop-up foto ketika diklik) -->
+        <div class="qr-code-display-box" id="qrDisplayBox" style="position: relative; min-height: 270px; display: flex; align-items: center; justify-content: center; background: #ffffff; border-radius: 14px; overflow: hidden;">
+          <div id="qrcodeCanvas" style="display: flex; align-items: center; justify-content: center; padding: 12px; background: #ffffff;"></div>
+          <img src="{{ $qrisData['qr_url'] ?? asset('images/payment/qris-code.svg') }}"
+               alt="QRIS Auto Generated by Midtrans"
                class="qr-code-matrix-img"
-               id="qrisImgPreview">
+               id="qrisImgPreview"
+               style="display: none; max-width: 250px; max-height: 250px;">
+
+          <!-- Overlay Kedaluwarsa Otomatis (10 Menit) -->
+          <div id="qrExpiredOverlay" style="display: {{ ($isExpired ?? false) ? 'flex' : 'none' }}; position: absolute; inset: 0; background: rgba(255,255,255,0.95); border-radius: 14px; flex-direction: column; align-items: center; justify-content: center; padding: 18px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+            <div style="width: 44px; height: 44px; border-radius: 50%; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; margin-bottom: 8px;">
+              &times;
+            </div>
+            <strong style="color: #991b1b; font-size: 13.5px;">QRIS Kedaluwarsa</strong>
+            <p style="font-size: 11px; color: #64748b; margin-top: 6px; line-height: 1.45;">Batas waktu 10 menit telah habis dan pesanan otomatis dibatalkan. Klik Refresh QRIS untuk membuat transaksi baru.</p>
+          </div>
         </div>
 
-        <div class="qris-brand-title">QRIS</div>
-        <div class="qris-brand-sub">Shopeepay, Gopay, Dana, OVO, LinkAja, dan Transferbank Lainnya</div>
+        <!-- Logo QRIS Resmi Nasional (Menggantikan Teks Plain QRIS) -->
+        <div class="qris-official-logo-box">
+          <img src="{{ asset('images/payment/qris-logo.svg') }}" alt="QRIS Standar Pembayaran Nasional" class="qris-official-logo">
+        </div>
+        <div class="qris-brand-sub">
+          Mendukung ShopeePay, GoPay, DANA, OVO, LinkAja, BCA, Mandiri, BRI, BNI &amp; m-Banking se-Indonesia
+        </div>
 
-        <a href="{{ asset('images/payment/qris-code.png') }}" download="QRIS-Maybeads-ID1025444490185.png" class="btn-download-black" id="btnDownloadQris">
-          <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-          <span>Unduh QR</span>
-        </a>
+        <!-- Tombol Aksi: Refresh QRIS & Unduh QR -->
+        <div class="qris-action-row">
+          <button type="button" class="btn-refresh-qris" id="btnRefreshQris" onclick="handleRefreshQris()" title="Klik untuk auto-generate ulang QRIS dari Midtrans">
+            <svg id="refreshSpinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            <span>Refresh QRIS</span>
+          </button>
+
+          <button type="button" class="btn-download-black" id="btnDownloadQris" onclick="downloadQrisImage()" title="Unduh gambar QRIS ke perangkat">
+            <svg id="downloadIcon" viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span id="downloadBtnText">Unduh QR</span>
+          </button>
+        </div>
+
+        <!-- Fitur Salin URL Foto QRIS / Simulator Midtrans -->
+        <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+          <button type="button" onclick="copySimulatorUrl()" id="btnCopySimulatorUrl" 
+                  data-url="{{ $qrisData['simulator_url'] ?? ($qrisData['qr_url'] ?? '') }}"
+                  title="Salin URL resmi HTTPS untuk dicoba di Midtrans QRIS Simulator"
+                  style="width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 7px; background: #eff6ff; border: 1.5px solid #bfdbfe; color: #1d4ed8; padding: 8px 12px; border-radius: 8px; font-size: 11.5px; font-weight: 700; cursor: pointer; transition: all 0.15s ease;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span id="copySimulatorText">Salin URL Simulator (HTTPS)</span>
+          </button>
+
+        </div>
       </div>
 
-      <!-- Sisi Kanan: Ringkasan Pembayaran -->
+      <!-- Sisi Kanan: Ringkasan Pembayaran & Timer 10 Menit -->
       <div class="payment-box-card">
         <h2 class="summary-heading">Ringkasan Pembayaran</h2>
 
         <div class="summary-row-line">
-          <span>Subtotal</span>
-          <span class="amount-val" id="sumSubtotal">Rp. 120.000,00</span>
+          <span>Nomor Pesanan</span>
+          <span class="amount-val">#{{ $order['id'] }}</span>
         </div>
 
         <div class="summary-row-line">
-          <span>Biaya Pengantaran</span>
-          <span class="amount-val">Rp. 15.000,00</span>
+          <span>Metode Pembayaran</span>
+          <span class="amount-val" style="color: #2563eb;">QRIS Auto-Generate (Midtrans)</span>
         </div>
 
         <div class="summary-row-line">
-          <span>Biaya Admin</span>
-          <span class="amount-val">Rp. 2.500,00</span>
+          <span>Subtotal Produk</span>
+          <span class="amount-val">Rp {{ number_format($order['amount'], 0, ',', '.') }}</span>
         </div>
 
         <div class="summary-row-line">
-          <span>Pengambilan</span>
-          <span class="amount-val" style="color: #64748b;">-Rp. 10.000,00</span>
+          <span>Biaya Admin (QRIS)</span>
+          <span class="amount-val" style="color: #16a34a;">Gratis</span>
         </div>
 
         <div class="summary-divider"></div>
 
         <div class="final-row-line">
-          <span class="final-label">Harga Akhir</span>
-          <span class="final-num" id="sumFinal">127.500,00</span>
+          <span class="final-label">Total Tagihan</span>
+          <span class="final-num" id="sumFinal">Rp {{ number_format($order['amount'], 0, ',', '.') }}</span>
         </div>
 
-        <!-- Timer Box -->
+        <!-- Timer Box (Batas 10 Menit Otomatis Dibatalkan) -->
         <div class="timer-gray-card">
-          <div class="timer-caption">Selesaikan Pembayaran Dalam</div>
-          <div class="timer-digits" id="liveTimer">09:59</div>
-          <div class="timer-footer">Kode QR akan kedaluarsa setelah waktu habis</div>
+          <div class="timer-caption">Selesaikan Pembayaran Dalam:</div>
+          <div class="timer-digits" id="liveTimer">10:00</div>
+          <div class="timer-footer">Pesanan akan otomatis dibatalkan jika tidak dibayar dalam 10 menit</div>
         </div>
 
         <!-- Status Strip -->
-        <div class="status-strip-banner">
-          Menunggu Pembayaran
+        <div class="status-strip-banner" id="statusStrip">
+          @if($isExpired ?? false)
+            Pesanan Dibatalkan (Waktu Habis)
+          @else
+            Menunggu Pembayaran
+          @endif
         </div>
       </div>
 
     </div>
 
     <!-- Bottom Buttons -->
-    <div class="bottom-buttons-bar">
-      <a href="{{ route('checkout') }}" class="btn-cancel-pay">Batalkan Pembayaran</a>
-      <a href="{{ route('payment.success') }}" class="btn-already-paid">Saya Sudah Bayar</a>
+    <div class="bottom-buttons-bar" id="bottomButtonsBar">
+      @if($isExpired ?? false)
+        <a href="{{ route('checkout') }}" class="btn-already-paid">Buat Pesanan Baru</a>
+      @else
+        <button type="button" onclick="manualCancel()" class="btn-cancel-pay">Batalkan Pembayaran</button>
+        <a href="{{ route('payment.success', $order['id']) }}" class="btn-already-paid">Saya Sudah Bayar</a>
+      @endif
     </div>
   </main>
 
   <script>
-    function switchMethod(m) {
-      const qrisTab = document.getElementById('tabQrisBtn');
-      const gopayTab = document.getElementById('tabGopayBtn');
-      const viewQris = document.getElementById('viewQris');
-      const viewGopay = document.getElementById('viewGopay');
+    const orderId = @json($order['id']);
+    let remainingSeconds = {{ (int) ($remainingSeconds ?? 600) }};
+    let isExpired = {{ ($isExpired ?? false) ? 'true' : 'false' }};
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
-      if (!qrisTab || !gopayTab || !viewQris || !viewGopay) return;
-
-      if (m === 'qris') {
-        qrisTab.classList.add('active');
-        gopayTab.classList.remove('active');
-        viewQris.style.display = 'block';
-        viewGopay.style.display = 'none';
-      } else {
-        gopayTab.classList.add('active');
-        qrisTab.classList.remove('active');
-        viewQris.style.display = 'none';
-        viewGopay.style.display = 'block';
-      }
-    }
-
-    // Countdown 09:59
-    let sec = 9 * 60 + 59;
     const timerEl = document.getElementById('liveTimer');
-    const timerInterval = setInterval(() => {
-      sec--;
-      if (sec < 0) {
-        clearInterval(timerInterval);
+    const statusStrip = document.getElementById('statusStrip');
+    const qrOverlay = document.getElementById('qrExpiredOverlay');
+    const bottomBar = document.getElementById('bottomButtonsBar');
+
+    function updateTimerDisplay() {
+      if (remainingSeconds <= 0 || isExpired) {
         timerEl.textContent = '00:00';
+        handleAutoExpired();
         return;
       }
-      const m = String(Math.floor(sec / 60)).padStart(2, '0');
-      const s = String(sec % 60).padStart(2, '0');
+      const m = String(Math.floor(remainingSeconds / 60)).padStart(2, '0');
+      const s = String(remainingSeconds % 60).padStart(2, '0');
       timerEl.textContent = `${m}:${s}`;
+    }
+
+    function handleAutoExpired() {
+      isExpired = true;
+      timerEl.textContent = '00:00';
+      timerEl.style.color = '#dc2626';
+
+      if (qrOverlay) qrOverlay.style.display = 'flex';
+
+      if (statusStrip) {
+        statusStrip.textContent = 'Waktu Habis — Pesanan Otomatis Dibatalkan';
+        statusStrip.style.background = '#fef2f2';
+        statusStrip.style.color = '#991b1b';
+      }
+
+      if (bottomBar) {
+        bottomBar.innerHTML = `
+          <button type="button" onclick="handleRefreshQris()" class="btn-cancel-pay" style="border-color: #0f172a; font-weight: 700;">Refresh QRIS Baru</button>
+          <a href="{{ route('checkout') }}" class="btn-already-paid">Buat Pesanan Baru</a>
+        `;
+      }
+
+      // Kirim trigger pembatalan ke server
+      fetch(`/payment/qris/cancel/${orderId}`, {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': csrfToken,
+          'Accept': 'application/json'
+        }
+      }).catch(() => {});
+    }
+
+    let timerInterval = setInterval(() => {
+      if (remainingSeconds > 0 && !isExpired) {
+        remainingSeconds--;
+        updateTimerDisplay();
+      } else {
+        clearInterval(timerInterval);
+        handleAutoExpired();
+      }
     }, 1000);
 
-    // Read cart subtotal
-    try {
-      const savedSub = localStorage.getItem('maybeads_subtotal');
-      if (savedSub && !isNaN(parseInt(savedSub, 10))) {
-        const sub = parseInt(savedSub, 10);
-        const finalTotal = sub + 15000 + 2500 - 10000;
-        document.getElementById('sumSubtotal').textContent = 'Rp. ' + sub.toLocaleString('id-ID') + ',00';
-        document.getElementById('sumFinal').textContent = finalTotal.toLocaleString('id-ID') + ',00';
+    updateTimerDisplay();
+
+    // Inisialisasi Render QRIS Client-Side (Instant 0 Detik & Bebas Hambatan Jaringan / CORS)
+    let currentQrString = @json($qrisData['qr_string'] ?? '');
+
+    function renderClientQr(str) {
+      const container = document.getElementById('qrcodeCanvas');
+      const imgFallback = document.getElementById('qrisImgPreview');
+      if (!container) return;
+
+      if (typeof QRCode !== 'undefined' && str) {
+        container.innerHTML = '';
+        try {
+          new QRCode(container, {
+            text: str,
+            width: 240,
+            height: 240,
+            colorDark: "#0f172a",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.M
+          });
+
+          if (imgFallback) {
+            imgFallback.style.display = 'none';
+          }
+          container.style.display = 'flex';
+
+          setTimeout(() => {
+            const canvas = container.querySelector('canvas');
+            if (canvas && imgFallback) {
+              try {
+                imgFallback.src = canvas.toDataURL('image/png');
+              } catch(e) {}
+            }
+          }, 150);
+          return;
+        } catch(err) {
+          console.warn('QRCode JS error:', err);
+        }
       }
-    } catch(e) {}
-    // Modal Zoom QRIS
-    function openQrModal() {
-      document.getElementById('qrModalBackdrop').style.display = 'flex';
-    }
-    function closeQrModal() {
-      document.getElementById('qrModalBackdrop').style.display = 'none';
+
+      // Fallback jika QRCode JS belum siap
+      if (imgFallback) {
+        container.style.display = 'none';
+        imgFallback.style.display = 'block';
+      }
     }
 
-    // Salin NMID
-    function copyNmid(val) {
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(val).then(() => {
-          const t = document.getElementById('copyNmidText');
-          if (t) {
-            t.textContent = 'Tersalin!';
-            setTimeout(() => { t.textContent = 'Salin'; }, 2000);
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => renderClientQr(currentQrString));
+    } else {
+      renderClientQr(currentQrString);
+    }
+
+    // 1. Fitur Refresh QRIS (Auto-Generate Ulang dari Midtrans API)
+    function handleRefreshQris() {
+      const btn = document.getElementById('btnRefreshQris');
+      const spinner = document.getElementById('refreshSpinner');
+      const img = document.getElementById('qrisImgPreview');
+      const dlBtn = document.getElementById('btnDownloadQris');
+
+      if (btn) btn.disabled = true;
+      if (spinner) spinner.style.animation = 'spin 0.8s linear infinite';
+
+      fetch(`/payment/qris/refresh/${orderId}`, {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': csrfToken,
+          'Accept': 'application/json'
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          if (data.qr_string) {
+            currentQrString = data.qr_string;
+            renderClientQr(data.qr_string);
+          } else if (data.qr_url) {
+            img.src = data.qr_url;
+            img.style.display = 'block';
+            document.getElementById('qrcodeCanvas').style.display = 'none';
+          }
+
+          if (dlBtn && data.qr_url) dlBtn.href = data.qr_url;
+
+          const simBtn = document.getElementById('btnCopySimulatorUrl');
+          const imgBtn = document.getElementById('btnCopyImageUrl');
+          const strBtn = document.getElementById('btnCopyString');
+          if (simBtn) simBtn.setAttribute('data-url', data.simulator_url || data.qr_url);
+          if (imgBtn) imgBtn.setAttribute('data-url', data.image_url || data.qr_url);
+          if (strBtn) strBtn.setAttribute('data-string', data.qr_string || '');
+
+          // Catatan: Refresh QRIS hanya berlaku untuk QRIS itu sendiri, tidak mengulang timer pesanan yang berjalan
+          if (typeof data.remaining_seconds !== 'undefined' && data.remaining_seconds !== null) {
+            remainingSeconds = Math.min(remainingSeconds, data.remaining_seconds);
+            updateTimerDisplay();
+          }
+        } else {
+          alert('Gagal merefresh QRIS: ' + (data.message || 'Terjadi kesalahan.'));
+        }
+      })
+      .catch(err => {
+        alert('Gagal menghubungi server untuk refresh QRIS.');
+      })
+      .finally(() => {
+        if (btn) btn.disabled = false;
+        if (spinner) spinner.style.animation = '';
+      });
+    }
+
+    // 2. Fitur Unduh QRIS (Client-side Instant Canvas & Same-Origin Fallback)
+    function downloadQrisImage() {
+      const img = document.getElementById('qrisImgPreview');
+      const btn = document.getElementById('btnDownloadQris');
+      const btnText = document.getElementById('downloadBtnText');
+
+      if (btnText) btnText.textContent = 'Mengunduh...';
+      if (btn) btn.disabled = true;
+
+      // Strategi 0: Ambil langsung dari Canvas QRCode lokal jika ada (100% cepat & tanpa CORS issue)
+      const qrCanvas = document.querySelector('#qrcodeCanvas canvas');
+      if (qrCanvas) {
+        try {
+          const dataUrl = qrCanvas.toDataURL('image/png');
+          const link = document.createElement('a');
+          link.href = dataUrl;
+          link.download = `QRIS-Maybeads-${orderId}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          if (btnText) btnText.textContent = 'Unduh QR';
+          if (btn) btn.disabled = false;
+          return;
+        } catch(canvasErr) {
+          console.warn('Local canvas download error:', canvasErr);
+        }
+      }
+
+      if (!img || !img.src) {
+        alert('Gambar QRIS belum tersedia.');
+        if (btnText) btnText.textContent = 'Unduh QR';
+        if (btn) btn.disabled = false;
+        return;
+      }
+
+      // Strategi 1: Render via Canvas fallback
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth || 320;
+        canvas.height = img.naturalHeight || 320;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        const dataUrl = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = `QRIS-Maybeads-${orderId}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        if (btnText) btnText.textContent = 'Unduh QR';
+        if (btn) btn.disabled = false;
+        return;
+      } catch (canvasErr) {
+        console.warn('Canvas export skipped, using server proxy...', canvasErr);
+      }
+
+      // Strategi 2: Server-side proxy dengan Content-Disposition attachment
+      const proxyDownloadUrl = `{{ route('payment.qris.download', $order['id']) }}?url=${encodeURIComponent(img.src)}`;
+
+      fetch(proxyDownloadUrl)
+        .then(response => {
+          if (!response.ok) throw new Error('Proxy error');
+          return response.blob();
+        })
+        .then(blob => {
+          const blobUrl = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.download = `QRIS-Maybeads-${orderId}.png`;
+          document.body.appendChild(link);
+          link.click();
+          setTimeout(() => {
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(blobUrl);
+          }, 200);
+        })
+        .catch(() => {
+          // Fallback 3: Gunakan iframe atau direct window location
+          const iframe = document.createElement('iframe');
+          iframe.style.display = 'none';
+          iframe.src = proxyDownloadUrl;
+          document.body.appendChild(iframe);
+          setTimeout(() => {
+            document.body.removeChild(iframe);
+          }, 3000);
+        })
+        .finally(() => {
+          setTimeout(() => {
+            if (btnText) btnText.textContent = 'Unduh QR';
+            if (btn) btn.disabled = false;
+          }, 600);
+        });
+    }
+
+    // Pembatalan manual oleh pengguna
+    function manualCancel() {
+      if (confirm('Apakah Anda yakin ingin membatalkan transaksi ini?')) {
+        handleAutoExpired();
+        window.location.href = '{{ route("checkout") }}';
+      }
+    }
+
+    // Helper Salin Teks ke Clipboard
+    function copyTextToClipboard(text, targetTextEl, successMsg, originalMsg) {
+      if (!text) {
+        alert('Data belum tersedia untuk disalin.');
+        return;
+      }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          if (targetTextEl) {
+            targetTextEl.textContent = successMsg;
+            setTimeout(() => { targetTextEl.textContent = originalMsg; }, 2500);
           }
         }).catch(() => {
-          prompt('NMID maybeads:', val);
+          promptCopyFallback(text, targetTextEl, successMsg, originalMsg);
         });
       } else {
-        prompt('NMID maybeads:', val);
+        promptCopyFallback(text, targetTextEl, successMsg, originalMsg);
       }
+    }
+
+    function promptCopyFallback(text, targetTextEl, successMsg, originalMsg) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        if (targetTextEl) {
+          targetTextEl.textContent = successMsg;
+          setTimeout(() => { targetTextEl.textContent = originalMsg; }, 2500);
+        }
+      } catch (err) {
+        prompt('Salin teks berikut:', text);
+      }
+      document.body.removeChild(textarea);
+    }
+
+    // 1. Salin URL Resmi untuk Midtrans QRIS Simulator (HTTPS)
+    function copySimulatorUrl() {
+      const btn = document.getElementById('btnCopySimulatorUrl');
+      const textEl = document.getElementById('copySimulatorText');
+      const url = btn ? btn.getAttribute('data-url') : '';
+      copyTextToClipboard(url, textEl, '✓ URL Simulator Tersalin!', 'Salin URL Simulator (HTTPS)');
+    }
+
+    // 2. Salin URL Foto Langsung (.PNG)
+    function copyQrisImageUrl() {
+      const btn = document.getElementById('btnCopyImageUrl');
+      const textEl = document.getElementById('copyImageText');
+      const url = btn ? btn.getAttribute('data-url') : (document.getElementById('qrisImgPreview')?.src || '');
+      copyTextToClipboard(url, textEl, '✓ URL Foto Tersalin!', 'Salin URL Foto (.PNG)');
+    }
+
+    // 3. Salin Payload String QRIS
+    function copyQrisString() {
+      const btn = document.getElementById('btnCopyString');
+      const textEl = document.getElementById('copyStringText');
+      const str = btn ? btn.getAttribute('data-string') : '';
+      copyTextToClipboard(str, textEl, '✓ String QR Tersalin!', 'Salin String QR');
+    }
+
+    // Fallback kompatibilitas nama fungsi lama
+    function copyQrisUrl() {
+      copySimulatorUrl();
     }
   </script>
 
-  <!-- Modal Zoom QRIS Full Preview -->
-  <div class="qr-modal-backdrop" id="qrModalBackdrop" onclick="closeQrModal()">
-    <div class="qr-modal-content" onclick="event.stopPropagation()">
-      <button type="button" class="btn-close-qr-modal" onclick="closeQrModal()">&times;</button>
-      <img src="{{ asset('images/payment/qris-maybeads.jpg') }}" alt="QRIS Maybeads Full" class="qr-modal-full-img">
-      <div class="qr-modal-caption">
-        <strong>maybeads</strong> &bull; NMID: ID1025444490185 &bull; A01
-      </div>
-    </div>
-  </div>
 </body>
 </html>

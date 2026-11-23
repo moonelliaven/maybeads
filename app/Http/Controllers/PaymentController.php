@@ -1,15 +1,17 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Payment;
 use Illuminate\Http\Request;
 
-class PaymentController extends Controller {
+class PaymentController extends Controller
+{
     public function index(Request $request)
     {
         $query = Payment::with(['order.user', 'order.product', 'paymentMethod', 'deliveryMethod']);
 
-        // 1. Search Query (ID, IDP, Username, Method, Status, Amount)
+        // 1. Search Query
         if ($search = trim((string) $request->input('search', ''))) {
             $query->where(function ($q) use ($search) {
                 $cleanId = ltrim(str_ireplace('IDP', '', $search), '#0');
@@ -26,11 +28,11 @@ class PaymentController extends Controller {
             });
         }
 
-        // 2. Status Filter Tabs (Semua, Selesai, Gagal, Pending)
+        // 2. Status Filter Tabs
         $status = strtolower(trim((string) $request->input('status', 'semua')));
         if ($status !== 'semua' && !empty($status)) {
             if ($status === 'selesai' || $status === 'sukses') {
-                $query->whereIn('payment_status', ['Sukses', 'sukses', 'completed', 'paid', 'Selesai']);
+                $query->whereIn('payment_status', ['Sukses', 'sukses', 'completed', 'paid', 'Selesai', 'berhasil']);
             } elseif ($status === 'gagal' || $status === 'dibatalkan') {
                 $query->whereIn('payment_status', ['Gagal', 'gagal', 'failed', 'Dibatalkan', 'dibatalkan', 'cancelled']);
             } elseif ($status === 'pending' || $status === 'proses') {
@@ -40,16 +42,33 @@ class PaymentController extends Controller {
             }
         }
 
-        // 3. Per Page setting (supports "ALL" / "Show Less")
-        $perPage = $request->input('show_all') === 'true' ? 100 : 7;
+        // 3. Sortir berdasarkan waktu & nominal
+        $sortBy = $request->input('sort', 'terbaru');
+        switch ($sortBy) {
+            case 'terlama':
+                $query->orderBy('id', 'asc');
+                break;
+            case 'nominal_tinggi':
+                $query->orderByDesc('amount');
+                break;
+            case 'nominal_rendah':
+                $query->orderBy('amount', 'asc');
+                break;
+            case 'terbaru':
+            default:
+                $query->orderBy('id', 'desc');
+                break;
+        }
+
+        $perPage = $request->input('show_all') === 'true' ? 100 : 10;
         $totalPayments = Payment::count();
-        $payments = $query->orderBy('id', 'asc')->paginate($perPage)->withQueryString();
+        $payments = $query->paginate($perPage)->withQueryString();
 
         $stats = [
-            'total_income' => Payment::whereIn('payment_status', ['sukses', 'Sukses', 'lunas'])->sum('amount'),
+            'total_income' => Payment::whereIn('payment_status', ['sukses', 'Sukses', 'paid', 'lunas', 'berhasil'])->sum('amount'),
             'total_count'  => $totalPayments,
-            'sukses'       => Payment::whereIn('payment_status', ['sukses', 'Sukses'])->count(),
-            'pending'      => Payment::whereIn('payment_status', ['pending', 'Pending'])->count(),
+            'sukses'       => Payment::whereIn('payment_status', ['sukses', 'Sukses', 'paid', 'lunas', 'berhasil'])->count(),
+            'pending'      => Payment::whereIn('payment_status', ['pending', 'Pending', 'proses', 'Proses'])->count(),
             'gagal'        => Payment::whereIn('payment_status', ['gagal', 'Gagal', 'Dibatalkan', 'dibatalkan'])->count(),
         ];
 
@@ -59,6 +78,7 @@ class PaymentController extends Controller {
             'stats',
             'status',
             'search',
+            'sortBy',
             'perPage'
         ));
     }
@@ -67,7 +87,7 @@ class PaymentController extends Controller {
     {
         $payment->load(['order.user', 'order.product', 'paymentMethod', 'deliveryMethod']);
 
-        if ($request->wantsJson() || $request->ajax() || !$request->hasHeader('accept') || !view()->exists('admin.payment.show')) {
+        if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'id'               => $payment->formatted_id,
                 'user'             => $payment->order?->user?->name ?? 'Customer',
@@ -90,7 +110,7 @@ class PaymentController extends Controller {
         ]);
 
         $st = strtolower($validated['payment_status']);
-        $paidAt = in_array($st, ['sukses', 'selesai', 'lunas']) ? now() : null;
+        $paidAt = in_array($st, ['sukses', 'selesai', 'lunas', 'berhasil']) ? now() : null;
 
         $payment->update([
             'payment_status' => $validated['payment_status'],
@@ -98,9 +118,15 @@ class PaymentController extends Controller {
         ]);
 
         if ($payment->order) {
-            $payment->order->update([
-                'payment_status' => in_array($st, ['sukses', 'selesai', 'lunas']) ? 'lunas' : 'menunggu_pembayaran',
-            ]);
+            if (in_array($st, ['sukses', 'selesai', 'lunas', 'berhasil'])) {
+                $payment->order->update([
+                    'payment_status' => 'sudah_dibayar',
+                ]);
+            } elseif (in_array($st, ['gagal', 'dibatalkan'])) {
+                $payment->order->update([
+                    'payment_status' => 'dibatalkan',
+                ]);
+            }
         }
 
         return back()->with('success', 'Status pembayaran berhasil diperbarui.');
@@ -109,7 +135,66 @@ class PaymentController extends Controller {
     public function destroy(Payment $payment)
     {
         $payment->delete();
+        return redirect()->route('admin.payment.index')->with('success', 'Riwayat pembayaran berhasil dihapus.');
+    }
 
-        return redirect()->route('admin.payment.index')->with('success', 'Data pembayaran berhasil dihapus.');
+    public function export(Request $request)
+    {
+        $status = strtolower(trim((string) $request->input('status', 'semua')));
+        $query = Payment::with(['order.user', 'order.product', 'paymentMethod']);
+
+        if ($status !== 'semua' && !empty($status)) {
+            if ($status === 'selesai' || $status === 'sukses') {
+                $query->whereIn('payment_status', ['Sukses', 'sukses', 'completed', 'paid', 'Selesai', 'berhasil']);
+            } elseif ($status === 'gagal' || $status === 'dibatalkan') {
+                $query->whereIn('payment_status', ['Gagal', 'gagal', 'failed', 'Dibatalkan', 'dibatalkan', 'cancelled']);
+            } elseif ($status === 'pending' || $status === 'proses') {
+                $query->whereIn('payment_status', ['Pending', 'pending', 'Proses', 'proses']);
+            }
+        }
+
+        $payments = $query->orderBy('id', 'desc')->get();
+
+        $filename = 'rekap_pembayaran_maybeads_' . date('Y-m-d_His') . '.csv';
+        $headers = [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Pragma'              => 'no-cache',
+            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires'             => '0',
+        ];
+
+        $callback = function () use ($payments) {
+            $handle = fopen('php://output', 'w');
+            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            fputcsv($handle, [
+                'ID Pembayaran',
+                'ID Pesanan',
+                'Nama Pelanggan',
+                'Email',
+                'Metode Pembayaran',
+                'Nominal (Rp)',
+                'Status Pembayaran',
+                'Waktu Pembayaran'
+            ]);
+
+            foreach ($payments as $p) {
+                fputcsv($handle, [
+                    '#PAY-' . str_pad($p->id, 4, '0', STR_PAD_LEFT),
+                    '#ORD-' . str_pad($p->order_id, 4, '0', STR_PAD_LEFT),
+                    $p->order?->user?->name ?? 'Guest / Kasir',
+                    $p->order?->user?->email ?? '-',
+                    $p->payment_method ?? 'QRIS',
+                    $p->amount ?? 0,
+                    ucfirst($p->payment_status ?? 'Pending'),
+                    $p->paid_at ? $p->paid_at->format('Y-m-d H:i') : ($p->created_at ? $p->created_at->format('Y-m-d H:i') : '-')
+                ]);
+            }
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

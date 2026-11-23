@@ -56,31 +56,27 @@
       <nav class="breadcrumb" aria-label="Breadcrumb">
         <a href="{{ route('admin.dashboard') }}">Dashboard</a>
         <span class="breadcrumb-sep">&gt;</span>
-        <span class="breadcrumb-current">Pesanan</span>
+        <span class="breadcrumb-current">{{ ($statusFilter ?? '') === 'pending' ? 'Pending Order' : 'Pesanan' }}</span>
       </nav>
 
-      {{-- Page Heading + Search Bar --}}
+      {{-- Page Heading + Ekspor CSV Sejajar --}}
       <div class="order-page-head">
-        <h1 class="order-page-title">Semua Pesanan</h1>
+        <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+          <h1 class="order-page-title">{{ ($statusFilter ?? '') === 'pending' ? 'Pending Order' : 'Semua Pesanan' }}</h1>
 
-        <div class="order-search-wrap">
-          <span class="search-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          <a href="{{ route('admin.order.export', ['status' => request('status', 'semua')]) }}" class="btn-export-orders" style="display: inline-flex; align-items: center; gap: 7px; background: #ffffff; border: 1.5px solid #cbd5e1; color: #1e293b; padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px; color: #2563eb;">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
             </svg>
-          </span>
-          <input type="text"
-                 id="orderSearchInput"
-                 class="order-search-input"
-                 placeholder="Cari Pesanan"
-                 autocomplete="off"
-                 aria-label="Cari data pesanan">
+            <span>Ekspor CSV</span>
+          </a>
         </div>
       </div>
 
-      {{-- Stat Cards (6 Kotak Statistik) --}}
-      <div class="order-stats-grid">
+      {{-- Stat Cards (5 Kotak Statistik — Bagian Pemasukan Dihapus) --}}
+      <div class="order-stats-grid" style="grid-template-columns: repeat(5, 1fr);">
         {{-- 1. Total Pesanan --}}
         <div class="stat-card">
           <div class="stat-header">
@@ -129,34 +125,41 @@
         <div class="stat-card">
           <div class="stat-header">
             <span class="stat-title">Dibatalkan</span>
-            <span class="stat-dot dot-green"></span>
+            <span class="stat-dot" style="background-color: #94a3b8;"></span>
           </div>
           <div class="stat-number">
             {{ $stats['dibatalkan'] ?? 0 }}
           </div>
         </div>
-
-        {{-- 6. Pemasukan --}}
-        <div class="stat-card">
-          <div class="stat-header">
-            <span class="stat-title">Pemasukan</span>
-            <span class="stat-dot dot-purple"></span>
-          </div>
-          <div class="stat-number">
-            {{ number_format($stats['pemasukan'] ?? 0, 0, ',', '.') }}<span class="stat-currency">.Rp</span>
-          </div>
-        </div>
       </div>
 
-      {{-- Filter Tabs (Sortir) --}}
-      <div class="order-filter-row">
-        <span class="filter-sort-label">Sortir:</span>
-        <div class="filter-tabs" role="tablist">
-          <button type="button" class="filter-tab active" data-tab="semua">Semua</button>
-          <button type="button" class="filter-tab" data-tab="pending">Pending</button>
-          <button type="button" class="filter-tab" data-tab="process">Process</button>
-          <button type="button" class="filter-tab" data-tab="selesai">Selesai</button>
-          <button type="button" class="filter-tab" data-tab="dibatalkan">Dibatalkan</button>
+      {{-- Filter Tabs (Sortir) & Search Bar Sejajar --}}
+      <div class="order-filter-row" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <span class="filter-sort-label">Sortir:</span>
+          <div class="filter-tabs" role="tablist">
+            <button type="button" class="filter-tab {{ ($statusFilter ?? 'semua') === 'semua' ? 'active' : '' }}" data-tab="semua">Semua</button>
+            <button type="button" class="filter-tab {{ ($statusFilter ?? '') === 'pending' ? 'active' : '' }}" data-tab="pending">Pending</button>
+            <button type="button" class="filter-tab {{ in_array($statusFilter ?? '', ['process', 'proses']) ? 'active' : '' }}" data-tab="process">Process</button>
+            <button type="button" class="filter-tab {{ ($statusFilter ?? '') === 'selesai' ? 'active' : '' }}" data-tab="selesai">Selesai</button>
+            <button type="button" class="filter-tab {{ ($statusFilter ?? '') === 'dibatalkan' ? 'active' : '' }}" data-tab="dibatalkan">Dibatalkan</button>
+          </div>
+        </div>
+
+        <div class="order-search-wrap" style="max-width: 300px; width: 100%;">
+          <span class="search-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </span>
+          <input type="text"
+                 id="orderSearchInput"
+                 class="order-search-input"
+                 value="{{ $search ?? '' }}"
+                 placeholder="Cari Pesanan..."
+                 autocomplete="off"
+                 aria-label="Cari data pesanan">
         </div>
       </div>
 
@@ -165,9 +168,6 @@
         <table class="order-table" id="orderTable">
           <thead>
             <tr>
-              <th class="cb-col">
-                <input type="checkbox" class="tbl-check" id="selectAll" aria-label="Pilih semua pesanan">
-              </th>
               <th>Order ID</th>
               <th>Username</th>
               <th>Jenis Pengantaran</th>
@@ -203,9 +203,6 @@
                 };
               @endphp
               <tr data-id="{{ $order->id }}" data-status="{{ strtolower($order->order_status) }}">
-                <td class="cb-col">
-                  <input type="checkbox" class="tbl-check row-cb" data-id="{{ $order->id }}" aria-label="Pilih pesanan #{{ $order->formatted_id }}">
-                </td>
                 <td class="col-id">{{ $order->formatted_id }}</td>
                 <td class="col-user">
                   <div class="user-meta-cell">
@@ -236,21 +233,6 @@
                 <td class="col-action">
                   <div class="action-btns">
                     <a href="{{ route('admin.order.show', $order->id) }}" class="btn-detail">Detail</a>
-                    <a href="{{ route('admin.order.show', $order->id) }}" class="btn-icon-action" title="Ubah Pesanan">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 20h9"></path>
-                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                      </svg>
-                    </a>
-                    <button type="button" class="btn-icon-action" title="Hapus Pesanan">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="3 6 5 6 21 6"></polyline>
-                        <path d="M19 6l-1 14H6L5 6"></path>
-                        <path d="M10 11v6"></path>
-                        <path d="M14 11v6"></path>
-                        <path d="M9 6V4h6v2"></path>
-                      </svg>
-                    </button>
                   </div>
                 </td>
               </tr>

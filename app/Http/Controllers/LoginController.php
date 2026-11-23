@@ -80,11 +80,56 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
+        // 1. Dapatkan URL asal sebelum sesi di-invalidate
+        $referer = $request->input('redirect_to')
+            ?? $request->headers->get('referer')
+            ?? url()->previous();
+
+        // 2. Lakukan proses logout & bersihkan sesi
         Auth::logout();
+        if ($request->hasSession()) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        // 3. Evaluasi path asal
+        $path = '/';
+        if ($referer) {
+            $parsed = parse_url($referer, PHP_URL_PATH);
+            if ($parsed) {
+                $path = '/' . ltrim($parsed, '/');
+            }
+        }
 
-        return redirect()->route('login')->with('success', 'Anda telah berhasil keluar. Silakan login kembali untuk mengakses dashboard.');
+        // Tentukan apakah user logout dari dashboard (Admin Dashboard atau User Dashboard)
+        $isFromDashboard = (
+            str_starts_with($path, '/admin') ||
+            str_contains($path, '/dashboard') ||
+            str_contains($path, '/orders') ||
+            $path === '/dashboard' ||
+            $path === '/main/dashboard' ||
+            $path === '/admin'
+        );
+
+        if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success'  => true,
+                'message'  => 'Anda telah berhasil keluar.',
+                'redirect' => $isFromDashboard ? route('login') : ($referer && !str_contains($path, '/logout') ? $referer : route('home')),
+            ]);
+        }
+
+        // Jika awalnya dari Dashboard: Arahkan ke halaman login
+        if ($isFromDashboard) {
+            return redirect()->route('login')->with('success', 'Anda telah berhasil keluar dari dashboard. Silakan login kembali.');
+        }
+
+        // Jika dari Halaman Utama, Landing Page, Kontak, atau halaman toko lainnya:
+        // Arahkan kembali ke tempat yang sama
+        if ($referer && !str_contains($path, '/logout') && !str_contains($path, '/login')) {
+            return redirect()->to($referer)->with('success', 'Anda telah berhasil keluar.');
+        }
+
+        return redirect()->route('home')->with('success', 'Anda telah berhasil keluar.');
     }
 }

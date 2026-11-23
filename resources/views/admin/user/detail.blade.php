@@ -175,7 +175,13 @@
 
               <div class="info-item full-width">
                 <span class="info-label">Alamat Pengiriman Utama</span>
-                <span class="info-val">{{ $user->address }}</span>
+                <span class="info-val">
+                  @if(!empty($user->address))
+                    {{ $user->address }}
+                  @else
+                    <span style="color: #94a3b8; font-style: italic;">Belum diatur oleh pengguna (Opsional)</span>
+                  @endif
+                </span>
               </div>
 
               <div class="info-item">
@@ -188,6 +194,44 @@
                 <span class="info-val">{{ $user->updated_at ? $user->updated_at->format('d M Y, H:i') : '-' }}</span>
               </div>
             </div>
+          </div>
+
+          {{-- Panel: Lokasi & Peta Alamat Pengguna --}}
+          <div class="panel-card">
+            <h3 class="panel-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              Peta Lokasi &amp; Detail Alamat
+            </h3>
+
+            @if(!empty($user->address))
+              <div style="margin-bottom: 12px; font-size: 13.5px; color: #334155; line-height: 1.6; background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <strong style="color: #0f172a; display: block; margin-bottom: 2px;">Alamat Tercatat:</strong>
+                {{ $user->address }}
+              </div>
+              <div style="border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1; height: 220px;">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  style="border:0;"
+                  loading="lazy"
+                  allowfullscreen
+                  referrerpolicy="no-referrer-when-downgrade"
+                  src="https://maps.google.com/maps?q={{ urlencode($user->address) }}&output=embed">
+                </iframe>
+              </div>
+            @else
+              <div style="background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 10px; padding: 36px 20px; text-align: center; color: #94a3b8;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width: 44px; height: 44px; margin: 0 auto 12px; color: #94a3b8;">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                <div style="font-weight: 700; font-size: 14px; color: #64748b; margin-bottom: 4px;">Alamat Belum Diatur</div>
+                <div style="font-size: 12.5px; color: #94a3b8;">Pengguna ini belum menambahkan alamat tempat tinggal / pengiriman. Alamat bersifat opsional.</div>
+              </div>
+            @endif
           </div>
 
           {{-- Panel 2: Statistik Aktivitas --}}

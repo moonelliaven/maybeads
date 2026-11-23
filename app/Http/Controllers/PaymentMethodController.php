@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Payment;
 use App\Models\PaymentMethod;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class PaymentMethodController extends Controller
@@ -13,91 +14,112 @@ class PaymentMethodController extends Controller
      */
     public function index(Request $request)
     {
-        $activeTab = strtolower($request->query('tab', 'semua'));
         $search = trim($request->query('q', ''));
         $statusFilter = strtolower($request->query('status', 'semua'));
+        $typeFilter = strtolower($request->query('type', 'semua'));
 
-        $query = PaymentMethod::with('payments')->orderBy('id', 'asc');
+        // Filter Bulan & Tahun untuk pemasukan
+        $selectedMonth = (int) $request->input('month', date('n'));
+        $selectedYear  = (int) $request->input('year', date('Y'));
+        $sortBy        = $request->input('sort', 'default');
 
-        // Filter kategori / tab
-        if ($activeTab !== 'semua') {
-            if ($activeTab === 'bank') {
-                $query->where('type', 'bank');
-            } elseif ($activeTab === 'auto-link' || $activeTab === 'autolink') {
-                $query->where('type', 'auto-link');
-            } elseif ($activeTab === 'qris') {
-                $query->where('type', 'qris');
-            } elseif ($activeTab === 'e-wallet' || $activeTab === 'ewallet') {
-                $query->where('type', 'e-wallet');
-            }
+        $query = PaymentMethod::with('payments');
+
+        // Filter tipe
+        if ($typeFilter !== 'semua') {
+            $query->where('type', $typeFilter);
         }
 
         // Filter status
         if ($statusFilter !== 'semua') {
-            if ($statusFilter === 'active' || $statusFilter === 'aktif') {
-                $query->where('status', 'active');
-            } elseif ($statusFilter === 'non-active' || $statusFilter === 'nonaktif') {
-                $query->where('status', 'non-active');
-            }
+            $query->where('status', $statusFilter);
         }
 
-        // Pencarian nama, kode, no rekening, nama pemilik
+        // Search
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('code', 'like', "%{$search}%")
                   ->orWhere('account_number', 'like', "%{$search}%")
-                  ->orWhere('account_name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                  ->orWhere('account_name', 'like', "%{$search}%");
             });
         }
 
-        $methods = $query->get();
+        $allMethods = $query->get();
 
-        // Hitung statistik akumulasi harga per wallet maupun total transaksi
-        $allMethods = PaymentMethod::with('payments')->get();
-        $allSuccessPayments = Payment::whereIn('payment_status', ['Sukses', 'sukses', 'paid', 'Success'])->get();
+        // Hitung pemasukan per metode untuk bulan terpilih dan akumulasi keseluruhan
+        $startDate = Carbon::create($selectedYear, $selectedMonth, 1)->startOfMonth();
+        $endDate   = Carbon::create($selectedYear, $selectedMonth, 1)->endOfMonth();
 
-        $totalRevenue = $allSuccessPayments->sum('amount');
-        $totalTransactionsCount = $allSuccessPayments->count();
+        foreach ($allMethods as $method) {
+            $methodPayments = $method->payments->filter(function ($p) {
+                return in_array(strtolower($p->payment_status), ['sukses', 'paid', 'lunas', 'berhasil']);
+            });
 
-        // Akumulasi per kategori
-        $bankRevenue = $allMethods->where('type', 'bank')->sum(fn($m) => $m->total_accumulated);
-        $bankTrxCount = $allMethods->where('type', 'bank')->sum(fn($m) => $m->transactions_count);
+            $method->total_revenue = (float) $methodPayments->sum('amount');
+            $method->month_revenue = (float) $methodPayments->filter(function ($p) use ($startDate, $endDate) {
+                $date = $p->paid_at ?? $p->created_at;
+                return $date && $date >= $startDate && $date <= $endDate;
+            })->sum('amount');
+        }
 
-        $autoLinkRevenue = $allMethods->where('type', 'auto-link')->sum(fn($m) => $m->total_accumulated);
-        $autoLinkTrxCount = $allMethods->where('type', 'auto-link')->sum(fn($m) => $m->transactions_count);
+        // Sortir
+        if ($sortBy === 'month_income_desc') {
+            $methods = $allMethods->sortByDesc('month_revenue')->values();
+        } elseif ($sortBy === 'total_income_desc') {
+            $methods = $allMethods->sortByDesc('total_revenue')->values();
+        } elseif ($sortBy === 'fee_desc') {
+            $methods = $allMethods->sortByDesc('price')->values();
+        } elseif ($sortBy === 'name_asc') {
+            $methods = $allMethods->sortBy('name')->values();
+        } else {
+            $methods = $allMethods->sortBy('id')->values();
+        }
 
-        $qrisRevenue = $allMethods->where('type', 'qris')->sum(fn($m) => $m->total_accumulated);
-        $qrisTrxCount = $allMethods->where('type', 'qris')->sum(fn($m) => $m->transactions_count);
+        // Total Akumulasi Keseluruhan
+        $allSuccessPayments = Payment::whereIn('payment_status', ['Sukses', 'sukses', 'paid', 'lunas', 'berhasil'])->get();
+        $totalRevenueAll = (float) $allSuccessPayments->sum('amount');
 
-        $ewalletRevenue = $allMethods->where('type', 'e-wallet')->sum(fn($m) => $m->total_accumulated);
-        $ewalletTrxCount = $allMethods->where('type', 'e-wallet')->sum(fn($m) => $m->transactions_count);
+        // Pemasukan Bulan Terpilih Keseluruhan
+        $monthRevenueAll = (float) $allSuccessPayments->filter(function ($p) use ($startDate, $endDate) {
+            $date = $p->paid_at ?? $p->created_at;
+            return $date && $date >= $startDate && $date <= $endDate;
+        })->sum('amount');
 
-        $activeMethodsCount = $allMethods->where('status', 'active')->count();
-        $avgAdminFee = $allMethods->count() > 0 ? $allMethods->avg('price') : 0;
+        $activeMethodsCount = PaymentMethod::where('status', 'active')->count();
+        $totalMethodsCount  = PaymentMethod::count();
 
         $stats = [
-            'total_revenue'         => $totalRevenue,
-            'total_transactions'    => $totalTransactionsCount,
-            'bank_revenue'          => $bankRevenue,
-            'bank_trx_count'        => $bankTrxCount,
-            'autolink_revenue'      => $autoLinkRevenue,
-            'autolink_trx_count'    => $autoLinkTrxCount,
-            'qris_revenue'          => $qrisRevenue,
-            'qris_trx_count'        => $qrisTrxCount,
-            'ewallet_revenue'       => $ewalletRevenue,
-            'ewallet_trx_count'     => $ewalletTrxCount,
-            'active_methods_count'  => $activeMethodsCount,
-            'total_methods_count'   => $allMethods->count(),
-            'avg_admin_fee'         => $avgAdminFee,
+            'total_revenue_all' => $totalRevenueAll,
+            'month_revenue_all' => $monthRevenueAll,
+            'selected_month'    => $selectedMonth,
+            'selected_year'     => $selectedYear,
+            'active_count'      => $activeMethodsCount,
+            'total_count'       => $totalMethodsCount,
         ];
 
-        return view('admin.payment-method.index', compact('methods', 'stats', 'activeTab', 'search', 'statusFilter'));
+        return view('admin.payment-method.index', compact(
+            'methods',
+            'stats',
+            'search',
+            'statusFilter',
+            'typeFilter',
+            'selectedMonth',
+            'selectedYear',
+            'sortBy'
+        ));
     }
 
     /**
-     * Tambah metode pembayaran baru oleh admin (Bank, Auto-Link, QRIS, E-Wallet)
+     * Halaman Khusus Tambah Metode Pembayaran (Bukan pop up)
+     */
+    public function create()
+    {
+        return view('admin.payment-method.create');
+    }
+
+    /**
+     * Tambah metode pembayaran baru oleh admin
      */
     public function store(Request $request)
     {
@@ -119,7 +141,32 @@ class PaymentMethodController extends Controller
     }
 
     /**
-     * Update metode pembayaran (ubah biaya admin, nama akun, status, dll.)
+     * Halaman Khusus Detail Metode Pembayaran (Bukan pop up)
+     */
+    public function show(PaymentMethod $paymentMethod)
+    {
+        $paymentMethod->load('payments.order.user');
+
+        $allPayments = $paymentMethod->payments->filter(function ($p) {
+            return in_array(strtolower($p->payment_status), ['sukses', 'paid', 'lunas', 'berhasil']);
+        });
+
+        $totalRevenue = (float) $allPayments->sum('amount');
+        $transactionCount = $allPayments->count();
+
+        return view('admin.payment-method.show', compact('paymentMethod', 'totalRevenue', 'transactionCount'));
+    }
+
+    /**
+     * Halaman Khusus Edit Metode Pembayaran
+     */
+    public function edit(PaymentMethod $paymentMethod)
+    {
+        return view('admin.payment-method.edit', compact('paymentMethod'));
+    }
+
+    /**
+     * Update metode pembayaran
      */
     public function update(Request $request, PaymentMethod $paymentMethod)
     {
@@ -166,4 +213,3 @@ class PaymentMethodController extends Controller
             ->with('success', "Metode pembayaran '{$name}' berhasil dihapus.");
     }
 }
-

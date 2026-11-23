@@ -72,32 +72,6 @@
             </a>
           </div>
         </div>
-
-        {{-- Profil --}}
-        <div class="dropdown" data-dropdown>
-          <button type="button" class="header-user-badge"
-                  aria-haspopup="true" aria-expanded="false" data-dropdown-trigger>
-            <div class="header-user-avatar">
-              {{ strtoupper(substr(Auth::user()->name ?? 'W', 0, 1)) }}
-            </div>
-            <div class="header-user-info">
-              <span class="header-user-name">{{ Auth::user()->name ?? 'M. Waiz Fadhillah' }}</span>
-              <span class="header-user-role">{{ ucfirst(Auth::user()->role ?? 'Admin') }}</span>
-            </div>
-            <div class="header-user-chevron">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </div>
-          </button>
-          <div class="dropdown-menu" role="menu" hidden>
-            <a href="/" target="_blank" rel="noopener" class="dropdown-item" role="menuitem">Lihat toko</a>
-            <form method="POST" action="/logout">
-              @csrf
-              <button type="submit" class="dropdown-item danger" role="menuitem">Keluar</button>
-            </form>
-          </div>
-        </div>
       </div>
     </header>
 
@@ -184,10 +158,8 @@
         <table class="category-table" id="categoryTable">
           <thead>
             <tr>
-              <th class="cb-col">
-                <input type="checkbox" class="tbl-check" id="selectAll" aria-label="Pilih semua">
-              </th>
-              <th>ID</th>
+              <th style="width: 80px;">ID</th>
+              <th style="width: 80px;">Gambar</th>
               <th>Kategori</th>
               <th>Total Produk</th>
               <th>Stok</th>
@@ -197,13 +169,23 @@
           <tbody id="categoryTableBody">
             @forelse ($categories as $cat)
               <tr data-id="{{ $cat['id'] }}">
-                <td class="cb-col">
-                  <input type="checkbox" class="tbl-check" aria-label="Pilih {{ $cat['category_name'] }}">
-                </td>
                 <td class="col-id">{{ $cat['id'] }}</td>
-                <td class="col-name">{{ $cat['category_name'] }}</td>
-                <td class="col-count">{{ $cat['products_count'] }}</td>
-                <td class="col-stock">{{ $cat['products_stock'] }}</td>
+                <td class="col-img">
+                  @if(!empty($cat['image']))
+                    <img src="{{ str_starts_with($cat['image'], 'http') ? $cat['image'] : asset('storage/' . $cat['image']) }}" alt="{{ $cat['category_name'] }}" style="width: 44px; height: 44px; border-radius: 8px; object-fit: cover; border: 1px solid #e2e8f0; display: block;">
+                  @else
+                    <div style="width: 44px; height: 44px; border-radius: 8px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #94a3b8;">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 20px; height: 20px;">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
+                      </svg>
+                    </div>
+                  @endif
+                </td>
+                <td class="col-name" style="font-weight: 600;">{{ $cat['category_name'] }}</td>
+                <td class="col-count">{{ $cat['products_count'] }} Produk</td>
+                <td class="col-stock"><span style="font-weight: 600; color: #0f172a;">{{ $cat['products_stock'] }}</span> pcs</td>
                 <td class="col-action">
                   <div class="action-btns">
                     <a href="{{ route('admin.category.show', $cat['id']) }}" class="btn-detail">Detail</a>

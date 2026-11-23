@@ -68,13 +68,34 @@
       </div>
 
       <div class="form-card">
-        <form action="{{ route('admin.category.store') }}" method="POST">
+        <form action="{{ route('admin.category.store') }}" method="POST" enctype="multipart/form-data">
           @csrf
           <div class="form-field-group">
             <label for="category_name" class="form-label">Nama Kategori</label>
             <input type="text" id="category_name" name="category_name" class="form-control-input"
                    placeholder="Contoh: Gelang, Kalung, Cincin..." value="{{ old('category_name') }}" required>
             @error('category_name')
+              <div class="form-error-msg">{{ $message }}</div>
+            @enderror
+          </div>
+
+          <div class="form-field-group" style="margin-top: 20px;">
+            <label for="image" class="form-label">Gambar Kategori (Opsional)</label>
+            <input type="file" id="image" name="image" class="form-control-input" accept="image/*"
+                   style="padding: 9px 12px; background: #fff;"
+                   onchange="if(this.files && this.files[0]) {
+                     const reader = new FileReader();
+                     reader.onload = e => {
+                       const p = document.getElementById('catImagePreview');
+                       p.src = e.target.result;
+                       p.style.display = 'block';
+                     };
+                     reader.readAsDataURL(this.files[0]);
+                   }">
+            <div style="margin-top: 10px;">
+              <img id="catImagePreview" src="" alt="Preview Kategori" style="display: none; max-width: 140px; max-height: 140px; border-radius: 8px; object-fit: cover; border: 1.5px solid #cbd5e1;">
+            </div>
+            @error('image')
               <div class="form-error-msg">{{ $message }}</div>
             @enderror
           </div>

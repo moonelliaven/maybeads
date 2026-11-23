@@ -36,11 +36,27 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ==========================================================================
      2. FILTER & SORT ACTIONS (Form Submissions)
      ========================================================================== */
-  const filterForm    = document.getElementById('filterForm');
-  const inputSort     = document.getElementById('inputSort');
-  const inputCategory = document.getElementById('inputCategory');
+  const filterForm      = document.getElementById('filterForm');
+  const selectSort      = document.getElementById('selectSort');
+  const selectCategory  = document.getElementById('selectCategory');
+  const inputSort       = document.getElementById('inputSort');
+  const inputCategory   = document.getElementById('inputCategory');
 
-  // Sort Radio Options
+  // Dropdown Sort Change
+  if (selectSort && filterForm) {
+    selectSort.addEventListener('change', () => {
+      filterForm.submit();
+    });
+  }
+
+  // Dropdown Category Change
+  if (selectCategory && filterForm) {
+    selectCategory.addEventListener('change', () => {
+      filterForm.submit();
+    });
+  }
+
+  // Legacy fallback Sort Radio Options
   document.querySelectorAll('.sort-radio-option[data-sort]').forEach(btn => {
     btn.addEventListener('click', () => {
       if (inputSort && filterForm) {
@@ -50,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Category Options
+  // Legacy fallback Category Options
   document.querySelectorAll('.category-option-item[data-category]').forEach(btn => {
     btn.addEventListener('click', () => {
       if (inputCategory && filterForm) {
@@ -59,20 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
-
-  // Expand Categories Toggle
-  const btnToggleCategories  = document.getElementById('btnToggleCategories');
-  const textExpandCategories = document.getElementById('textExpandCategories');
-  if (btnToggleCategories) {
-    btnToggleCategories.addEventListener('click', () => {
-      const extraItems = document.querySelectorAll('.cat-extra-item');
-      const isExpanded = btnToggleCategories.classList.toggle('expanded');
-      extraItems.forEach(item => item.classList.toggle('is-hidden', !isExpanded));
-      if (textExpandCategories) {
-        textExpandCategories.textContent = isExpanded ? 'Tutup' : 'Lihat lebih';
-      }
-    });
-  }
 
 
   /* ==========================================================================

@@ -35,12 +35,14 @@
       </div>
 
       <div class="header-right">
-        <div class="header-user-badge">
-          <div class="header-user-avatar">{{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}</div>
-          <div class="header-user-info">
-            <span class="header-user-name">{{ Auth::user()->name ?? 'Administrator' }}</span>
-            <span class="header-user-role">{{ ucfirst(Auth::user()->role ?? 'Admin') }}</span>
-          </div>
+        <div class="dropdown" data-dropdown>
+          <button type="button" class="notification-btn" aria-label="Notifikasi">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span class="notification-badge">1</span>
+          </button>
         </div>
       </div>
     </header>
@@ -53,10 +55,20 @@
         </div>
       @endif
 
-      <div class="page-header">
+      <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
         <div>
           <h1 class="page-title">Riwayat Pembayaran</h1>
           <p class="page-subtitle">Kelola dan verifikasi transaksi keuangan pelanggan</p>
+        </div>
+        <div>
+          <a href="{{ route('admin.payment.export', ['status' => request('status', 'semua')]) }}" class="btn-export-payments" style="display: inline-flex; align-items: center; gap: 7px; background: #ffffff; border: 1.5px solid #cbd5e1; color: #1e293b; padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px; color: #2563eb;">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Ekspor CSV</span>
+          </a>
         </div>
       </div>
 
@@ -116,26 +128,40 @@
       </div>
 
       <!-- Filter Toolbar -->
-      <div class="toolbar-card">
-        <form method="GET" action="{{ route('admin.payment.index') }}" class="search-form">
+      <div class="toolbar-card" style="display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+        <form method="GET" action="{{ route('admin.payment.index') }}" class="search-form" style="flex: 1; min-width: 260px;">
+          @if(request('status'))
+            <input type="hidden" name="status" value="{{ request('status') }}">
+          @endif
+          @if(request('sort'))
+            <input type="hidden" name="sort" value="{{ request('sort') }}">
+          @endif
           <div class="search-input-wrap">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
-            <input type="text" name="search" placeholder="Cari ID transaksi, nama, metode..." value="{{ request('search') }}">
+            <input type="text" name="search" placeholder="Cari ID pembayaran, ID pesanan, nama..." value="{{ request('search') }}">
           </div>
         </form>
 
-        <form method="GET" action="{{ route('admin.payment.index') }}" class="filter-group">
+        <form method="GET" action="{{ route('admin.payment.index') }}" class="filter-group" style="display: flex; gap: 10px; align-items: center;">
           @if(request('search'))
             <input type="hidden" name="search" value="{{ request('search') }}">
           @endif
-          <select name="status" class="filter-select" onchange="this.form.submit()">
+          
+          <select name="status" class="filter-select" onchange="this.form.submit()" style="padding: 9px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-size: 13px; font-weight: 600; color: #334155; background: #fff;">
             <option value="semua" {{ request('status') === 'semua' || !request('status') ? 'selected' : '' }}>Semua Status</option>
             <option value="sukses" {{ request('status') === 'sukses' ? 'selected' : '' }}>Sukses / Berhasil</option>
             <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending / Menunggu</option>
             <option value="gagal" {{ request('status') === 'gagal' ? 'selected' : '' }}>Gagal / Batal</option>
+          </select>
+
+          <select name="sort" class="filter-select" onchange="this.form.submit()" style="padding: 9px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-size: 13px; font-weight: 600; color: #334155; background: #fff;">
+            <option value="terbaru" {{ request('sort') === 'terbaru' || !request('sort') ? 'selected' : '' }}>Sortir: Waktu Terbaru</option>
+            <option value="terlama" {{ request('sort') === 'terlama' ? 'selected' : '' }}>Sortir: Waktu Terlama</option>
+            <option value="nominal_tinggi" {{ request('sort') === 'nominal_tinggi' ? 'selected' : '' }}>Nominal Tertinggi</option>
+            <option value="nominal_rendah" {{ request('sort') === 'nominal_rendah' ? 'selected' : '' }}>Nominal Terendah</option>
           </select>
         </form>
       </div>
@@ -196,6 +222,17 @@
                 </td>
                 <td>
                   <div class="table-actions">
+                    <!-- Tombol Lihat Struk -->
+                    <a href="{{ route('admin.payment.show', $payment->id) }}" class="btn-action" title="Lihat Struk Pembayaran" style="color: #2563eb; border-color: #bfdbfe;">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                      </svg>
+                    </a>
+
                     <!-- Form konfirmasi cepat / update status -->
                     <form method="POST" action="{{ route('admin.payment.update', $payment->id) }}" style="margin: 0;">
                       @csrf

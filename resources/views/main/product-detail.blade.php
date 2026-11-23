@@ -131,37 +131,82 @@
       <!-- Left: Brand Logo + Breadcrumb -->
       <div class="sub-nav-left">
         <a href="{{ route('main.dashboard') }}" class="sub-nav-brand">
-          Maybead.s
+          Maybeads
         </a>
-        <span class="sub-nav-crumb" style="font-size: 11px; color: #94a3b8; font-weight: 500;">Detail Produk</span>
+        <span class="sub-nav-crumb">/ Detail Produk</span>
       </div>
 
       <!-- Right: Keranjang and Akun buttons -->
       <div class="sub-nav-right">
+        <!-- Keranjang Button -->
         @auth
-          <a href="{{ route('cart.index') }}" class="sub-btn-pill">
-            <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          <a href="{{ route('cart.index') }}" class="action-pill-btn" id="cartOpenBtn" title="Lihat Keranjang">
+            <svg class="pill-icon" viewBox="0 0 24 24">
+              <circle cx="9" cy="21" r="1"></circle>
+              <circle cx="20" cy="21" r="1"></circle>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
             <span>Keranjang</span>
-            @if(($cartCount ?? 0) > 0)
-              <span class="cart-count-badge" id="cartCountBadge" style="background:#2b4570; color:#fff; font-size:10px; font-weight:700; padding:1px 6px; border-radius:999px;">{{ $cartCount }}</span>
-            @endif
-          </a>
-          <a href="{{ route('orders.history') }}" class="sub-btn-pill">
-            <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            <span>Akun</span>
-            <svg viewBox="0 0 24 24" style="width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2.5;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            <span class="cart-count-badge {{ ($cartCount ?? 0) > 0 ? 'visible' : '' }}" id="cartCountBadge">{{ $cartCount ?? 0 }}</span>
           </a>
         @else
-          <button type="button" class="sub-btn-pill btn-trigger-login-prompt">
-            <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          <button type="button" class="action-pill-btn btn-trigger-login-prompt" title="Lihat Keranjang">
+            <svg class="pill-icon" viewBox="0 0 24 24">
+              <circle cx="9" cy="21" r="1"></circle>
+              <circle cx="20" cy="21" r="1"></circle>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
             <span>Keranjang</span>
           </button>
-          <a href="{{ route('login') }}" class="sub-btn-pill">
-            <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            <span>Akun</span>
-            <svg viewBox="0 0 24 24" style="width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2.5;"><polyline points="6 9 12 15 18 9"></polyline></svg>
-          </a>
         @endauth
+
+        <!-- Akun Button with dropdown -->
+        <div class="account-dropdown-wrapper">
+          <button type="button" class="action-pill-btn" id="accountDropdownBtn" aria-expanded="false" title="Menu Akun">
+            <svg class="pill-icon" viewBox="0 0 24 24">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span>Akun</span>
+            <svg class="chevron-down" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+
+          <div class="account-menu-popover" id="accountMenuPopover">
+            @auth
+              <div class="acc-popover-header">
+                <strong>{{ Auth::user()->name }}</strong>
+                <small>{{ Auth::user()->email }}</small>
+              </div>
+              <div class="acc-popover-divider"></div>
+              @if(Auth::user()->isAdmin())
+                <a href="{{ route('admin.dashboard') }}" class="acc-popover-item">
+                  <svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg>
+                  Admin Dashboard
+                </a>
+              @endif
+              <a href="{{ route('orders.history') }}" class="acc-popover-item">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                Riwayat Pesanan
+              </a>
+              <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
+                <button type="submit" class="acc-popover-item text-danger">
+                  <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  Keluar
+                </button>
+              </form>
+            @else
+              <div class="acc-popover-header">
+                <strong>Akun Pengguna</strong>
+                <small>Silakan masuk atau daftar</small>
+              </div>
+              <div class="acc-popover-divider"></div>
+              <a href="{{ route('login') }}" class="acc-popover-item">Masuk ke Akun</a>
+              <a href="{{ route('register') }}" class="acc-popover-item">Daftar Akun Baru</a>
+            @endauth
+          </div>
+        </div>
       </div>
     </div>
   </nav>
@@ -171,43 +216,64 @@
        ======================================================================== -->
   <main class="detail-main-wrapper">
 
-    <!-- Breadcrumb Heading -->
-    <div class="detail-header-block">
-      <div class="detail-crumb-line"><a href="{{ route('main.dashboard') }}" class="btn-back-link" style="color:inherit;text-decoration:none;">Dashboard</a> &gt; <a href="{{ route('main.dashboard') }}#produk" class="btn-back-link" style="color:inherit;text-decoration:none;">Produk</a></div>
-      <h1 class="detail-page-title">Detail Produk</h1>
+    <!-- Top Return CTA & Breadcrumb Bar -->
+    <div class="detail-back-bar">
+      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <a href="{{ route('main.dashboard') }}" class="btn-back-to-home">
+          <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          <span>Kembali ke Katalog</span>
+        </a>
+        <a href="{{ route('home') }}" class="btn-back-outline">
+          <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          <span>Beranda</span>
+        </a>
+      </div>
+
+      <nav class="breadcrumb-trail" aria-label="Breadcrumb">
+        <a href="{{ route('home') }}">Beranda</a>
+        <span class="sep">&rsaquo;</span>
+        <a href="{{ route('main.dashboard') }}">Katalog Produk</a>
+        <span class="sep">&rsaquo;</span>
+        <span class="active-crumb">{{ $product->product_name }}</span>
+      </nav>
     </div>
 
     <!-- CARD 1: Main Product Showcase Card -->
-    <section class="detail-card-box"
-             id="productDetailCard"
+    <section class="product-showcase-card detail-card-box"
+             id="productDetailStore"
+             data-id="{{ $product->id }}"
              data-product-id="{{ $product->id }}"
+             data-name="{{ $product->product_name }}"
              data-product-name="{{ $product->product_name }}"
+             data-raw-price="{{ $rawPrice }}"
              data-product-price="{{ $rawPrice }}"
              data-formatted-price="{{ $formattedPrice }}"
+             data-price-formatted="{{ $formattedPrice }}"
+             data-image="{{ $mainProductImg }}"
              data-product-img="{{ $mainProductImg }}"
              data-default-variant="{{ $defaultVariantStr }}">
 
-      <div class="showcase-grid-layout">
-        
-        <!-- Left: Image & 5 Thumbnails -->
-        <div class="gallery-column">
-          <div class="main-image-display-frame">
-            <img src="{{ $mainProductImg }}"
-                 id="mainProductImage"
-                 alt="{{ $product->product_name }}">
-          </div>
-
-          <div class="thumbs-horizontal-row">
-            @foreach($galleryImages as $tIdx => $tImg)
-              <button type="button"
-                      class="thumb-item-btn thumb-select-btn {{ $tIdx === 0 ? 'active' : '' }}"
-                      data-src="{{ $tImg }}"
-                      aria-label="Thumbnail {{ $tIdx + 1 }}">
-                <img src="{{ $tImg }}" alt="{{ $product->product_name }} {{ $tIdx + 1 }}">
-              </button>
-            @endforeach
-          </div>
+      <!-- Left: Image & 5 Thumbnails -->
+      <div class="showcase-media-col gallery-column">
+        <div class="main-img-box main-image-display-frame">
+          <span class="media-code-badge">{{ $productCode }}</span>
+          <img src="{{ $mainProductImg }}"
+               id="mainProductImage"
+               class="main-img-display"
+               alt="{{ $product->product_name }}">
         </div>
+
+        <div class="thumbnail-gallery-row thumbs-horizontal-row">
+          @foreach($galleryImages as $tIdx => $tImg)
+            <button type="button"
+                    class="thumb-item-btn thumb-select-btn {{ $tIdx === 0 ? 'active' : '' }}"
+                    data-src="{{ $tImg }}"
+                    aria-label="Thumbnail {{ $tIdx + 1 }}">
+              <img src="{{ $tImg }}" alt="{{ $product->product_name }} {{ $tIdx + 1 }}">
+            </button>
+          @endforeach
+        </div>
+      </div>
 
         <!-- Right: Product Info & Actions -->
         <div class="info-details-column">
@@ -302,23 +368,23 @@
       <h3 class="card-inner-heading">Spesifikasi Produk</h3>
       <div class="specs-keyvalue-list">
         <div class="spec-pair-item">
-          <span class="spec-prop-key">Deskripsi</span>
+          <span class="spec-prop-key">Kategori</span>
           <span class="spec-prop-val">{{ $catName }}</span>
         </div>
         <div class="spec-pair-item">
-          <span class="spec-prop-key">Deskripsi</span>
+          <span class="spec-prop-key">Kode Produk</span>
           <span class="spec-prop-val">{{ $productCode }}</span>
         </div>
         <div class="spec-pair-item">
-          <span class="spec-prop-key">Deskripsi</span>
+          <span class="spec-prop-key">Nama Produk</span>
           <span class="spec-prop-val">{{ $product->product_name }}</span>
         </div>
         <div class="spec-pair-item">
-          <span class="spec-prop-key">Deskripsi</span>
-          <span class="spec-prop-val">100% Original Handmade</span>
+          <span class="spec-prop-key">Kualitas &amp; Pengerjaan</span>
+          <span class="spec-prop-val">100% Original Handmade Beads</span>
         </div>
         <div class="spec-pair-item">
-          <span class="spec-prop-key">Deskripsi</span>
+          <span class="spec-prop-key">Stok Tersedia</span>
           <span class="spec-prop-val">{{ $product->stock > 0 ? $product->stock : 30 }} pcs</span>
         </div>
       </div>
@@ -349,12 +415,18 @@
       @endif
     </section>
 
-    <!-- CARD 4: Produk Terkait Lainnya -->
+    <!-- CARD 4: Produk Terkait Lainnya (Mengikuti format card katalog utama) -->
     @if(isset($relatedProducts) && $relatedProducts->count() > 0)
       <section class="related-section-wrap">
-        <h3 class="related-section-header">Produk Terkait Lainnya</h3>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+          <h3 class="related-section-header" style="margin: 0; font-size: 18px; font-weight: 800; color: #141418;">Produk Terkait Lainnya</h3>
+          <a href="{{ route('main.dashboard') }}" style="font-size: 13px; font-weight: 700; color: #2b4570; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+            <span>Lihat Semua Katalog</span>
+            <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </a>
+        </div>
 
-        <div class="related-cards-grid">
+        <div class="products-grid-wrapper">
           @foreach($relatedProducts->take(4) as $rIdx => $rProduct)
             @php
               $rRawPrice = (float)$rProduct->price < 1000 ? (float)$rProduct->price * 1000 : (float)$rProduct->price;
@@ -362,25 +434,70 @@
               $rPriceFmt = number_format($rRawPrice, 0, ',', '.');
               $rStrikeFmt = number_format($rRawPrice * 1.15, 0, ',', '.');
               $rImg = $resolveImg($rProduct->image, $rIdx + 1);
+              $rProductCode = 'IDP' . str_pad($rProduct->id, 4, '0', STR_PAD_LEFT);
+              $rCatName = $rProduct->category ? $rProduct->category->category_name : 'Aksesoris';
             @endphp
-            <div class="related-product-card">
-              <span class="rel-seller-badge">BEST SELLER #01</span>
-              <div class="rel-image-box">
-                <img src="{{ $rImg }}" alt="{{ $rProduct->product_name }}">
+            <article class="product-card-item"
+                     data-id="{{ $rProduct->id }}"
+                     data-code="{{ $rProductCode }}"
+                     data-name="{{ $rProduct->product_name }}"
+                     data-category="{{ $rCatName }}"
+                     data-price="{{ $rRawPrice }}"
+                     data-formatted-price="Rp {{ $rPriceFmt }}"
+                     data-image="{{ $rImg }}">
+
+              <!-- Image with Top-Left Best Seller Badge -->
+              <div class="card-media-wrap">
+                <span class="card-badge-bestseller badge-top3">
+                  <svg viewBox="0 0 24 24" fill="currentColor" style="width:12px;height:12px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  BEST SELLER #{{ str_pad($rIdx + 1, 2, '0', STR_PAD_LEFT) }}
+                </span>
+                <img src="{{ $rImg }}"
+                     alt="{{ $rProduct->product_name }}"
+                     class="card-product-img"
+                     loading="lazy"
+                     onerror="this.onerror=null;this.src='{{ asset('images/landing/prod-keychain.jpg') }}'">
               </div>
-              <div class="rel-category-text">{{ $rProduct->category ? $rProduct->category->category_name : 'Kategori' }}</div>
-              <div class="rel-title-text" title="{{ $rProduct->product_name }}">{{ $rProduct->product_name }}</div>
-              <div class="rel-price-row">
-                <span class="rel-current-price">Rp{{ $rPriceFmt }}</span>
-                <span class="rel-old-price">Rp {{ $rStrikeFmt }}</span>
+
+              <!-- Card Body -->
+              <div class="card-info-wrap">
+                <div class="card-cat-label">{{ $rCatName }}</div>
+                <h3 class="card-product-title" title="{{ $rProduct->product_name }}">
+                  {{ $rProduct->product_name }}
+                </h3>
+
+                <!-- Price Row -->
+                <div class="card-price-row">
+                  <span class="card-currency">Rp</span>
+                  <span class="card-price-val">{{ $rPriceFmt }}</span>
+                  <span class="card-price-original">Rp {{ $rStrikeFmt }}</span>
+                </div>
+
+                <!-- Bottom Actions Row: Detail & Cart Modal -->
+                <div class="card-actions-row">
+                  <a href="{{ route('product.detail', $rProduct->id) }}" class="btn-card-detail">
+                    Detail
+                  </a>
+
+                  @auth
+                    <button type="button"
+                            class="btn-card-cart-icon btn-related-add-cart"
+                            data-id="{{ $rProduct->id }}"
+                            title="Tambah ke Keranjang"
+                            aria-label="Tambah {{ $rProduct->product_name }} ke keranjang">
+                      <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                    </button>
+                  @else
+                    <button type="button"
+                            class="btn-card-cart-icon btn-trigger-login-prompt"
+                            title="Tambah ke Keranjang"
+                            aria-label="Tambah {{ $rProduct->product_name }} ke keranjang">
+                      <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                    </button>
+                  @endauth
+                </div>
               </div>
-              <div class="rel-actions-row">
-                <a href="{{ route('product.detail', $rProduct->id) }}" class="btn-card-detail">Detail</a>
-                <button type="button" class="btn-card-cart btn-quick-cart {{ Auth::check() ? '' : 'btn-trigger-login-prompt' }}" data-id="{{ $rProduct->id }}" title="Tambah ke keranjang">
-                  <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-                </button>
-              </div>
-            </div>
+            </article>
           @endforeach
         </div>
       </section>

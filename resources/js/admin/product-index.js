@@ -286,7 +286,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const catName = p.category_name || p.category?.category_name || 'Tanpa Kategori';
       return `
       <tr data-id="${p.id}">
-        <td class="cb-col"><input type="checkbox" class="tbl-check" aria-label="Pilih ${escHtml(p.product_name)}"></td>
         <td class="col-id">${p.id}</td>
         <td class="col-name">${escHtml(p.product_name)}</td>
         <td class="col-category"><span class="cat-badge">${escHtml(catName)}</span></td>
@@ -671,15 +670,22 @@ document.addEventListener('DOMContentLoaded', () => {
   /* =====================================================================
      17. PAGINATION BAR — ALL / SHOW LESS
   ===================================================================== */
-  document.getElementById('btnPagAll')?.addEventListener('click', () => {
-    state.perPage = allProducts.length || 999;
+  const btnAll = document.getElementById('btnPagAll');
+  const btnLess = document.getElementById('btnPagLess');
+
+  btnAll?.addEventListener('click', () => {
+    state.perPage = Math.max(allProducts.length, 9999);
     state.page    = 1;
+    btnAll.classList.add('active');
+    btnLess?.classList.remove('active');
     render();
   });
 
-  document.getElementById('btnPagLess')?.addEventListener('click', () => {
+  btnLess?.addEventListener('click', () => {
     state.perPage = 8;
     state.page    = 1;
+    btnLess?.classList.add('active');
+    btnAll?.classList.remove('active');
     render();
   });
 

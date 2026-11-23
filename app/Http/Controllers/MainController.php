@@ -6,6 +6,8 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\ProductVariant;
 use App\Models\Cart;
+use App\Models\Order;
+use App\Models\Payment;
 use App\Models\Testimonial;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -169,7 +171,11 @@ class MainController extends Controller
         $cartCount = Cart::where('user_id', Auth::id())->sum('quantity');
         $cartItems = Cart::with('product.category')->where('user_id', Auth::id())->get();
 
-        return view('main.cart', compact('cartCount', 'cartItems'));
+        if (view()->exists('main.cart')) {
+            return view('main.cart', compact('cartCount', 'cartItems'));
+        }
+
+        return view('main.account.cart', compact('cartCount', 'cartItems'));
     }
 
     public function orderDetail(Request $request, $orderId = null)
@@ -270,7 +276,7 @@ class MainController extends Controller
                 'product_id'     => $productId,
                 'quantity'       => (int) $request->input('quantity', 1),
                 'subtotal'       => $totalAmount,
-                'order_status'   => 'diproses',
+                'order_status'   => 'Pending',
                 'payment_status' => 'belum_dibayar',
                 'address'        => $address,
                 'order_at'       => now(),
@@ -305,18 +311,182 @@ class MainController extends Controller
         return redirect()->route('payment.qris', ['order_id' => $orderId]);
     }
 
-    public function paymentQris($orderId = null)
+    public function paymentQris(Request $request, $orderId = null)
     {
-        $order = session('current_order', [
-            'id'             => $orderId ?? 'ORD-' . rand(1000, 9999),
-            'amount'         => 98000,
+        $dbOrder = null;
+        if ($orderId && is_numeric($orderId)) {
+            $dbOrder = Order::with('user', 'product')->find($orderId);
+        }
+
+        $sessionOrder = session('current_order', []);
+
+        $order = [
+            'id'             => $dbOrder ? $dbOrder->id : ($orderId ?? ($sessionOrder['id'] ?? 'ORD-' . rand(1000, 9999))),
+            'amount'         => $dbOrder ? (float)$dbOrder->subtotal : (float)($sessionOrder['amount'] ?? 98000),
             'payment_method' => 'qris',
-            'date'           => now()->format('d M Y, H:i'),
-        ]);
+            'date'           => $dbOrder && $dbOrder->created_at ? $dbOrder->created_at->format('d M Y, H:i') : ($sessionOrder['date'] ?? now()->format('d M Y, H:i')),
+            'status'         => $dbOrder ? $dbOrder->payment_status : 'belum_dibayar',
+        ];
+
+        // Batas waktu pembayaran 10 menit (600 detik) terhitung di sistem sejak order_at
+        if ($dbOrder) {
+            if (!$dbOrder->order_at) {
+                $dbOrder->update(['order_at' => now()]);
+            }
+            $startTime = \Carbon\Carbon::parse($dbOrder->order_at);
+        } else {
+            $sessionTimerKey = 'order_start_time_' . $order['id'];
+            if (!session()->has($sessionTimerKey)) {
+                session()->put($sessionTimerKey, now()->toDateTimeString());
+            }
+            $startTime = \Carbon\Carbon::parse(session($sessionTimerKey));
+        }
+
+        $expiresAt = $startTime->copy()->addMinutes(10);
+        $now = now();
+
+        if ($now->greaterThanOrEqualTo($expiresAt)) {
+            $remainingSeconds = 0;
+            $isExpired = true;
+        } else {
+            $remainingSeconds = (int) $now->diffInSeconds($expiresAt, false);
+            $isExpired = false;
+        }
+
+        if ($remainingSeconds <= 0 && !in_array(strtolower($order['status']), ['sudah_dibayar', 'lunas', 'paid', 'sukses'])) {
+            $isExpired = true;
+            if ($dbOrder) {
+                $dbOrder->update([
+                    'order_status'   => 'Dibatalkan',
+                    'payment_status' => 'dibatalkan',
+                ]);
+                Payment::where('order_id', $dbOrder->id)->update([
+                    'payment_status' => 'dibatalkan',
+                ]);
+            }
+        }
+
+        // Auto-generate QRIS via Midtrans API (.env)
+        $customer = [
+            'name'  => $dbOrder?->user?->name ?? (Auth::user()?->name ?? 'Customer Maybeads'),
+            'email' => $dbOrder?->user?->email ?? (Auth::user()?->email ?? 'customer@maybeads.com'),
+            'phone' => $dbOrder?->user?->phone ?? '081234567890',
+        ];
+
+        $qrisData = \App\Services\MidtransService::generateQris($order['id'], $order['amount'], $customer);
 
         $cartCount = Auth::check() ? Cart::where('user_id', Auth::id())->sum('quantity') : 0;
 
-        return view('main.payment-qris', compact('order', 'cartCount'));
+        if (view()->exists('main.payment.QRIS.payment-qris')) {
+            return view('main.payment.QRIS.payment-qris', compact('order', 'cartCount', 'qrisData', 'remainingSeconds', 'isExpired'));
+        }
+
+        return view('main.payment-qris', compact('order', 'cartCount', 'qrisData', 'remainingSeconds', 'isExpired'));
+    }
+
+    public function refreshQris(Request $request, $orderId = null)
+    {
+        $dbOrder = null;
+        if ($orderId && is_numeric($orderId)) {
+            $dbOrder = Order::find($orderId);
+        }
+
+        $sessionOrder = session('current_order', []);
+        $id     = $dbOrder ? $dbOrder->id : ($orderId ?? ($sessionOrder['id'] ?? 'ORD-' . rand(1000, 9999)));
+        $amount = $dbOrder ? (float)$dbOrder->subtotal : (float)($sessionOrder['amount'] ?? 98000);
+
+        $customer = [
+            'name'  => $dbOrder?->user?->name ?? (Auth::user()?->name ?? 'Customer Maybeads'),
+            'email' => $dbOrder?->user?->email ?? (Auth::user()?->email ?? 'customer@maybeads.com'),
+            'phone' => $dbOrder?->user?->phone ?? '081234567890',
+        ];
+
+        // Hitung sisa waktu pesanan saat ini (refresh hanya berlaku untuk QRIS itu sendiri, tidak mengulang timer pesanan)
+        if ($dbOrder && $dbOrder->order_at) {
+            $startTime = \Carbon\Carbon::parse($dbOrder->order_at);
+        } else {
+            $sessionTimerKey = 'order_start_time_' . $id;
+            $startTime = session()->has($sessionTimerKey) ? \Carbon\Carbon::parse(session($sessionTimerKey)) : now();
+        }
+        $expiresAt = $startTime->copy()->addMinutes(10);
+        $remainingSeconds = max(0, (int) now()->diffInSeconds($expiresAt, false));
+
+        // Hanya refresh data QRIS melalui API Midtrans
+        $qrisData = \App\Services\MidtransService::generateQris($id, $amount, $customer, true);
+
+        return response()->json([
+            'success'           => true,
+            'qr_url'            => $qrisData['qr_url'],
+            'simulator_url'     => $qrisData['simulator_url'] ?? $qrisData['qr_url'],
+            'image_url'         => $qrisData['image_url'] ?? $qrisData['qr_url'],
+            'qr_string'         => $qrisData['qr_string'],
+            'remaining_seconds' => $remainingSeconds,
+            'message'           => 'QRIS berhasil diperbarui!',
+        ]);
+    }
+
+    public function cancelQris(Request $request, $orderId = null)
+    {
+        if ($orderId && is_numeric($orderId)) {
+            Order::where('id', $orderId)->update([
+                'order_status'   => 'Dibatalkan',
+                'payment_status' => 'dibatalkan',
+            ]);
+            Payment::where('order_id', $orderId)->update([
+                'payment_status' => 'dibatalkan',
+            ]);
+        }
+        session()->forget('order_start_time_' . $orderId);
+        session()->forget('midtrans_qris_' . $orderId);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pesanan telah otomatis dibatalkan karena batas waktu pembayaran habis.',
+        ]);
+    }
+
+    public function downloadQris(Request $request, $orderId = null)
+    {
+        $url = $request->query('url');
+
+        if (!$url) {
+            $customer = [
+                'name'  => Auth::user()?->name ?? 'Customer Maybeads',
+                'email' => Auth::user()?->email ?? 'customer@maybeads.com',
+                'phone' => '081234567890',
+            ];
+            $qrisData = \App\Services\MidtransService::generateQris($orderId ?? '1', 98000, $customer);
+            $url = $qrisData['qr_url'];
+        }
+
+        $cleanOrderId = preg_replace('/[^a-zA-Z0-9_-]/', '', (string)($orderId ?? 'ORD'));
+        $filename = "QRIS-Maybeads-{$cleanOrderId}.png";
+
+        // Jika URL adalah path lokal di server
+        if (str_starts_with($url, '/') || str_contains($url, request()->getHost())) {
+            $parsedPath = parse_url($url, PHP_URL_PATH);
+            $localFile = public_path(ltrim($parsedPath, '/'));
+            if (file_exists($localFile)) {
+                return response()->download($localFile, $filename, [
+                    'Content-Type'  => 'image/png',
+                    'Cache-Control' => 'no-cache, must-revalidate',
+                ]);
+            }
+        }
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(6)->get($url);
+            if ($response->successful()) {
+                $contentType = $response->header('Content-Type') ?: 'image/png';
+                return response($response->body(), 200, [
+                    'Content-Type'        => $contentType,
+                    'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+                    'Cache-Control'       => 'no-cache, no-store, must-revalidate',
+                ]);
+            }
+        } catch (\Throwable $e) {}
+
+        return redirect()->away($url);
     }
 
     public function paymentTransfer($orderId = null)
@@ -329,6 +499,10 @@ class MainController extends Controller
         ]);
 
         $cartCount = Auth::check() ? Cart::where('user_id', Auth::id())->sum('quantity') : 0;
+
+        if (view()->exists('main.payment.QRIS.payment-transfer')) {
+            return view('main.payment.QRIS.payment-transfer', compact('order', 'cartCount'));
+        }
 
         return view('main.payment-transfer', compact('order', 'cartCount'));
     }
@@ -345,21 +519,25 @@ class MainController extends Controller
             'date'           => now()->format('d M Y, H:i'),
         ]);
 
-        // Update status in DB if exists
+        // Update status in DB if exists: masukkan ke status orderan Pending sebelum diterima oleh sang pemilik toko
         try {
             if ($orderId && is_numeric($orderId)) {
                 \App\Models\Order::where('id', $orderId)->update([
                     'payment_status' => 'sudah_dibayar',
-                    'order_status'   => 'diproses'
+                    'order_status'   => 'Pending',
                 ]);
                 \App\Models\Payment::where('order_id', $orderId)->update([
-                    'payment_status' => 'berhasil',
-                    'paid_at'        => now()
+                    'payment_status' => 'sukses',
+                    'paid_at'        => now(),
                 ]);
             }
         } catch (\Throwable $e) {}
 
         $cartCount = 0;
+
+        if (view()->exists('main.payment.QRIS.payment-success')) {
+            return view('main.payment.QRIS.payment-success', compact('order', 'cartCount'));
+        }
 
         return view('main.payment-success', compact('order', 'cartCount'));
     }

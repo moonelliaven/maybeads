@@ -10,7 +10,6 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    // Fillable
     protected $fillable = [
         'name',
         'email',
@@ -20,7 +19,7 @@ class User extends Authenticatable
         'address',
         'avatar',
     ];
-    // Hidden
+
     protected $hidden = [
         'password',
         'remember_token',
@@ -30,54 +29,42 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password'          => 'hashed',
         ];
     }
 
-    // Check if user is admin
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
     }
 
-    // Relasi dengan Order
     public function orders()
     {
         return $this->hasMany(Order::class);
     }
 
-    // Accessor ID Terformat (contoh: IDP0098)
     public function getFormattedIdAttribute(): string
     {
         return 'IDP' . str_pad($this->id, 4, '0', STR_PAD_LEFT);
     }
 
-    // Accessor Alamat dengan fallback teratur
-    public function getAddressAttribute($value): string
+    /**
+     * Alamat user murni (opsional, jika belum diatur kembalikan null agar tidak tertukar dengan metode pengantaran)
+     */
+    public function getAddressAttribute($value): ?string
     {
-        if (!empty($value)) {
-            return $value;
+        if (!empty($value) && !in_array(strtolower(trim($value)), ['ambil ditempat', 'ambil di tempat', '-', 'none', 'null'])) {
+            return trim($value);
         }
 
-        try {
-            $latestOrder = $this->orders()->latest('id')->first();
-            if ($latestOrder && !empty($latestOrder->address)) {
-                return $latestOrder->address;
-            }
-        } catch (\Throwable $e) {
-            // Ignore if orders table is not yet created
-        }
-
-        return 'Jl. 1 No. 5 Kampung Sigm..';
+        return null;
     }
 
-    // Accessor Telepon dengan fallback
-    public function getPhoneAttribute($value): string
+    public function getPhoneAttribute($value): ?string
     {
-        return !empty($value) ? $value : '08' . str_pad((string)($this->id * 12345678 % 1000000000), 10, '8', STR_PAD_LEFT);
+        return !empty($value) ? $value : null;
     }
 
-    // Accessor Avatar
     public function getAvatarUrlAttribute(): string
     {
         if (!empty($this->attributes['avatar'] ?? null)) {

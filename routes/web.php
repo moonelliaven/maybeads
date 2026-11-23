@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\MainController;
 use App\Http\Controllers\OrderController;
@@ -9,6 +11,8 @@ use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\PosController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\RestoreController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,7 +25,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [RegisterController::class, 'register']);
 });
 
-Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+Route::match(['GET', 'POST'], '/logout', [LoginController::class, 'logout'])->name('logout');
 
 // ─── Landing Page ─────────────────────────────────────────────────────────────
 Route::get('/', fn () => view('landing.home'))->name('home');
@@ -49,7 +53,10 @@ Route::get('/main/order-detail',       [MainController::class, 'orderDetail'])->
 Route::get('/checkout',                [MainController::class, 'checkout'])->name('checkout');
 Route::post('/checkout',               [MainController::class, 'processCheckout'])->name('checkout.process');
 
-Route::get('/payment/qris/{order_id?}',     [MainController::class, 'paymentQris'])->name('payment.qris');
+Route::get('/payment/qris/{order_id?}',         [MainController::class, 'paymentQris'])->name('payment.qris');
+Route::get('/payment/qris/download/{order_id?}',[MainController::class, 'downloadQris'])->name('payment.qris.download');
+Route::post('/payment/qris/refresh/{order_id?}',[MainController::class, 'refreshQris'])->name('payment.qris.refresh');
+Route::post('/payment/qris/cancel/{order_id?}', [MainController::class, 'cancelQris'])->name('payment.qris.cancel');
 Route::get('/payment/transfer/{order_id?}', [MainController::class, 'paymentTransfer'])->name('payment.transfer');
 Route::get('/payment/success/{order_id?}',  [MainController::class, 'paymentSuccess'])->name('payment.success');
 
@@ -61,7 +68,7 @@ Route::middleware(['auth'])->group(function () {
 // ─── Admin Routes ─────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
 
-    Route::get('/', fn () => view('admin.dashboard'))->name('dashboard');
+    Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
 
     // Products
     Route::prefix('product')->name('product.')->controller(ProductController::class)->group(function () {
@@ -88,29 +95,35 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Orders
     Route::prefix('order')->name('order.')->controller(OrderController::class)->group(function () {
         Route::get('/',               'index')->name('index');
+        Route::get('/pending',        'pending')->name('pending');
+        Route::get('/export',         'export')->name('export');
         Route::get('/detail/{order}', 'show')->name('detail');
         Route::get('/{order}',        'show')->name('show');
         Route::put('/{order}',        'update')->name('update');
         Route::patch('/{order}/status','updateStatus')->name('updateStatus');
         Route::post('/{order}/cancel','cancelOrder')->name('cancel');
-        Route::delete('/{order}',     'destroy')->name('destroy');
+        // Fitur hapus pesanan sengaja ditiadakan demi integritas data audit
     });
     Route::redirect('/orders', '/admin/order');
 
     // Payments
     Route::prefix('payment')->name('payment.')->controller(PaymentController::class)->group(function () {
         Route::get('/',               'index')->name('index');
+        Route::get('/export',         'export')->name('export');
         Route::get('/{payment}',      'show')->name('show');
         Route::put('/{payment}',      'update')->name('update');
         Route::delete('/{payment}',   'destroy')->name('destroy');
     });
     Route::redirect('/payments', '/admin/payment');
 
-    // Payment Methods (Management khusus metode dari admin)
+    // Payment Methods (Halaman khusus non-popup)
     Route::prefix('payment-method')->name('payment-method.')->controller(PaymentMethodController::class)->group(function () {
         Route::get('/',                           'index')->name('index');
+        Route::get('/create',                     'create')->name('create');
         Route::post('/',                          'store')->name('store');
-        Route::patch('/{paymentMethod}',          'update')->name('update');
+        Route::get('/{paymentMethod}',            'show')->name('show');
+        Route::get('/{paymentMethod}/edit',       'edit')->name('edit');
+        Route::put('/{paymentMethod}',            'update')->name('update');
         Route::patch('/{paymentMethod}/toggle-status', 'toggleStatus')->name('toggleStatus');
         Route::delete('/{paymentMethod}',         'destroy')->name('destroy');
     });
@@ -127,10 +140,32 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     });
     Route::redirect('/users', '/admin/user');
 
+    // Restore Management (Produk & Kategori Soft Deleted 30 Hari)
+    Route::prefix('restore')->name('restore.')->controller(RestoreController::class)->group(function () {
+        Route::get('/',                       'index')->name('index');
+        Route::post('/product/{id}',          'restoreProduct')->name('product');
+        Route::delete('/product/{id}',        'forceDeleteProduct')->name('product.force');
+        Route::post('/category/{id}',         'restoreCategory')->name('category');
+        Route::delete('/category/{id}',       'forceDeleteCategory')->name('category.force');
+    });
+
+    // Data Pengantaran (Delivery)
+    Route::prefix('delivery')->name('delivery.')->controller(DeliveryController::class)->group(function () {
+        Route::get('/',                       'index')->name('index');
+        Route::post('/{order}/update-courier','updateCourier')->name('updateCourier');
+    });
+
     // POS Kasir
     Route::prefix('pos')->name('pos.')->controller(PosController::class)->group(function () {
-        Route::get('/',               'index')->name('index');
-        Route::get('/transactions',   'index')->name('transactions');
-        Route::post('/checkout',      'checkout')->name('checkout');
+        Route::get('/',                       'index')->name('index');
+        Route::get('/transactions',           'transactions')->name('transactions');
+        Route::get('/transaction/{id}',       'show')->name('show');
+        Route::post('/checkout',              'checkout')->name('checkout');
+    });
+
+    // Pengaturan Website
+    Route::prefix('settings')->name('settings.')->controller(SettingController::class)->group(function () {
+        Route::get('/',  'index')->name('index');
+        Route::put('/',  'update')->name('update');
     });
 });

@@ -65,31 +65,6 @@
             </a>
           </div>
         </div>
-
-        {{-- Profil --}}
-        <div class="dropdown" data-dropdown>
-          <button type="button" class="header-user-badge" aria-haspopup="true" aria-expanded="false" data-dropdown-trigger>
-            <div class="header-user-avatar">
-              {{ strtoupper(substr(Auth::user()->name ?? 'W', 0, 1)) }}
-            </div>
-            <div class="header-user-info">
-              <span class="header-user-name">{{ Auth::user()->name ?? 'M. Waiz Fadhillah' }}</span>
-              <span class="header-user-role">{{ ucfirst(Auth::user()->role ?? 'Admin') }}</span>
-            </div>
-            <div class="header-user-chevron">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </div>
-          </button>
-          <div class="dropdown-menu" role="menu" hidden>
-            <a href="/" target="_blank" rel="noopener" class="dropdown-item" role="menuitem">Lihat toko</a>
-            <form method="POST" action="/logout">
-              @csrf
-              <button type="submit" class="dropdown-item danger" role="menuitem">Keluar</button>
-            </form>
-          </div>
-        </div>
       </div>
     </header>
 
@@ -217,9 +192,6 @@
         <table class="product-table" id="productTable">
           <thead>
             <tr>
-              <th class="cb-col">
-                <input type="checkbox" class="tbl-check" id="selectAll" aria-label="Pilih semua">
-              </th>
               <th>ID</th>
               <th>Produk</th>
               <th>Kategori</th>
@@ -232,9 +204,6 @@
           <tbody id="productTableBody">
             @forelse ($products as $p)
               <tr data-id="{{ $p->id }}">
-                <td class="cb-col">
-                  <input type="checkbox" class="tbl-check" aria-label="Pilih {{ $p->product_name }}">
-                </td>
                 <td class="col-id">{{ $p->id }}</td>
                 <td class="col-name">{{ $p->product_name }}</td>
                 <td class="col-category">

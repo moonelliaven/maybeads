@@ -32,6 +32,7 @@
         @endif
         <form method="POST" action="{{ route('logout') }}" class="inline-form">
           @csrf
+          <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
           <button type="submit" class="btn btn-ghost-red btn-sm">Keluar</button>
         </form>
       @else

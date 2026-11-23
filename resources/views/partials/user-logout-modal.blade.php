@@ -182,16 +182,28 @@
             customClass: { popup: 'maybeads-swal-popup' }
           }).then(function(result) {
             if (result.isConfirmed) {
-              if (pendingLogoutForm) pendingLogoutForm.submit();
-              else {
-                const defaultForm = document.querySelector('form[action*="logout"]');
-                if (defaultForm) defaultForm.submit();
-              }
+              submitLogout(pendingLogoutForm);
             }
           });
           return;
         }
         if (modal) modal.style.display = 'flex';
+      }
+
+      function submitLogout(form) {
+        const targetForm = form || document.querySelector('form[action*="logout"]');
+        if (targetForm) {
+          if (!targetForm.querySelector('input[name="redirect_to"]')) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'redirect_to';
+            input.value = window.location.href;
+            targetForm.appendChild(input);
+          }
+          targetForm.submit();
+        } else {
+          window.location.href = '/logout?redirect_to=' + encodeURIComponent(window.location.href);
+        }
       }
 
       function closeModal() {
@@ -225,13 +237,7 @@
 
       if (btnConfirm) {
         btnConfirm.addEventListener('click', function () {
-          if (pendingLogoutForm) {
-            pendingLogoutForm.submit();
-          } else {
-            // Fallback submit form logout pertama
-            const defaultForm = document.querySelector('form[action*="logout"]');
-            if (defaultForm) defaultForm.submit();
-          }
+          submitLogout(pendingLogoutForm);
         });
       }
 

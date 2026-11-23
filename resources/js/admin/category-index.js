@@ -244,15 +244,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderTableRows(categories) {
     if (!categories.length) return renderEmpty();
-    return categories.map(cat => `
+    return categories.map(cat => {
+      const imgHtml = cat.image
+        ? `<img src="/storage/${cat.image}" alt="${escHtml(cat.category_name)}" style="width: 44px; height: 44px; border-radius: 8px; object-fit: cover; border: 1px solid #e2e8f0; display: block;">`
+        : `<div style="width: 44px; height: 44px; border-radius: 8px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #94a3b8;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 20px; height: 20px;">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+          </div>`;
+
+      return `
       <tr data-id="${cat.id}">
-        <td class="cb-col">
-          <input type="checkbox" class="tbl-check" aria-label="Pilih ${escHtml(cat.category_name)}">
-        </td>
         <td class="col-id">${cat.id}</td>
-        <td class="col-name">${escHtml(cat.category_name)}</td>
-        <td class="col-count">${cat.products_count ?? 0}</td>
-        <td class="col-stock">${cat.products_stock ?? 0}</td>
+        <td class="col-img">${imgHtml}</td>
+        <td class="col-name" style="font-weight: 600;">${escHtml(cat.category_name)}</td>
+        <td class="col-count">${cat.products_count ?? 0} Produk</td>
+        <td class="col-stock"><span style="font-weight: 600; color: #0f172a;">${cat.products_stock ?? 0}</span> pcs</td>
         <td class="col-action">
           <div class="action-btns">
             <a href="${detailUrl(cat.id)}" class="btn-detail">Detail</a>
@@ -266,7 +275,8 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </td>
       </tr>
-    `).join('');
+    `;
+    }).join('');
   }
 
   function renderEmpty() {

@@ -118,101 +118,6 @@
         </div>
       </div>
 
-      {{-- Status & Cancellation Banner (Item 1) --}}
-      @php
-        $stLower = strtolower($order->order_status);
-        $statusBadgeClass = 'status-badge-pending';
-        $statusIcon = 'clock';
-
-        if (in_array($stLower, ['proses', 'diproses'])) {
-            $statusBadgeClass = 'status-badge-proses';
-            $statusIcon = 'refresh';
-        } elseif ($stLower === 'sedang perjalanan') {
-            $statusBadgeClass = 'status-badge-perjalanan';
-            $statusIcon = 'truck';
-        } elseif ($stLower === 'siap diambil') {
-            $statusBadgeClass = 'status-badge-ambil';
-            $statusIcon = 'package';
-        } elseif (in_array($stLower, ['selesai', 'sukses'])) {
-            $statusBadgeClass = 'status-badge-selesai';
-            $statusIcon = 'check';
-        } elseif (in_array($stLower, ['dibatalkan', 'batal'])) {
-            $statusBadgeClass = 'status-badge-batal';
-            $statusIcon = 'x';
-        }
-      @endphp
-
-      <div class="order-status-banner">
-        <div class="status-banner-left">
-          <div class="status-title-row">
-            <span class="status-indicator-badge {{ $statusBadgeClass }}">
-              @if ($statusIcon === 'check')
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              @elseif ($statusIcon === 'truck')
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-              @elseif ($statusIcon === 'package')
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-              @elseif ($statusIcon === 'refresh')
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-              @elseif ($statusIcon === 'x')
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              @else
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-              @endif
-              {{ $order->order_status }}
-            </span>
-
-            <span class="banner-order-tag">ID Pesanan: <strong>{{ $order->order_code }}</strong></span>
-            <span class="banner-pay-tag">ID Pembayaran: <strong>{{ $order->payment_id }}</strong></span>
-          </div>
-
-          {{-- 5-Day Expiration / Batas Waktu 5 Hari --}}
-          <div class="status-deadline-info">
-            <div class="deadline-row">
-              <span class="deadline-label">Batas Waktu Penerimaan (5 Hari):</span>
-              <span class="deadline-badge {{ $order->is_expired || in_array($stLower, ['dibatalkan', 'batal']) ? 'deadline-expired' : 'deadline-active' }}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="deadline-clock-icon">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <polyline points="12 6 12 12 16 14"></polyline>
-                </svg>
-                {{ $order->remaining_time_text }}
-              </span>
-            </div>
-            <p class="deadline-note">
-              Jatuh Tempo: <strong>{{ $order->deadline_at ? $order->deadline_at->format('d M Y, H:i') : '-' }}</strong>.
-              Pesanan otomatis dibatalkan oleh sistem jika tidak diselesaikan dalam 5 hari dari waktu pemesanan.
-            </p>
-          </div>
-        </div>
-
-        {{-- Action Buttons in Banner --}}
-        <div class="status-banner-actions">
-          <button type="button" class="btn-change-status" id="btnOpenStatusModal">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-            </svg>
-            <span>Ubah Status</span>
-          </button>
-
-          @if ($order->can_cancel_by_admin)
-            <button type="button" class="btn-cancel-order" id="btnOpenCancelModal">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="15" y1="9" x2="9" y2="15"></line>
-                <line x1="9" y1="9" x2="15" y2="15"></line>
-              </svg>
-              <span>Batalkan Pesanan</span>
-            </button>
-          @else
-            <div class="cancel-order-disabled" title="Pembatalan tidak tersedia (status sudah selesai/batal atau lewat batas 5 hari)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
-              <span>Tidak Dapat Dibatalkan</span>
-            </div>
-          @endif
-        </div>
-      </div>
-
       {{-- Grid 2 Kolom --}}
       <div class="order-detail-grid">
 
@@ -584,7 +489,31 @@
 
           {{-- Card 4: Status Timeline Card --}}
           <div class="side-card">
-            <div class="side-card-label">Perjalanan Status Pesanan</div>
+            <div class="side-card-label" style="display: flex; justify-content: space-between; align-items: center;">
+              <span>Perjalanan Status Pesanan</span>
+              @php
+                $stLower = strtolower($order->order_status);
+                $badgeBg = '#ecfdf5';
+                $badgeBorder = '#a7f3d0';
+                $badgeColor = '#065f46';
+                if ($stLower === 'pending') {
+                  $badgeBg = '#fff7ed';
+                  $badgeBorder = '#fed7aa';
+                  $badgeColor = '#c2410c';
+                } elseif (in_array($stLower, ['proses', 'diproses', 'sedang perjalanan', 'siap diambil'])) {
+                  $badgeBg = '#fff7ed';
+                  $badgeBorder = '#fed7aa';
+                  $badgeColor = '#c2410c';
+                } elseif (in_array($stLower, ['dibatalkan', 'batal'])) {
+                  $badgeBg = '#f1f5f9';
+                  $badgeBorder = '#cbd5e1';
+                  $badgeColor = '#475569';
+                }
+              @endphp
+              <span style="font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; background: {{ $badgeBg }}; border: 1px solid {{ $badgeBorder }}; color: {{ $badgeColor }}; text-transform: uppercase;">
+                {{ $order->order_status }}
+              </span>
+            </div>
 
             <div class="timeline-list">
               @foreach ($timeline as $step)
@@ -598,9 +527,32 @@
               @endforeach
             </div>
 
-            <button type="button" class="btn-update-status" id="btnUpdateStatusSidebar">
-              Update Status
-            </button>
+            <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 8px;">
+              @if (!in_array(strtolower($order->order_status), ['selesai', 'sukses', 'dibatalkan', 'batal']))
+                <button type="button" class="btn-update-status" id="btnUpdateStatusSidebar" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 15px; height: 15px;">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                  Perbarui Status
+                </button>
+
+                @if ($order->can_cancel_by_admin)
+                  <button type="button" class="btn-cancel-order" id="btnOpenCancelModal" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 14px; font-size: 13px; border-radius: 8px; border: 1.5px solid #fecaca; background: #fff5f5; color: #dc2626; cursor: pointer; font-weight: 600;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="15" y1="9" x2="9" y2="15"></line>
+                      <line x1="9" y1="9" x2="15" y2="15"></line>
+                    </svg>
+                    Batalkan Pesanan
+                  </button>
+                @endif
+              @else
+                <div style="padding: 10px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 600; text-align: center; background: #f8fafc; color: #64748b; border: 1.5px solid #e2e8f0;">
+                  Status Pesanan Final: <strong>{{ ucfirst($order->order_status) }}</strong>
+                </div>
+              @endif
+            </div>
           </div>
 
         </div>
@@ -625,18 +577,33 @@
 
       <div class="modal-body">
         <p class="modal-desc">
-          Pilih status terbaru untuk pesanan <strong>{{ $order->order_code }}</strong>.
+          Pilih status selanjutnya untuk pesanan <strong>{{ $order->order_code }}</strong> (Status saat ini: <strong>{{ $order->order_status }}</strong>).
         </p>
 
+        @php
+          $curSt = strtolower($order->order_status);
+        @endphp
+
         <div class="form-group">
-          <label for="orderStatusSelect" class="form-label">Status Pesanan</label>
+          <label for="orderStatusSelect" class="form-label">Status Pesanan Baru</label>
           <select name="order_status" id="orderStatusSelect" class="form-select">
-            <option value="Pending" {{ $order->order_status === 'Pending' ? 'selected' : '' }}>Pending (Menunggu)</option>
-            <option value="Diproses" {{ in_array($order->order_status, ['Diproses', 'Proses']) ? 'selected' : '' }}>Diproses (Sedang Disiapkan)</option>
-            <option value="Sedang Perjalanan" {{ $order->order_status === 'Sedang Perjalanan' ? 'selected' : '' }}>Sedang Perjalanan (Dalam Pengantaran)</option>
-            <option value="Siap Diambil" {{ $order->order_status === 'Siap Diambil' ? 'selected' : '' }}>Siap Diambil (Toko)</option>
-            <option value="Selesai" {{ in_array($order->order_status, ['Selesai', 'Sukses']) ? 'selected' : '' }}>Selesai (Pesanan Selesai)</option>
-            <option value="Dibatalkan" {{ $order->order_status === 'Dibatalkan' ? 'selected' : '' }}>Dibatalkan (Pesanan Dibatalkan)</option>
+            @if ($curSt === 'pending')
+              <option value="Diproses">Diproses (Sedang Disiapkan)</option>
+              <option value="Dibatalkan">Dibatalkan (Pesanan Dibatalkan)</option>
+            @elseif (in_array($curSt, ['diproses', 'proses']))
+              @if ($order->is_delivery_to_home)
+                <option value="Sedang Perjalanan">Sedang Perjalanan (Dalam Pengantaran Kurir)</option>
+              @else
+                <option value="Siap Diambil">Siap Diambil (Toko)</option>
+              @endif
+              <option value="Selesai">Selesai (Pesanan Selesai)</option>
+              <option value="Dibatalkan">Dibatalkan (Pesanan Dibatalkan)</option>
+            @elseif (in_array($curSt, ['sedang perjalanan', 'siap diambil']))
+              <option value="Selesai">Selesai (Pesanan Selesai / Diterima)</option>
+              <option value="Dibatalkan">Dibatalkan (Pesanan Dibatalkan)</option>
+            @else
+              <option value="{{ $order->order_status }}" selected>{{ $order->order_status }}</option>
+            @endif
           </select>
         </div>
       </div>

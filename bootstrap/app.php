@@ -20,6 +20,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'prevent-back-history' => \App\Http\Middleware\PreventBackHistory::class,
         ]);
 
+        // Kecualikan logout dari pengecekan CSRF token agar tidak memicu 419 Page Expired
+        $middleware->validateCsrfTokens(except: [
+            'logout',
+            '/logout',
+        ]);
+
         // Arahkan guest yang belum login/sudah logout ke halaman login
         $middleware->redirectGuestsTo(function (Request $request) {
             session()->flash('error', 'Silakan masuk (login) terlebih dahulu untuk mengakses dashboard.');

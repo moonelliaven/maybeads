@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Category extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'categories';
 
     public $timestamps = false;
@@ -18,10 +21,16 @@ class Category extends Model
 
     protected $casts = [
         'created_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
+    }
+
+    public function getTotalStockAttribute(): int
+    {
+        return (int) $this->products()->sum('stock');
     }
 }

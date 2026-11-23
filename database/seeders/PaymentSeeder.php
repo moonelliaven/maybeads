@@ -13,7 +13,7 @@ class PaymentSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Seed Payment Methods (Bank, Auto-Link, QRIS, E-Wallet)
+        // 1. Seed Payment Methods (Hanya QRIS dan GoPay E-Wallet)
         $methods = [
             [
                 'code'           => 'qris',
@@ -26,94 +26,14 @@ class PaymentSeeder extends Seeder
                 'description'    => 'Pembayaran instan QRIS lintas bank & e-wallet (+ Rp 500)',
             ],
             [
-                'code'           => 'bca',
-                'name'           => 'Transfer Bank BCA',
-                'type'           => 'bank',
-                'price'          => 1000,
-                'status'         => 'active',
-                'account_number' => '7820192837',
-                'account_name'   => 'CV Maybeads Indonesia',
-                'description'    => 'Transfer ke rekening BCA resmi toko (+ Rp 1.000)',
-            ],
-            [
-                'code'           => 'mandiri',
-                'name'           => 'Transfer Bank Mandiri',
-                'type'           => 'bank',
-                'price'          => 1000,
-                'status'         => 'active',
-                'account_number' => '1420019283746',
-                'account_name'   => 'CV Maybeads Indonesia',
-                'description'    => 'Transfer ke rekening Mandiri resmi toko (+ Rp 1.000)',
-            ],
-            [
-                'code'           => 'bri',
-                'name'           => 'Transfer Bank BRI',
-                'type'           => 'bank',
-                'price'          => 1000,
-                'status'         => 'non-active',
-                'account_number' => '0129018273645',
-                'account_name'   => 'CV Maybeads Indonesia',
-                'description'    => 'Transfer ke rekening BRI resmi toko (+ Rp 1.000)',
-            ],
-            [
-                'code'           => 'autolink_bca',
-                'name'           => 'Auto-Link BCA OneKlik',
-                'type'           => 'auto-link',
-                'price'          => 500,
-                'status'         => 'active',
-                'account_number' => 'DEBIT-BCA-MBDS',
-                'account_name'   => 'Direct Debit BCA Terhubung',
-                'description'    => 'Pembayaran otomatis debit kartu BCA OneKlik (+ Rp 500)',
-            ],
-            [
-                'code'           => 'autolink_mandiri',
-                'name'           => 'Auto-Link Mandiri Debit',
-                'type'           => 'auto-link',
-                'price'          => 500,
-                'status'         => 'non-active',
-                'account_number' => 'DEBIT-MDR-MBDS',
-                'account_name'   => 'Power Debit Mandiri Terhubung',
-                'description'    => 'Pembayaran otomatis debit Mandiri terhubung (+ Rp 500)',
-            ],
-            [
                 'code'           => 'gopay',
                 'name'           => 'GoPay E-Wallet',
                 'type'           => 'e-wallet',
                 'price'          => 500,
-                'status'         => 'non-active',
+                'status'         => 'active',
                 'account_number' => '0812-3456-7890',
                 'account_name'   => 'Maybeads Official',
                 'description'    => 'Pembayaran dompet digital GoPay (+ Rp 500)',
-            ],
-            [
-                'code'           => 'ovo',
-                'name'           => 'OVO E-Wallet',
-                'type'           => 'e-wallet',
-                'price'          => 500,
-                'status'         => 'active',
-                'account_number' => '0812-3456-7890',
-                'account_name'   => 'Maybeads Official',
-                'description'    => 'Pembayaran dompet digital OVO (+ Rp 500)',
-            ],
-            [
-                'code'           => 'dana',
-                'name'           => 'DANA E-Wallet',
-                'type'           => 'e-wallet',
-                'price'          => 500,
-                'status'         => 'active',
-                'account_number' => '0812-3456-7890',
-                'account_name'   => 'Maybeads Official',
-                'description'    => 'Pembayaran dompet digital DANA (+ Rp 500)',
-            ],
-            [
-                'code'           => 'shopeepay',
-                'name'           => 'ShopeePay E-Wallet',
-                'type'           => 'e-wallet',
-                'price'          => 500,
-                'status'         => 'non-active',
-                'account_number' => '0812-3456-7890',
-                'account_name'   => 'Maybeads Official',
-                'description'    => 'Pembayaran dompet digital ShopeePay (+ Rp 500)',
             ],
         ];
 
@@ -126,14 +46,17 @@ class PaymentSeeder extends Seeder
         }
 
         $qris = $savedMethods['qris'];
-        $bca = $savedMethods['bca'];
-        $mandiri = $savedMethods['mandiri'];
-        $dana = $savedMethods['dana'];
-        $ovo = $savedMethods['ovo'];
-        $autolinkBca = $savedMethods['autolink_bca'];
+        $gopay = $savedMethods['gopay'];
+
+        // Hapus metode pembayaran lama selain QRIS dan GoPay agar database tetap bersih
+        Payment::whereNotIn('payment_method_id', [$qris->id, $gopay->id])
+            ->update([
+                'payment_method_id' => $qris->id,
+                'payment_method'    => $qris->name,
+            ]);
+        PaymentMethod::whereNotIn('code', ['qris', 'gopay'])->delete();
 
         // 2. Seed Delivery Methods
-        // Ambil Ditempat (active, 200 rupiah), Antar ke Tempat (khusus Banjarbaru, non-active, Rp 2.000/km via Google Maps)
         $pickup = DeliveryMethod::updateOrCreate(
             ['code' => 'pickup'],
             [
@@ -154,33 +77,19 @@ class PaymentSeeder extends Seeder
             ]
         );
 
-        // 3. Seed Payments for Existing Orders
+        // 3. Seed Payments for Existing Orders (Mapping hanya ke QRIS dan GoPay)
         $orders = Order::all();
 
         if ($orders->isEmpty()) {
             return;
         }
 
-        $methodObjMapping = [
-            0 => $qris,
-            1 => $bca,
-            2 => $dana,
-            3 => $qris,
-            4 => $ovo,
-            5 => $qris,
-            6 => $mandiri,
-            7 => $qris,
-            8 => $bca,
-            9 => $qris,
-            10 => $dana,
-            11 => $autolinkBca,
-            12 => $qris,
-        ];
+        $availableMethods = [$qris, $gopay];
 
         foreach ($orders as $index => $order) {
             $isPaid = in_array(strtolower($order->payment_status), ['sukses', 'success', 'paid']);
             $paidAt = $isPaid ? ($order->order_at ? Carbon::parse($order->order_at)->addMinutes(12) : now()) : null;
-            $chosenMethod = $methodObjMapping[$index] ?? $qris;
+            $chosenMethod = $availableMethods[$index % count($availableMethods)];
 
             $isHomeDelivery = !empty($order->address) && !str_contains(strtolower($order->address), 'ambil') && !str_contains(strtolower($order->address), 'ditempat');
             $deliveryMethodId = $isHomeDelivery ? $delivery->id : $pickup->id;

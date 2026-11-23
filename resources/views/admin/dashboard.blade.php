@@ -72,7 +72,7 @@
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                 <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
               </svg>
-              <span class="notification-badge" data-notif-badge>1</span>
+              <span class="notification-badge" data-notif-badge>{{ $pendingCount ?? ($stats['pending'] ?? 0) }}</span>
             </button>
             <div class="dropdown-menu dropdown-menu-wide" role="menu" hidden>
               <div class="dropdown-head">
@@ -82,33 +82,10 @@
               <a href="/admin/orders?status=pending" class="notif-item" role="menuitem">
                 <span class="status-dot orange"></span>
                 <span>
-                  <span class="notif-title">{{ $stats['pending'] }} pesanan menunggu diproses</span>
+                  <span class="notif-title">{{ $stats['pending'] ?? 0 }} pesanan menunggu diproses</span>
                   <span class="notif-sub">Periksa dan konfirmasi pesanan pending</span>
                 </span>
               </a>
-            </div>
-          </div>
-
-          <!-- Profil -->
-          <div class="dropdown" data-dropdown>
-            <button type="button" class="header-user-badge" aria-haspopup="true" aria-expanded="false" data-dropdown-trigger>
-              <div class="header-user-avatar">{{ strtoupper(substr(Auth::user()->name ?? 'W', 0, 1)) }}</div>
-              <div class="header-user-info">
-                <span class="header-user-name">{{ Auth::user()->name ?? 'M. Waiz Fadhillah' }}</span>
-                <span class="header-user-role">{{ ucfirst(Auth::user()->role ?? 'Admin') }}</span>
-              </div>
-              <div class="header-user-chevron">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-              </div>
-            </button>
-            <div class="dropdown-menu" role="menu" hidden>
-              <a href="/" target="_blank" rel="noopener" class="dropdown-item" role="menuitem">Lihat toko</a>
-              <form method="POST" action="/logout">
-                @csrf
-                <button type="submit" class="dropdown-item danger" role="menuitem">Keluar</button>
-              </form>
             </div>
           </div>
         </div>
@@ -213,8 +190,8 @@
             </div>
 
             <div class="orders-scroll" id="ordersList">
-              @foreach ($orders as $order)
-                <a href="/admin/orders" class="order-row-item" data-status="{{ $order['status'] }}">
+              @forelse ($orders as $order)
+                <a href="{{ isset($order['id']) ? route('admin.order.show', $order['id']) : route('admin.order.index') }}" class="order-row-item" data-status="{{ $order['status'] }}">
                   <div class="order-user-info">
                     <div class="order-avatar-mini {{ $statusDot[$order['status']] ?? 'orange' }}">{{ strtoupper(substr($order['user'], 0, 1)) }}</div>
                     <div class="order-user-text">
@@ -224,10 +201,12 @@
                   </div>
                   <div class="order-status-badge {{ $statusDot[$order['status']] ?? 'orange' }}">
                     <span class="status-dot {{ $statusDot[$order['status']] ?? 'orange' }}"></span>
-                    <span class="order-status-label">{{ $order['status'] }}</span>
+                    <span class="order-status-label">{{ ucfirst($order['raw_status'] ?? $order['status']) }}</span>
                   </div>
                 </a>
-              @endforeach
+              @empty
+                <p class="empty-state">Belum ada pesanan masuk.</p>
+              @endforelse
               <p class="empty-state" id="ordersEmpty" hidden>Belum ada pesanan dengan status ini.</p>
             </div>
           </div>
@@ -281,17 +260,24 @@
               </div>
 
               @forelse ($transactions as $trx)
+                @php
+                  $trxDot = match($trx['status'] ?? 'sukses') {
+                    'sukses' => 'green',
+                    'proses' => 'yellow',
+                    default  => 'red'
+                  };
+                @endphp
                 <a href="/admin/payments" class="order-row-item">
                   <div class="order-user-info">
-                    <div class="order-avatar-mini green">{{ strtoupper(substr($trx['user'], 0, 1)) }}</div>
+                    <div class="order-avatar-mini {{ $trxDot }}">{{ strtoupper(substr($trx['user'], 0, 1)) }}</div>
                     <div class="order-user-text">
                       <span class="order-username">{{ $trx['user'] }}</span>
-                      <span class="order-timestamp">{{ $trx['time'] }}</span>
+                      <span class="order-timestamp">{{ $trx['time'] }} &bull; Rp {{ number_format($trx['amount'] ?? 0, 0, ',', '.') }}</span>
                     </div>
                   </div>
-                  <div class="order-status-badge green">
-                    <span class="status-dot green"></span>
-                    <span class="order-status-label">{{ $trx['status'] }}</span>
+                  <div class="order-status-badge {{ $trxDot }}">
+                    <span class="status-dot {{ $trxDot }}"></span>
+                    <span class="order-status-label">{{ ucfirst($trx['status']) }}</span>
                   </div>
                 </a>
               @empty

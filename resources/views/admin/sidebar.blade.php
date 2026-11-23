@@ -69,6 +69,21 @@
           </a>
         </li>
         <li>
+          <a href="{{ route('admin.order.pending') }}" data-label="Pending Order" class="nav-item {{ ($active ?? '') === 'pending_order' ? 'active' : '' }}">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span class="nav-text">Pending Order</span>
+            @php
+              $sidebarPendingOrders = \App\Models\Order::whereRaw('LOWER(order_status) = ?', ['pending'])->count();
+            @endphp
+            @if($sidebarPendingOrders > 0)
+              <span class="sidebar-pending-badge" style="margin-left: auto; background: #f97316; color: #ffffff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px;">{{ $sidebarPendingOrders }}</span>
+            @endif
+          </a>
+        </li>
+        <li>
           <a href="/admin/payments" data-label="Pembayaran" class="nav-item {{ ($active ?? '') === 'pembayaran' ? 'active' : '' }}">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <rect x="2" y="5" width="20" height="14" rx="2"></rect>
@@ -106,6 +121,26 @@
             <span class="nav-text">Metode Pembayaran</span>
           </a>
         </li>
+        <li>
+          <a href="{{ route('admin.delivery.index') }}" data-label="Data Pengantaran" class="nav-item {{ in_array($active ?? '', ['delivery', 'pengantaran']) ? 'active' : '' }}">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="1" y="3" width="15" height="13"></rect>
+              <polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon>
+              <circle cx="5.5" cy="18.5" r="2.5"></circle>
+              <circle cx="18.5" cy="18.5" r="2.5"></circle>
+            </svg>
+            <span class="nav-text">Data Pengantaran</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ route('admin.restore.index') }}" data-label="Restore" class="nav-item {{ ($active ?? '') === 'restore' ? 'active' : '' }}">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="1 4 1 10 7 10"></polyline>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+            </svg>
+            <span class="nav-text">Restore</span>
+          </a>
+        </li>
       </ul>
     </div>
 
@@ -114,20 +149,17 @@
       <div class="nav-header">MENU KASIR</div>
       <ul class="nav-list">
         <li>
-          <a href="/" target="_blank" rel="noopener" data-label="Halaman Utama" class="nav-item nav-item-external">
+          <a href="{{ route('admin.pos.index') }}" data-label="Halaman Utama" class="nav-item {{ in_array($active ?? '', ['pos', 'pos_register']) ? 'active' : '' }}">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+              <line x1="8" y1="21" x2="16" y2="21"></line>
+              <line x1="12" y1="17" x2="12" y2="21"></line>
             </svg>
             <span class="nav-text">Halaman Utama</span>
-            <svg class="nav-external-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="7" y1="17" x2="17" y2="7"></line>
-              <polyline points="7 7 17 7 17 17"></polyline>
-            </svg>
           </a>
         </li>
         <li>
-          <a href="{{ route('admin.pos.index') }}" data-label="Transaksi Kasir" class="nav-item {{ in_array($active ?? '', ['pos', 'transaksi_kasir']) ? 'active' : '' }}">
+          <a href="{{ route('admin.pos.transactions') }}" data-label="Transaksi Kasir" class="nav-item {{ in_array($active ?? '', ['pos_transactions', 'transaksi_kasir']) ? 'active' : '' }}">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1z"></path>
               <line x1="8" y1="6" x2="16" y2="6"></line>
@@ -152,7 +184,7 @@
       <div class="sidebar-user-menu-divider" role="separator"></div>
       <ul class="sidebar-user-menu-list">
         <li>
-          <a href="#" class="sidebar-user-menu-item" role="menuitem">
+          <a href="{{ route('admin.settings.index') }}" class="sidebar-user-menu-item" role="menuitem">
             <svg class="menu-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="3"></circle>
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
@@ -173,6 +205,7 @@
         <li>
           <form method="POST" action="{{ route('logout') }}" id="adminSidebarLogoutForm" class="sidebar-logout-form" style="margin: 0;">
             @csrf
+            <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
             <button type="button" id="btnAdminSidebarLogout" class="sidebar-user-menu-item danger" role="menuitem">
               <svg class="menu-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -263,13 +296,29 @@
             reverseButtons: true,
             customClass: { popup: 'maybeads-swal-popup' }
           }).then(function(result) {
-            if (result.isConfirmed && pendingAdminLogoutForm) {
-              pendingAdminLogoutForm.submit();
+            if (result.isConfirmed) {
+              submitAdminLogout(pendingAdminLogoutForm);
             }
           });
           return;
         }
         if (modal) modal.style.display = 'flex';
+      }
+
+      function submitAdminLogout(form) {
+        const targetForm = form || defaultLogoutForm || document.querySelector('form[action*="logout"]');
+        if (targetForm) {
+          if (!targetForm.querySelector('input[name="redirect_to"]')) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'redirect_to';
+            input.value = window.location.href;
+            targetForm.appendChild(input);
+          }
+          targetForm.submit();
+        } else {
+          window.location.href = '/logout?redirect_to=' + encodeURIComponent(window.location.href);
+        }
       }
 
       function closeModal() {
@@ -301,11 +350,7 @@
 
       if (btnConfirm) {
         btnConfirm.addEventListener('click', function() {
-          if (pendingAdminLogoutForm) {
-            pendingAdminLogoutForm.submit();
-          } else if (defaultLogoutForm) {
-            defaultLogoutForm.submit();
-          }
+          submitAdminLogout(pendingAdminLogoutForm);
         });
       }
 
@@ -348,5 +393,55 @@
           .catch(function() {});
       }
     });
+  })();
+
+  // Toggle Menu Dropup Pengguna di Footer Sidebar (Bisa di-klik di halaman manapun)
+  (function() {
+    function initSidebarUserDropdown() {
+      var badge = document.getElementById('sidebarUserBadge');
+      var menu = document.getElementById('sidebarUserMenu');
+      if (!badge || !menu) return;
+
+      badge.style.cursor = 'pointer';
+
+      function toggleMenu(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var isHidden = menu.hasAttribute('hidden');
+        if (isHidden) {
+          menu.removeAttribute('hidden');
+          menu.classList.add('show');
+          badge.setAttribute('aria-expanded', 'true');
+        } else {
+          menu.setAttribute('hidden', '');
+          menu.classList.remove('show');
+          badge.setAttribute('aria-expanded', 'false');
+        }
+      }
+
+      badge.addEventListener('click', toggleMenu);
+
+      document.addEventListener('click', function(e) {
+        if (!badge.contains(e.target) && !menu.contains(e.target)) {
+          menu.setAttribute('hidden', '');
+          menu.classList.remove('show');
+          badge.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !menu.hasAttribute('hidden')) {
+          menu.setAttribute('hidden', '');
+          menu.classList.remove('show');
+          badge.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initSidebarUserDropdown);
+    } else {
+      initSidebarUserDropdown();
+    }
   })();
 </script>

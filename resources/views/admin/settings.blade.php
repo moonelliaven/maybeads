@@ -39,39 +39,42 @@
         </div>
 
         <div class="header-right">
-          <!-- Profil -->
           <div class="dropdown" data-dropdown>
-            <button type="button" class="header-user-badge" aria-haspopup="true" aria-expanded="false" data-dropdown-trigger>
-              <div class="header-user-avatar">{{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}</div>
-              <div class="header-user-info">
-                <span class="header-user-name">{{ Auth::user()->name ?? 'Administrator' }}</span>
-                <span class="header-user-role">{{ ucfirst(Auth::user()->role ?? 'Admin') }}</span>
-              </div>
-              <div class="header-user-chevron">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-              </div>
+            <button type="button" class="notification-btn" aria-label="Notifikasi">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+              </svg>
+              <span class="notification-badge">1</span>
             </button>
-            <div class="dropdown-menu" role="menu" hidden>
-              <a href="/" target="_blank" rel="noopener" class="dropdown-item" role="menuitem">Lihat Toko</a>
-              <form method="POST" action="/logout">
-                @csrf
-                <button type="submit" class="dropdown-item danger" role="menuitem">Keluar</button>
-              </form>
-            </div>
           </div>
         </div>
       </header>
 
       <!-- Main Content -->
       <main class="settings-container">
+        @if(session('success'))
+          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 12px 18px; border-radius: 8px; margin-bottom: 20px; font-size: 13.5px; font-weight: 500;">
+            {{ session('success') }}
+          </div>
+        @endif
+
+        @if($errors->any())
+          <div style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px 18px; border-radius: 8px; margin-bottom: 20px; font-size: 13.5px;">
+            <ul style="margin: 0; padding-left: 20px;">
+              @foreach($errors->all() as $err)
+                <li>{{ $err }}</li>
+              @endforeach
+            </ul>
+          </div>
+        @endif
+
         <!-- Judul Halaman -->
         <div class="page-head" style="margin-bottom: 8px;">
           <div>
             <div class="breadcrumb-label">Admin Dashboard &bull; Konfigurasi</div>
-            <h1 class="page-title">Pengaturan & Akun</h1>
-            <p class="welcome-text">Kelola preferensi toko Maybeads serta pengaturan profil dan keamanan akun Anda.</p>
+            <h1 class="page-title">Pengaturan Website &amp; Akun</h1>
+            <p class="welcome-text">Kelola preferensi toko Maybeads serta pengaturan profil dan identitas website Anda.</p>
           </div>
         </div>
 
@@ -91,7 +94,7 @@
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
-            <span>Akun & Keamanan</span>
+            <span>Akun &amp; Keamanan</span>
           </button>
         </div>
 
@@ -99,7 +102,9 @@
              PANEL 1: PENGATURAN WEBSITE
              ========================================== -->
         <div class="settings-panel {{ $currentTab !== 'account' ? 'active' : '' }}" id="panelWebsite" role="tabpanel" aria-labelledby="tabBtnWebsite">
-          <form id="formWebsiteSettings" onsubmit="handleSaveSettings(event, 'Pengaturan Website berhasil diperbarui!')">
+          <form id="formWebsiteSettings" action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
             <div class="settings-grid">
               <!-- Kartu Informasi Toko -->
               <div class="settings-card">
@@ -112,26 +117,46 @@
                     </svg>
                   </div>
                   <div>
-                    <h3 class="settings-card-title">Identitas Website & Toko</h3>
+                    <h3 class="settings-card-title">Identitas Website &amp; Toko</h3>
                     <p class="settings-card-desc">Informasi dasar yang tampil pada halaman toko utama Maybeads.</p>
                   </div>
                 </div>
                 <div class="settings-card-body">
                   <div class="form-row">
                     <div class="form-group">
-                      <label class="form-label" for="siteName">Nama Toko / Brand</label>
-                      <input type="text" class="form-input" id="siteName" name="site_name" value="Maybead.s" required>
+                      <label class="form-label" for="siteName">Nama Toko / Brand *</label>
+                      <input type="text" class="form-input" id="siteName" name="site_name" value="{{ old('site_name', $settings->site_name ?? 'Maybead.s') }}" required>
                     </div>
                     <div class="form-group">
                       <label class="form-label" for="siteTagline">Slogan / Tagline</label>
-                      <input type="text" class="form-input" id="siteTagline" name="site_tagline" value="Handcrafted Beads & Aesthetic Jewelry">
+                      <input type="text" class="form-input" id="siteTagline" name="site_tagline" value="{{ old('site_tagline', $settings->site_tagline ?? 'Handcrafted Beads & Aesthetic Jewelry') }}">
                     </div>
                   </div>
 
-                  <div class="form-group">
-                    <label class="form-label" for="siteDesc">Deskripsi Singkat Toko</label>
-                    <textarea class="form-textarea" id="siteDesc" name="site_desc" rows="3">Koleksi aksesoris manik-manik buatan tangan (handcrafted) berkualitas tinggi, trendi, dan estetik untuk menemani hari-harimu.</textarea>
-                    <div class="form-hint">Akan digunakan untuk ringkasan di footer dan metadata SEO.</div>
+                  <div class="form-row" style="margin-top: 14px;">
+                    <div class="form-group">
+                      <label class="form-label" for="openingHours">Jam Operasional Toko</label>
+                      <input type="text" class="form-input" id="openingHours" name="opening_hours" value="{{ old('opening_hours', $settings->opening_hours ?? 'Senin - Sabtu: 09:00 - 21:00 WIB') }}">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="siteLogo">Logo Toko (Opsional)</label>
+                      <input type="file" class="form-input" id="siteLogo" name="logo" accept="image/*">
+                      @if(!empty($settings->logo))
+                        <div style="margin-top: 6px; font-size: 11.5px; color: #64748b;">
+                          Logo saat ini: <a href="{{ asset('storage/' . $settings->logo) }}" target="_blank" style="color: #2563eb;">Lihat Logo</a>
+                        </div>
+                      @endif
+                    </div>
+                  </div>
+
+                  <div class="form-group" style="margin-top: 14px;">
+                    <label class="form-label" for="siteAddress">Alamat Fisik / Lokasi Toko</label>
+                    <textarea class="form-textarea" id="siteAddress" name="address" rows="3">{{ old('address', $settings->address ?? 'Jl. Merdeka No. 45, Bandung, Jawa Barat') }}</textarea>
+                  </div>
+
+                  <div class="form-group" style="margin-top: 14px;">
+                    <label class="form-label" for="mapsEmbedUrl">Google Maps Embed URL</label>
+                    <input type="text" class="form-input" id="mapsEmbedUrl" name="maps_embed_url" value="{{ old('maps_embed_url', $settings->maps_embed_url ?? '') }}" placeholder="https://maps.google.com/maps?q=...">
                   </div>
                 </div>
               </div>
@@ -145,7 +170,7 @@
                     </svg>
                   </div>
                   <div>
-                    <h3 class="settings-card-title">Kontak & Jalur Pemesanan</h3>
+                    <h3 class="settings-card-title">Kontak &amp; Jalur Pemesanan</h3>
                     <p class="settings-card-desc">Nomor WhatsApp dan tautan media sosial untuk konfirmasi pesanan pelanggan.</p>
                   </div>
                 </div>
@@ -153,34 +178,28 @@
                   <div class="form-row">
                     <div class="form-group">
                       <label class="form-label" for="waHotline">WhatsApp Customer Service</label>
-                      <input type="text" class="form-input" id="waHotline" name="wa_hotline" value="+62 812-3456-7890">
+                      <input type="text" class="form-input" id="waHotline" name="whatsapp" value="{{ old('whatsapp', $settings->whatsapp ?? '+62 812-3456-7890') }}">
                     </div>
                     <div class="form-group">
-                      <label class="form-label" for="supportEmail">Email Support</label>
-                      <input type="email" class="form-input" id="supportEmail" name="support_email" value="contact@maybeads.com">
+                      <label class="form-label" for="phoneNum">Nomor Telepon Toko</label>
+                      <input type="text" class="form-input" id="phoneNum" name="phone" value="{{ old('phone', $settings->phone ?? '022-7654321') }}">
                     </div>
                   </div>
 
-                  <div class="form-row">
+                  <div class="form-group" style="margin-top: 14px;">
+                    <label class="form-label" for="supportEmail">Email Support</label>
+                    <input type="email" class="form-input" id="supportEmail" name="email" value="{{ old('email', $settings->email ?? 'contact@maybeads.com') }}">
+                  </div>
+
+                  <div class="form-row" style="margin-top: 14px;">
                     <div class="form-group">
                       <label class="form-label" for="instagramUrl">Akun Instagram</label>
-                      <input type="text" class="form-input" id="instagramUrl" name="instagram_url" value="https://instagram.com/maybead.s">
+                      <input type="text" class="form-input" id="instagramUrl" name="instagram" value="{{ old('instagram', $settings->instagram ?? 'https://instagram.com/maybead.s') }}">
                     </div>
                     <div class="form-group">
                       <label class="form-label" for="tiktokUrl">Akun TikTok</label>
-                      <input type="text" class="form-input" id="tiktokUrl" name="tiktok_url" value="https://tiktok.com/@maybead.s">
+                      <input type="text" class="form-input" id="tiktokUrl" name="tiktok" value="{{ old('tiktok', $settings->tiktok ?? 'https://tiktok.com/@maybead.s') }}">
                     </div>
-                  </div>
-
-                  <div class="toggle-item" style="margin-top: 10px;">
-                    <div class="toggle-info">
-                      <h4>Status Toko (Online)</h4>
-                      <p>Jika dimatikan, halaman checkout sementara akan menampilkan pesan bahwa toko sedang libur.</p>
-                    </div>
-                    <label class="switch" aria-label="Toggle status toko">
-                      <input type="checkbox" name="store_active" checked>
-                      <span class="slider"></span>
-                    </label>
                   </div>
                 </div>
                 <div class="settings-card-footer">

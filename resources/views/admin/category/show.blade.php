@@ -124,7 +124,15 @@
           Dashboard <span>&gt;</span> Kategori <span>&gt;</span> <strong class="active-crumb">Detail Kategori</strong>
         </div>
 
-        <h1 class="form-main-heading">{{ $category->category_name }}</h1>
+        <div style="display: flex; align-items: center; gap: 16px; margin-top: 10px;">
+          @if($category->image)
+            <img src="{{ asset('storage/' . $category->image) }}" alt="{{ $category->category_name }}" style="width: 56px; height: 56px; border-radius: 10px; object-fit: cover; border: 1.5px solid #cbd5e1;">
+          @endif
+          <div>
+            <h1 class="form-main-heading" style="margin: 0;">{{ $category->category_name }}</h1>
+            <div style="font-size: 13px; color: #64748b; margin-top: 4px;">Dibuat: {{ $category->created_at ? $category->created_at->format('d M Y, H:i') : '-' }}</div>
+          </div>
+        </div>
       </div>
 
       <div class="cat-stat-grid">

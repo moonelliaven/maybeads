@@ -8,6 +8,15 @@ use Illuminate\Http\Request;
 class OrderController extends Controller
 {
     /**
+     * Halaman khusus Pending Order (Semua pesanan baru yang menunggu konfirmasi)
+     */
+    public function pending(Request $request)
+    {
+        $request->merge(['status' => 'pending']);
+        return $this->index($request);
+    }
+
+    /**
      * Menampilkan daftar semua pesanan / data orderan (Halaman index)
      */
     public function index(Request $request)
@@ -171,7 +180,7 @@ class OrderController extends Controller
     }
 
     /**
-     * Update status pesanan secara manual oleh admin
+     * Update status pesanan secara bertahap & teratur oleh admin
      */
     public function updateStatus(Request $request, $id)
     {
@@ -181,15 +190,33 @@ class OrderController extends Controller
             'order_status' => 'required|string|in:Pending,Diproses,Sedang Perjalanan,Siap Diambil,Selesai,Dibatalkan',
         ]);
 
+        $curr = strtolower($order->order_status);
         $newStatus = $validated['order_status'];
+        $newLower = strtolower($newStatus);
+
+        // Validasi kondisi: status tidak boleh diupdate sembarangan
+        if (in_array($curr, ['selesai', 'sukses'])) {
+            return redirect()->back()->with('error', 'Pesanan yang sudah selesai tidak dapat diubah lagi statusnya.');
+        }
+
+        if (in_array($curr, ['dibatalkan', 'batal'])) {
+            return redirect()->back()->with('error', 'Pesanan yang sudah dibatalkan tidak dapat diaktifkan kembali.');
+        }
+
+        if ($curr === 'pending' && !in_array($newLower, ['diproses', 'proses', 'dibatalkan'])) {
+            return redirect()->back()->with('error', 'Pesanan dengan status Pending hanya dapat dialihkan ke status Diproses atau Dibatalkan.');
+        }
+
         $updateData = ['order_status' => $newStatus];
 
-        if ($newStatus === 'Selesai' && !$order->send_at) {
+        if (in_array($newLower, ['selesai', 'sukses'])) {
             $updateData['send_at'] = now();
             if ($order->payment && in_array(strtolower($order->payment->payment_status), ['pending', 'proses'])) {
                 $order->payment->update(['payment_status' => 'Sukses']);
             }
-        } elseif ($newStatus === 'Dibatalkan') {
+        } elseif (in_array($newLower, ['diproses', 'proses', 'sedang perjalanan', 'siap diambil']) && !$order->send_at) {
+            $updateData['send_at'] = now();
+        } elseif ($newLower === 'dibatalkan') {
             if ($order->payment) {
                 $order->payment->update(['payment_status' => 'Dibatalkan']);
             }
@@ -253,5 +280,92 @@ class OrderController extends Controller
 
         return redirect()->route('admin.order.index')
             ->with('success', 'Pesanan berhasil dihapus.');
+    }
+
+    /**
+     * Ekspor data pesanan ke file CSV / Excel
+     */
+    public function export(Request $request)
+    {
+        $status = strtolower($request->query('status', 'semua'));
+        $query = Order::with(['user', 'product', 'payment'])->orderBy('id', 'desc');
+
+        if ($status && $status !== 'semua') {
+            if ($status === 'process' || $status === 'proses') {
+                $query->whereIn('order_status', ['Proses', 'Process', 'Diproses']);
+            } elseif ($status === 'selesai') {
+                $query->whereIn('order_status', ['Selesai', 'Sukses', 'Success']);
+            } elseif ($status === 'pending') {
+                $query->where('order_status', 'Pending');
+            } elseif ($status === 'dibatalkan') {
+                $query->whereIn('order_status', ['Dibatalkan', 'Batal', 'Cancelled']);
+            }
+        }
+
+        $orders = $query->get();
+
+        $filename = 'rekap_pesanan_maybeads_' . date('Y-m-d_His') . '.csv';
+        $headers = [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Pragma'              => 'no-cache',
+            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires'             => '0',
+        ];
+
+        $callback = function () use ($orders) {
+            $handle = fopen('php://output', 'w');
+            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            fputcsv($handle, [
+                'Order ID',
+                'Tanggal Pesanan',
+                'Nama Pelanggan',
+                'Email',
+                'Alamat Pengiriman',
+                'Produk',
+                'Kuantitas',
+                'Subtotal (Rp)',
+                'Status Pembayaran',
+                'Status Pesanan',
+                'Metode Pembayaran'
+            ]);
+
+            foreach ($orders as $order) {
+                fputcsv($handle, [
+                    '#ORD-' . str_pad($order->id, 4, '0', STR_PAD_LEFT),
+                    $order->order_at ? $order->order_at->format('Y-m-d H:i') : '-',
+                    $order->user->name ?? 'Guest / Kasir',
+                    $order->user->email ?? '-',
+                    $order->address ?? '-',
+                    $order->product->product_name ?? '-',
+                    $order->quantity ?? 1,
+                    $order->subtotal ?? 0,
+                    ucfirst($order->payment_status ?? 'Pending'),
+                    ucfirst($order->order_status ?? 'Pending'),
+                    $order->payment->payment_method ?? 'QRIS'
+                ]);
+            }
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Hapus masal pesanan terpilih
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (!empty($ids) && is_array($ids)) {
+            Order::whereIn('id', $ids)->delete();
+            return redirect()->route('admin.order.index')
+                ->with('success', count($ids) . ' pesanan berhasil dihapus.');
+        }
+
+        return redirect()->route('admin.order.index')
+            ->with('error', 'Tidak ada pesanan yang dipilih untuk dihapus.');
     }
 }

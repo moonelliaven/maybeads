@@ -301,13 +301,13 @@
     .cart-product-cell {
       display: flex;
       align-items: center;
-      gap: 18px;
+      gap: 14px;
       min-width: 0;
     }
     .cart-thumb-img {
-      width: 90px;
-      height: 64px;
-      min-width: 90px;
+      width: 72px;
+      height: 60px;
+      min-width: 72px;
       border-radius: 8px;
       object-fit: cover;
       background: #e2e8f0;
@@ -316,11 +316,11 @@
     .cart-info-texts {
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 2px;
       min-width: 0;
     }
     .cart-item-title {
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 700;
       color: #141418;
       line-height: 1.35;
@@ -330,8 +330,21 @@
       text-overflow: ellipsis;
     }
     .cart-item-variant {
-      font-size: 12px;
+      font-size: 11.5px;
       color: #71717a;
+    }
+    .cart-unit-price-inline {
+      display: none;
+      font-size: 12px;
+      font-weight: 700;
+      color: #23477d;
+      margin-top: 2px;
+    }
+    .cart-unit-price-inline .price-label {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: #64748b;
+      margin-right: 3px;
     }
 
     /* Total Stepper Column */
@@ -375,7 +388,7 @@
 
     /* Unit Price Column (Harga Asli) */
     .cart-unit-price-cell {
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 600;
       color: #475569;
       text-align: center;
@@ -383,13 +396,13 @@
 
     /* Total Price Column (Harga Akhir: rawPrice * qty) */
     .cart-total-price-cell {
-      font-size: 15px;
+      font-size: 14.5px;
       font-weight: 700;
       color: #141418;
       text-align: center;
     }
     .cart-price-cell {
-      font-size: 14.5px;
+      font-size: 14px;
       font-weight: 700;
       color: #141418;
       padding-left: 12px;
@@ -422,9 +435,6 @@
     }
     .btn-action-delete:hover {
       color: #ef4444;
-    }
-    .btn-action-edit:hover {
-      color: #2563eb;
     }
 
     /* Empty state */
@@ -561,120 +571,169 @@
       fill: none;
     }
 
-    /* Mini Edit Modal */
-    .edit-modal-backdrop {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.45);
-      z-index: 100;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    .edit-modal-backdrop.show {
-      display: flex;
-    }
-    .edit-modal-box {
-      background: #ffffff;
-      border-radius: 8px;
-      width: 100%;
-      max-width: 420px;
-      padding: 24px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    }
-    .edit-modal-title {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 16px;
-    }
-    .edit-form-group {
-      margin-bottom: 14px;
-    }
-    .edit-form-group label {
-      display: block;
-      font-size: 12px;
-      font-weight: 600;
-      color: #475569;
-      margin-bottom: 4px;
-    }
-    .edit-form-input {
-      width: 100%;
-      padding: 8px 12px;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
-      font-size: 13px;
-      outline: none;
-      font-family: inherit;
-    }
-    .edit-modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 20px;
-    }
-    .btn-modal-cancel {
-      padding: 8px 16px;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
-      background: #f8fafc;
-      font-weight: 600;
-      font-size: 12.5px;
-      cursor: pointer;
-    }
-    .btn-modal-save {
-      padding: 8px 18px;
-      background: #244173;
-      color: #ffffff;
-      border: none;
-      border-radius: 6px;
-      font-weight: 700;
-      font-size: 12.5px;
-      cursor: pointer;
+    @media (min-width: 861px) {
+      .cart-grid-thead {
+        grid-template-columns: 36px 1fr 130px 130px 140px 60px;
+      }
+      .cart-grid-row {
+        padding: 14px 24px;
+        display: grid;
+        grid-template-columns: 36px 1fr 130px 130px 140px 60px;
+        align-items: center;
+        gap: 16px;
+        border-bottom: 1px solid #eaecee;
+      }
+      .cart-card-main-row {
+        display: contents;
+      }
+      .cart-card-bottom-row {
+        display: contents;
+      }
+      .total-label-mobile {
+        display: none;
+      }
+      .cart-unit-price-inline {
+        display: none;
+      }
     }
 
-    /* Responsive */
+    /* Responsive (Layout HP / Mobile) */
     @media (max-width: 860px) {
+      .cart-main-container {
+        margin: 18px auto 110px;
+        padding: 0 14px;
+      }
+      .cart-header-title {
+        font-size: 18px;
+      }
       .cart-grid-thead {
         display: none;
       }
       .cart-grid-row {
-        grid-template-columns: 30px 1fr;
-        gap: 12px;
+        display: flex;
+        flex-direction: column;
+        padding: 12px 14px;
+        gap: 10px;
+        border-bottom: 1px solid #eaecee;
       }
-      .cart-unit-price-cell,
-      .cart-stepper-cell,
-      .cart-total-price-cell,
-      .cart-action-cell {
-        grid-column: 2 / -1;
-        justify-content: flex-start;
-        text-align: left;
-        padding-left: 0;
+      .cart-card-main-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
       }
-      .cart-unit-price-cell::before {
-        content: "Harga Asli: ";
+      .cart-card-main-row .col-check {
+        flex-shrink: 0;
+      }
+      .cart-product-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+        min-width: 0;
+      }
+      .cart-thumb-img {
+        width: 62px;
+        height: 62px;
+        min-width: 62px;
+        border-radius: 8px;
+      }
+      .cart-info-texts {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+        flex: 1;
+      }
+      .cart-item-title {
+        font-size: 12.5px;
+        font-weight: 700;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .cart-item-variant {
+        font-size: 10.5px;
+        color: #64748b;
+      }
+      /* Harga asli tetap dibawah kategori barang dan disamping foto */
+      .cart-unit-price-inline {
+        display: flex;
+        align-items: center;
+        font-size: 12px;
+        font-weight: 700;
+        color: #23477d;
+        margin-top: 2px;
+      }
+      .cart-unit-price-inline .price-label {
+        font-size: 10.5px;
         font-weight: 600;
         color: #64748b;
-        font-size: 12.5px;
+        margin-right: 3px;
       }
-      .cart-total-price-cell::before {
-        content: "Total: ";
+      .cart-unit-price-cell {
+        display: none;
+      }
+      .cart-card-bottom-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-left: 27px;
+        width: 100%;
+      }
+      .cart-stepper-cell {
+        justify-content: flex-start;
+      }
+      .stepper-pill-box {
+        padding: 2px 4px;
+        gap: 8px;
+      }
+      .stepper-btn {
+        width: 20px;
+        height: 20px;
+        font-size: 14px;
+      }
+      .stepper-value {
+        font-size: 12px;
+        min-width: 16px;
+      }
+      .cart-total-price-cell {
+        font-size: 13.5px;
+        font-weight: 800;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        text-align: right;
+      }
+      .total-label-mobile {
+        display: inline-block;
+        font-size: 11px;
         font-weight: 600;
         color: #64748b;
-        font-size: 12.5px;
       }
       .cart-action-cell {
-        justify-content: flex-start;
+        justify-content: flex-end;
+      }
+      .btn-action-delete {
+        padding: 4px;
+        color: #ef4444;
       }
       .cart-bottom-container {
         flex-direction: column;
         align-items: stretch;
+        gap: 10px;
+        padding: 10px 14px;
       }
       .cart-bottom-left {
         justify-content: space-between;
       }
       .cart-bottom-right {
         justify-content: space-between;
+      }
+      .btn-checkout-action {
+        padding: 9px 18px;
+        font-size: 12.5px;
       }
     }
   </style>
@@ -707,28 +766,56 @@
         <a href="{{ route('main.dashboard') }}" class="cart-sub-nav-brand">
           Maybeads
         </a>
-        <span class="cart-sub-nav-crumb">/ Data Lengkap Keranjang</span>
       </div>
 
       <div class="cart-sub-nav-right">
-        <a href="{{ route('cart.index') }}" class="cart-action-pill-btn" title="Lihat Keranjang Belanja">
-          <svg class="pill-icon" viewBox="0 0 24 24">
-            <circle cx="9" cy="21" r="1"></circle>
-            <circle cx="20" cy="21" r="1"></circle>
-            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-          </svg>
-          <span>Keranjang</span>
-        </a>
+        <!-- Akun Button with Menu Dropdown -->
+        <div class="account-dropdown-wrapper" style="position: relative;">
+          <button type="button" class="cart-action-pill-btn" id="cartAccountDropdownBtn" aria-expanded="false" title="Menu Akun">
+            <svg class="pill-icon" viewBox="0 0 24 24">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span>Akun</span>
+            <svg class="chevron-down" viewBox="0 0 24 24" style="width: 13px; height: 13px; stroke: #475569; fill: none; stroke-width: 2.2;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
 
-        <!-- Akun Button -->
-        <a href="{{ route('login') }}" class="cart-action-pill-btn" title="Menu Akun">
-          <svg class="pill-icon" viewBox="0 0 24 24">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
-          </svg>
-          <span>Akun</span>
-          <svg class="chevron-down" viewBox="0 0 24 24" style="width: 13px; height: 13px; stroke: #475569; fill: none; stroke-width: 2.2;"><polyline points="6 9 12 15 18 9"></polyline></svg>
-        </a>
+          <div class="account-menu-popover" id="cartAccountMenuPopover">
+            @auth
+              <div class="acc-popover-header">
+                <strong>{{ Auth::user()->name }}</strong>
+                <small>{{ Auth::user()->email }}</small>
+              </div>
+              <div class="acc-popover-divider"></div>
+              @if(Auth::user()->isAdmin())
+                <a href="{{ route('admin.dashboard') }}" class="acc-popover-item">
+                  <svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg>
+                  Admin Dashboard
+                </a>
+              @endif
+              <a href="{{ route('orders.history') }}" class="acc-popover-item">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                Riwayat Pesanan
+              </a>
+              <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
+                <button type="submit" class="acc-popover-item text-danger">
+                  <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  Keluar
+                </button>
+              </form>
+            @else
+              <div class="acc-popover-header">
+                <strong>Akun Pengguna</strong>
+                <small>Silakan masuk atau daftar</small>
+              </div>
+              <div class="acc-popover-divider"></div>
+              <a href="{{ route('login') }}" class="acc-popover-item">Masuk ke Akun</a>
+              <a href="{{ route('register') }}" class="acc-popover-item">Daftar Akun Baru</a>
+            @endauth
+          </div>
+        </div>
       </div>
     </div>
   </nav>
@@ -808,34 +895,27 @@
     </div>
   </footer>
 
-  <!-- Mini Edit Variant Modal -->
-  <div class="edit-modal-backdrop" id="editModalBackdrop">
-    <div class="edit-modal-box">
-      <h3 class="edit-modal-title">Edit Varian Produk</h3>
-      <input type="hidden" id="editItemIndex">
-      <div class="edit-form-group">
-        <label for="editItemName">Nama Produk</label>
-        <input type="text" id="editItemName" class="edit-form-input" readonly style="background: #f1f5f9;">
-      </div>
-      <div class="edit-form-group">
-        <label for="editItemVariant">Jenis / Varian</label>
-        <input type="text" id="editItemVariant" class="edit-form-input" placeholder="e.g. Merah, XL">
-      </div>
-      <div class="edit-form-group">
-        <label for="editItemQty">Jumlah</label>
-        <input type="number" id="editItemQty" class="edit-form-input" min="1" value="1">
-      </div>
-      <div class="edit-modal-actions">
-        <button type="button" class="btn-modal-cancel" id="btnEditCancel">Batal</button>
-        <button type="button" class="btn-modal-save" id="btnEditSave">Simpan Perubahan</button>
-      </div>
-    </div>
-  </div>
-
   <!-- Interactive Cart Management Script -->
   <script>
     window.isUserLoggedIn = {{ Auth::check() ? 'true' : 'false' }};
     document.addEventListener('DOMContentLoaded', () => {
+      // Sub-navbar Account Popover
+      const cartAccountDropdownBtn = document.getElementById('cartAccountDropdownBtn');
+      const cartAccountMenuPopover = document.getElementById('cartAccountMenuPopover');
+      if (cartAccountDropdownBtn && cartAccountMenuPopover) {
+        cartAccountDropdownBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isOpen = cartAccountMenuPopover.classList.toggle('show');
+          cartAccountDropdownBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+        document.addEventListener('click', (e) => {
+          if (!cartAccountMenuPopover.contains(e.target) && !cartAccountDropdownBtn.contains(e.target)) {
+            cartAccountMenuPopover.classList.remove('show');
+            cartAccountDropdownBtn.setAttribute('aria-expanded', 'false');
+          }
+        });
+      }
+
       // Default sample items matching mockup exactly
       const sampleDefaultItems = [
         {
@@ -903,15 +983,6 @@
       const btnDeleteSelected  = document.getElementById('btnDeleteSelected');
       const cartSearchInput    = document.getElementById('cartSearchInput');
       const btnCheckoutAction  = document.getElementById('btnCheckoutAction');
-
-      // Edit Modal Elements
-      const editModalBackdrop  = document.getElementById('editModalBackdrop');
-      const editItemIndex      = document.getElementById('editItemIndex');
-      const editItemName       = document.getElementById('editItemName');
-      const editItemVariant    = document.getElementById('editItemVariant');
-      const editItemQty        = document.getElementById('editItemQty');
-      const btnEditCancel      = document.getElementById('btnEditCancel');
-      const btnEditSave        = document.getElementById('btnEditSave');
 
       let currentSearchQuery = '';
 
@@ -985,50 +1056,59 @@
 
           return `
             <div class="cart-grid-row" data-idx="${originalIdx}">
-              <!-- Checkbox -->
-              <div class="col-check">
-                <input type="checkbox"
-                       class="custom-cart-checkbox row-checkbox"
-                       data-idx="${originalIdx}"
-                       ${item.checked ? 'checked' : ''}>
-              </div>
+              <!-- Top Row: Checkbox + Foto + Info (Harga Asli di bawah kategori dan di samping foto) -->
+              <div class="cart-card-main-row">
+                <!-- Checkbox -->
+                <div class="col-check">
+                  <input type="checkbox"
+                         class="custom-cart-checkbox row-checkbox"
+                         data-idx="${originalIdx}"
+                         ${item.checked ? 'checked' : ''}>
+                </div>
 
-              <!-- Product Info -->
-              <div class="cart-product-cell">
-                <img src="${imgSrc}" alt="${item.name}" class="cart-thumb-img" onerror="this.onerror=null;this.src='/images/landing/prod-keychain.jpg'">
-                <div class="cart-info-texts">
-                  <h4 class="cart-item-title" title="${item.name}">${item.name}</h4>
-                  <span class="cart-item-variant">Jenis: ${variantText}</span>
+                <!-- Product Info & Media -->
+                <div class="cart-product-cell">
+                  <img src="${imgSrc}" alt="${item.name}" class="cart-thumb-img" onerror="this.onerror=null;this.src='/images/landing/prod-keychain.jpg'">
+                  <div class="cart-info-texts">
+                    <h4 class="cart-item-title" title="${item.name}">${item.name}</h4>
+                    <span class="cart-item-variant">Jenis: ${variantText}</span>
+                    <!-- Harga Asli di bawah kategori barang dan di samping foto -->
+                    <div class="cart-unit-price-inline">
+                      <span class="price-label">Harga Asli:</span>
+                      <span class="price-val">${displayUnitPrice}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <!-- Harga Asli (Unit Price) -->
+              <!-- Harga Asli (Unit Price di Desktop Table) -->
               <div class="cart-unit-price-cell">
                 <span>${displayUnitPrice}</span>
               </div>
 
-              <!-- Stepper (Jumlah / Quantity) -->
-              <div class="cart-stepper-cell">
-                <div class="stepper-pill-box">
-                  <button type="button" class="stepper-btn btn-minus" data-idx="${originalIdx}" title="Kurangi">-</button>
-                  <span class="stepper-value" id="qty-val-${originalIdx}">${qty}</span>
-                  <button type="button" class="stepper-btn btn-plus" data-idx="${originalIdx}" title="Tambah">+</button>
+              <!-- Bottom Row on Mobile / Columns on Desktop: Stepper, Total, Hapus -->
+              <div class="cart-card-bottom-row">
+                <!-- Stepper (Jumlah / Quantity) -->
+                <div class="cart-stepper-cell">
+                  <div class="stepper-pill-box">
+                    <button type="button" class="stepper-btn btn-minus" data-idx="${originalIdx}" title="Kurangi">-</button>
+                    <span class="stepper-value" id="qty-val-${originalIdx}">${qty}</span>
+                    <button type="button" class="stepper-btn btn-plus" data-idx="${originalIdx}" title="Tambah">+</button>
+                  </div>
                 </div>
-              </div>
 
-              <!-- Total Harga Produk (rawPrice * qty) -->
-              <div class="cart-total-price-cell">
-                <span id="row-total-${originalIdx}">${displayRowTotal}</span>
-              </div>
+                <!-- Total Harga Produk (rawPrice * qty) -->
+                <div class="cart-total-price-cell">
+                  <span class="total-label-mobile">Total:</span>
+                  <span id="row-total-${originalIdx}">${displayRowTotal}</span>
+                </div>
 
-              <!-- Action Icons (Trash & Edit) -->
-              <div class="cart-action-cell">
-                <button type="button" class="btn-action-icon btn-action-delete" data-idx="${originalIdx}" title="Hapus Produk">
-                  <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                </button>
-                <button type="button" class="btn-action-icon btn-action-edit" data-idx="${originalIdx}" title="Edit Varian">
-                  <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                </button>
+                <!-- Action Icon: HANYA HAPUS (Menu Edit Produk Dihapus) -->
+                <div class="cart-action-cell">
+                  <button type="button" class="btn-action-icon btn-action-delete" data-idx="${originalIdx}" title="Hapus Produk">
+                    <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  </button>
+                </div>
               </div>
             </div>
           `;
@@ -1082,7 +1162,7 @@
           });
         });
 
-        // Delete single item
+        // Delete single item (Menu Edit Produk sudah ditiadakan)
         rowsContainer.querySelectorAll('.btn-action-delete').forEach(btn => {
           btn.addEventListener('click', () => {
             const idx = parseInt(btn.dataset.idx, 10);
@@ -1112,21 +1192,6 @@
                 renderCartRows();
               }
             }
-          });
-        });
-
-        // Edit variant modal
-        rowsContainer.querySelectorAll('.btn-action-edit').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const idx = parseInt(btn.dataset.idx, 10);
-            const item = cart[idx];
-            if (!item) return;
-
-            editItemIndex.value = idx;
-            editItemName.value = item.name;
-            editItemVariant.value = item.color || 'Merah, XL';
-            editItemQty.value = item.qty || 1;
-            editModalBackdrop.classList.add('show');
           });
         });
       }
@@ -1204,33 +1269,6 @@
         cartSearchInput.addEventListener('input', (e) => {
           currentSearchQuery = e.target.value.trim();
           renderCartRows();
-        });
-      }
-
-      // Edit Modal Save / Cancel
-      if (btnEditCancel) {
-        btnEditCancel.addEventListener('click', () => {
-          editModalBackdrop.classList.remove('show');
-        });
-      }
-      if (editModalBackdrop) {
-        editModalBackdrop.addEventListener('click', (e) => {
-          if (e.target === editModalBackdrop) {
-            editModalBackdrop.classList.remove('show');
-          }
-        });
-      }
-      if (btnEditSave) {
-        btnEditSave.addEventListener('click', () => {
-          const idx = parseInt(editItemIndex.value, 10);
-          if (cart[idx]) {
-            cart[idx].color = editItemVariant.value.trim() || 'Merah, XL';
-            const qtyVal = parseInt(editItemQty.value, 10);
-            cart[idx].qty = qtyVal > 0 ? qtyVal : 1;
-            saveCart();
-            editModalBackdrop.classList.remove('show');
-            renderCartRows();
-          }
         });
       }
 

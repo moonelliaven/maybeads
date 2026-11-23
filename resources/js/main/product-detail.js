@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return false;
     }
 
-    const detailBox = document.getElementById('productDetailStore');
+    const detailBox = document.getElementById('productDetailStore') || document.getElementById('productDetailCard');
     if (!detailBox) return;
 
     const data = detailBox.dataset;
@@ -204,18 +204,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const variantStr = variantLabel.length ? variantLabel.join(', ') : (data.defaultVariant || 'Standard');
 
     const cart = getLocalCart();
-    const existing = cart.find(it => String(it.id) === String(data.id) && (it.color || '') === variantStr);
+    const existing = cart.find(it => String(it.id) === String(data.id || data.productId) && (it.color || '') === variantStr);
 
     if (existing) {
       existing.qty = (existing.qty || 1) + qty;
       existing.addedAt = Date.now();
     } else {
       cart.unshift({
-        id: data.id,
-        name: data.name,
-        price: data.priceFormatted,
+        id: data.id || data.productId,
+        name: data.name || data.productName,
+        price: data.priceFormatted || data.formattedPrice,
         rawPrice: rawPrice,
-        image: data.image,
+        image: data.image || data.productImg,
         color: variantStr,
         qty: qty,
         checked: true,
@@ -266,8 +266,27 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* 7. Related products Add to Cart button delegation */
-  document.querySelectorAll('.btn-related-add-cart, .btn-quick-cart').forEach(btn => {
+  /* 7. Account Menu Dropdown Popover */
+  const accountDropdownBtn = document.getElementById('accountDropdownBtn');
+  const accountMenuPopover = document.getElementById('accountMenuPopover');
+
+  if (accountDropdownBtn && accountMenuPopover) {
+    accountDropdownBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = accountMenuPopover.classList.toggle('show');
+      accountDropdownBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!accountMenuPopover.contains(e.target) && !accountDropdownBtn.contains(e.target)) {
+        accountMenuPopover.classList.remove('show');
+        accountDropdownBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  /* 8. Related products Add to Cart button delegation */
+  document.querySelectorAll('.btn-related-add-cart, .btn-quick-cart, .btn-card-cart-icon').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       if (window.isUserLoggedIn === false) {
@@ -278,9 +297,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!card) return;
       const data = card.dataset;
       const id = btn.dataset.id || data.id || '1';
-      const name = card.querySelector('.rel-title-text')?.textContent || data.name || 'Produk Maybeads';
-      const priceText = card.querySelector('.rel-current-price')?.textContent || data.price || 'Rp 18.500';
-      const rawPrice = parseInt(priceText.replace(/[^0-9]/g, ''), 10) || 18500;
+      const name = card.querySelector('.card-product-title, .rel-title-text')?.textContent?.trim() || data.name || 'Produk Maybeads';
+      const priceValEl = card.querySelector('.card-price-val, .rel-current-price');
+      const priceText = priceValEl ? 'Rp ' + priceValEl.textContent.trim().replace(/^Rp\s*/i, '') : (data.formattedPrice || 'Rp 18.500');
+      const rawPrice = parseInt(data.price || priceText.replace(/[^0-9]/g, ''), 10) || 18500;
       const img = card.querySelector('img')?.src || '';
 
       const cart = getLocalCart();
@@ -306,17 +326,21 @@ document.addEventListener('DOMContentLoaded', () => {
       saveLocalCart(cart);
 
       const origHtml = btn.innerHTML;
-      btn.innerHTML = `<span style="font-size:10px; font-weight:700; color:#16a34a;">✓</span>`;
+      btn.innerHTML = `<span style="font-size:11px; font-weight:700; color:#16a34a;">✓</span>`;
       setTimeout(() => {
         btn.innerHTML = origHtml;
       }, 1200);
     });
   });
 
-  /* 8. ESC Key Listener */
+  /* 9. ESC Key Listener */
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       closeLoginPromptModal();
+      if (accountMenuPopover) {
+        accountMenuPopover.classList.remove('show');
+        if (accountDropdownBtn) accountDropdownBtn.setAttribute('aria-expanded', 'false');
+      }
     }
   });
 

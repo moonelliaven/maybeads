@@ -1014,6 +1014,7 @@
               <div class="acc-dropdown-divider"></div>
               <form method="POST" action="{{ route('logout') }}" id="orderPageLogoutForm" style="margin: 0;">
                 @csrf
+                <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
                 <button type="submit" class="acc-dropdown-item text-danger" id="btnOrderPageLogout">
                   <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2;">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>

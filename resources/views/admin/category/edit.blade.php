@@ -68,7 +68,7 @@
       </div>
 
       <div class="form-card">
-        <form action="{{ route('admin.category.update', $category->id) }}" method="POST">
+        <form action="{{ route('admin.category.update', $category->id) }}" method="POST" enctype="multipart/form-data">
           @csrf
           @method('PUT')
           <div class="form-field-group">
@@ -76,6 +76,34 @@
             <input type="text" id="category_name" name="category_name" class="form-control-input"
                    placeholder="Contoh: Gelang, Kalung, Cincin..." value="{{ old('category_name', $category->category_name) }}" required>
             @error('category_name')
+              <div class="form-error-msg">{{ $message }}</div>
+            @enderror
+          </div>
+
+          <div class="form-field-group" style="margin-top: 20px;">
+            <label for="image" class="form-label">Gambar Kategori</label>
+            @if($category->image)
+              <div style="margin-bottom: 10px;">
+                <img id="catImagePreview" src="{{ asset('storage/' . $category->image) }}" alt="{{ $category->category_name }}" style="max-width: 140px; max-height: 140px; border-radius: 8px; object-fit: cover; border: 1.5px solid #cbd5e1; display: block;">
+              </div>
+            @else
+              <div style="margin-bottom: 10px;">
+                <img id="catImagePreview" src="" alt="Preview Kategori" style="display: none; max-width: 140px; max-height: 140px; border-radius: 8px; object-fit: cover; border: 1.5px solid #cbd5e1;">
+              </div>
+            @endif
+            <input type="file" id="image" name="image" class="form-control-input" accept="image/*"
+                   style="padding: 9px 12px; background: #fff;"
+                   onchange="if(this.files && this.files[0]) {
+                     const reader = new FileReader();
+                     reader.onload = e => {
+                       const p = document.getElementById('catImagePreview');
+                       p.src = e.target.result;
+                       p.style.display = 'block';
+                     };
+                     reader.readAsDataURL(this.files[0]);
+                   }">
+            <span style="font-size: 11.5px; color: #64748b; margin-top: 4px; display: block;">Kosongkan jika tidak ingin mengubah gambar kategori.</span>
+            @error('image')
               <div class="form-error-msg">{{ $message }}</div>
             @enderror
           </div>

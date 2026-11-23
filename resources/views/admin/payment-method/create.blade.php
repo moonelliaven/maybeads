@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>Tambah Metode Pembayaran — Maybeads</title>
+  <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  @vite(['resources/css/admin/product-form.css', 'resources/js/admin/product-form.js'])
+</head>
+<body>
+
+<div class="admin-layout">
+  @include('admin.sidebar', ['active' => 'payment-method'])
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <div class="admin-main">
+    <header class="admin-header">
+      <div class="header-left">
+        <button type="button" class="btn-sidebar-toggle" id="sidebarToggle" aria-label="Toggle navigasi">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="3" y1="6"  x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <span class="header-title">Admin Dashboard / Metode Pembayaran</span>
+      </div>
+    </header>
+
+    <main class="form-content-area" style="max-width: 760px;">
+      <div class="form-top-nav">
+        <a href="{{ route('admin.payment-method.index') }}" class="btn-back-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          Kembali ke Daftar Metode
+        </a>
+
+        <div class="form-breadcrumb">
+          Dashboard <span>&gt;</span> Metode Pembayaran <span>&gt;</span> <strong class="active-crumb">Tambah Metode Baru</strong>
+        </div>
+
+        <h1 class="form-main-heading">Tambah Metode Pembayaran Baru</h1>
+        <p style="font-size: 13.5px; color: #64748b; margin-top: 4px;">Konfigurasikan channel pembayaran baru untuk transaksi pelanggan dan kasir.</p>
+      </div>
+
+      <div class="form-card" style="margin-top: 20px;">
+        <form action="{{ route('admin.payment-method.store') }}" method="POST">
+          @csrf
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-field-group">
+              <label for="name" class="form-label">Nama Metode & Provider *</label>
+              <input type="text" id="name" name="name" class="form-control-input"
+                     placeholder="Contoh: BCA Virtual Account, QRIS ShopeePay, DANA"
+                     value="{{ old('name') }}" required>
+              @error('name')
+                <div class="form-error-msg">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="form-field-group">
+              <label for="code" class="form-label">Kode Unik / Slug *</label>
+              <input type="text" id="code" name="code" class="form-control-input"
+                     placeholder="Contoh: bca-va, qris-gopay, dana"
+                     value="{{ old('code') }}" required>
+              @error('code')
+                <div class="form-error-msg">{{ $message }}</div>
+              @enderror
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+            <div class="form-field-group">
+              <label for="type" class="form-label">Kategori Tipe *</label>
+              <select id="type" name="type" class="form-control-input" required>
+                <option value="bank" {{ old('type') === 'bank' ? 'selected' : '' }}>Transfer Bank</option>
+                <option value="auto-link" {{ old('type') === 'auto-link' ? 'selected' : '' }}>Auto-Link</option>
+                <option value="qris" {{ old('type') === 'qris' ? 'selected' : '' }}>QRIS</option>
+                <option value="e-wallet" {{ old('type') === 'e-wallet' ? 'selected' : '' }}>E-Wallet</option>
+              </select>
+              @error('type')
+                <div class="form-error-msg">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="form-field-group">
+              <label for="price" class="form-label">Biaya Admin (Rp) *</label>
+              <input type="number" id="price" name="price" class="form-control-input"
+                     placeholder="0 jika gratis"
+                     value="{{ old('price', 0) }}" min="0" required>
+              @error('price')
+                <div class="form-error-msg">{{ $message }}</div>
+              @enderror
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+            <div class="form-field-group">
+              <label for="account_number" class="form-label">No. Rekening / ID Merchant (Opsional)</label>
+              <input type="text" id="account_number" name="account_number" class="form-control-input"
+                     placeholder="Contoh: 8271928129 atau MID-01928"
+                     value="{{ old('account_number') }}">
+              @error('account_number')
+                <div class="form-error-msg">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="form-field-group">
+              <label for="account_name" class="form-label">Atas Nama (a/n) Rekening (Opsional)</label>
+              <input type="text" id="account_name" name="account_name" class="form-control-input"
+                     placeholder="Contoh: Maybeads Official"
+                     value="{{ old('account_name') }}">
+              @error('account_name')
+                <div class="form-error-msg">{{ $message }}</div>
+              @enderror
+            </div>
+          </div>
+
+          <div class="form-field-group" style="margin-top: 16px;">
+            <label for="status" class="form-label">Status Awal *</label>
+            <select id="status" name="status" class="form-control-input" required>
+              <option value="active" {{ old('status', 'active') === 'active' ? 'selected' : '' }}>Aktif (Dapat dipilih pelanggan & kasir)</option>
+              <option value="non-active" {{ old('status') === 'non-active' ? 'selected' : '' }}>Non-Aktif (Disembunyikan)</option>
+            </select>
+            @error('status')
+              <div class="form-error-msg">{{ $message }}</div>
+            @enderror
+          </div>
+
+          <div class="form-field-group" style="margin-top: 16px;">
+            <label for="description" class="form-label">Keterangan / Instruksi Pembayaran (Opsional)</label>
+            <textarea id="description" name="description" class="form-control-input" rows="4"
+                      placeholder="Masukkan petunjuk pembayaran atau catatan internal">{{ old('description') }}</textarea>
+            @error('description')
+              <div class="form-error-msg">{{ $message }}</div>
+            @enderror
+          </div>
+
+          <div class="form-actions-bar" style="margin-top: 24px;">
+            <a href="{{ route('admin.payment-method.index') }}" class="btn-form-cancel">Batal</a>
+            <button type="submit" class="btn-form-submit">
+              Simpan Metode Pembayaran
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+</div>
+
+</body>
+</html>

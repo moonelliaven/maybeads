@@ -84,7 +84,7 @@
 
 
   <!-- ========================================================================
-       2. HERO BANNER SECTION (Blue Gradient with Beaded Jewelry Backdrop)
+       2. HERO BANNER SECTION (Compact Blue Gradient Banner)
        ======================================================================== -->
   <section class="catalog-hero-section">
     <div class="hero-bg-layer">
@@ -94,8 +94,7 @@
     <div class="hero-container">
       <h1 class="hero-main-title">Temukan Gaya Favoritmu</h1>
       <p class="hero-main-desc">
-        Jelajahi koleksi pilihan Maybeads dan temukan berbagai aksesori serta<br>
-        produk unik yang melengkapi gayamu.
+        Jelajahi koleksi pilihan Maybeads dan temukan aksesori unik pelengkap gayamu.
       </p>
     </div>
   </section>
@@ -168,6 +167,7 @@
               </a>
               <form method="POST" action="{{ route('logout') }}">
                 @csrf
+                <input type="hidden" name="redirect_to" value="{{ url()->current() }}">
                 <button type="submit" class="acc-popover-item text-danger">
                   <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                   Keluar
@@ -199,68 +199,45 @@
       <aside class="sidebar-filter-panel" id="sidebarFilterPanel">
         <div class="filter-card-box">
           <form id="filterForm" method="GET" action="{{ url()->current() }}">
-            <!-- Hidden inputs to preserve query params -->
-            <input type="hidden" name="sort" id="inputSort" value="{{ $currentSort }}">
-            <input type="hidden" name="category" id="inputCategory" value="{{ $currentCategory }}">
             @if($currentSearch)
               <input type="hidden" name="search" id="inputSearch" value="{{ $currentSearch }}">
             @endif
 
-            <!-- 1. URUTAN PRODUK (Sort by Date / Price / Name) -->
-            <div class="filter-block">
-              <h4 class="filter-block-title">URUTAN PRODUK</h4>
-              <div class="sort-options-list">
-                @foreach($sortOptions as $key => $label)
-                  <button type="button"
-                          class="sort-radio-option {{ $currentSort === $key ? 'selected' : '' }}"
-                          data-sort="{{ $key }}">
-                    <span class="custom-radio">
-                      <span class="radio-inner-dot"></span>
-                    </span>
-                    <span class="option-label">{{ $label }}</span>
-                  </button>
-                @endforeach
-              </div>
-            </div>
-
-            <!-- Divider -->
-            <div class="filter-block-divider"></div>
-
-            <!-- 2. KATEGORI PRODUK (Categories from DB with count & expand) -->
-            <div class="filter-block">
-              <h4 class="filter-block-title">KATEGORI PRODUK</h4>
-              <div class="category-options-list" id="categoryOptionsList">
-                <!-- Semua Kategori -->
-                <button type="button"
-                        class="category-option-item {{ !$currentCategory ? 'selected' : '' }}"
-                        data-category="">
-                  <div class="cat-label-wrap">
-                    <span class="cat-bullet-dot">•</span>
-                    <span class="cat-title">Semua</span>
-                  </div>
-                  <span class="cat-pill-badge">Semua</span>
-                </button>
-
-                <!-- Dynamic Categories -->
-                @foreach($categories as $index => $cat)
-                  <button type="button"
-                          class="category-option-item {{ $currentCategory == $cat->id ? 'selected' : '' }} {{ $index >= 3 ? 'cat-extra-item is-hidden' : '' }}"
-                          data-category="{{ $cat->id }}">
-                    <div class="cat-label-wrap">
-                      <span class="cat-bullet-dot">•</span>
-                      <span class="cat-title">{{ $cat->category_name }}</span>
-                    </div>
-                    <span class="cat-count-badge">{{ $cat->products_count }}</span>
-                  </button>
-                @endforeach
+            <div class="filters-dropdowns-container">
+              <!-- 1. DROPDOWN SORTIR URUTAN PRODUK -->
+              <div class="filter-dropdown-item">
+                <label for="selectSort" class="filter-dropdown-label">
+                  <svg class="filter-dropdown-icon" viewBox="0 0 24 24"><path d="M3 6h18M6 12h12m-9 6h6"/></svg>
+                  <span>URUTAN PRODUK</span>
+                </label>
+                <div class="filter-select-wrapper">
+                  <select name="sort" id="selectSort" class="filter-dropdown-select" aria-label="Pilih Urutan Produk">
+                    @foreach($sortOptions as $key => $label)
+                      <option value="{{ $key }}" {{ $currentSort === $key ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                  </select>
+                  <svg class="select-arrow-icon" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
               </div>
 
-              @if($categories->count() > 3)
-                <button type="button" class="btn-expand-outline" id="btnToggleCategories">
-                  <span id="textExpandCategories">Lihat lebih</span>
-                  <svg class="chevron-expand" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                </button>
-              @endif
+              <!-- 2. DROPDOWN KATEGORI PRODUK -->
+              <div class="filter-dropdown-item">
+                <label for="selectCategory" class="filter-dropdown-label">
+                  <svg class="filter-dropdown-icon" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+                  <span>KATEGORI PRODUK</span>
+                </label>
+                <div class="filter-select-wrapper">
+                  <select name="category" id="selectCategory" class="filter-dropdown-select" aria-label="Pilih Kategori Produk">
+                    <option value="" {{ !$currentCategory ? 'selected' : '' }}>Semua Kategori</option>
+                    @foreach($categories as $cat)
+                      <option value="{{ $cat->id }}" {{ $currentCategory == $cat->id ? 'selected' : '' }}>
+                        {{ $cat->category_name }} ({{ $cat->products_count }})
+                      </option>
+                    @endforeach
+                  </select>
+                  <svg class="select-arrow-icon" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+              </div>
             </div>
 
             @if($currentCategory || $currentSearch || $currentSort !== 'terbaru')
@@ -374,17 +351,6 @@
                 <h3 class="card-product-title" title="{{ $product->product_name }}">
                   {{ $product->product_name }}
                 </h3>
-
-                <!-- Rating & Reviews (Data Nyata Dari Testimonial) -->
-                @if(isset($product->avg_rating))
-                  <div class="card-rating-row">
-                    <svg class="rating-star-icon" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b">
-                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                    </svg>
-                    <span class="rating-score">{{ number_format($product->avg_rating, 1, ',', '.') }}</span>
-                    <span class="rating-count">({{ $product->review_count > 0 ? $product->review_count . ' Review' : '0 Review' }})</span>
-                  </div>
-                @endif
 
                 <!-- Price Row -->
                 <div class="card-price-row">
