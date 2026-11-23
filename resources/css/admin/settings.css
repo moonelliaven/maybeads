@@ -1,0 +1,255 @@
+/* ==========================================================================
+   Admin Website & Account Settings Stylesheet - Maybead.s
+   ========================================================================== */
+
+.settings-container {
+  padding: 28px 36px 60px;
+  max-width: 1080px;
+  width: 100%;
+}
+
+/* Page Header */
+.page-head {
+  margin-bottom: 22px;
+}
+
+.breadcrumb-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.page-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+
+.welcome-text {
+  font-size: 13.5px;
+  color: #64748b;
+}
+
+/* Tab Navigation */
+.settings-tabs-wrapper {
+  display: inline-flex;
+  background: #e2e8f0;
+  padding: 4px;
+  border-radius: 10px;
+  gap: 4px;
+  margin-bottom: 26px;
+}
+
+.settings-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.settings-tab-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.settings-tab-btn:hover {
+  color: #0f172a;
+}
+
+.settings-tab-btn.active {
+  background: #ffffff;
+  color: #244173;
+  font-weight: 800;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* Panel Display */
+.settings-panel {
+  display: none;
+}
+
+.settings-panel.active {
+  display: block;
+  animation: fadeInSettings 0.2s ease-out;
+}
+
+@keyframes fadeInSettings {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Settings Cards Grid */
+.settings-cards-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.settings-card {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: border-color 0.15s;
+}
+
+.settings-card:hover {
+  border-color: #cbd5e1;
+}
+
+.settings-card-header {
+  padding: 20px 24px;
+  background: #fafaf9;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.settings-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.settings-card-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.settings-card-title {
+  font-size: 15.5px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 2px;
+}
+
+.settings-card-desc {
+  font-size: 12.5px;
+  color: #64748b;
+  margin: 0;
+}
+
+.settings-card-body {
+  padding: 24px;
+}
+
+.settings-card-footer {
+  padding: 16px 24px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Form Layout */
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 6px;
+}
+
+.form-input, .form-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-family: inherit;
+  color: #0f172a;
+  background: #ffffff;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+
+.form-input:focus, .form-textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.form-hint {
+  font-size: 11.5px;
+  color: #64748b;
+  margin-top: 5px;
+  line-height: 1.45;
+}
+
+/* Primary Button */
+.btn-primary {
+  background: #244173;
+  color: #ffffff;
+  border: none;
+  padding: 11px 22px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.btn-primary:hover {
+  background: #1b3259;
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 768px) {
+  .settings-container {
+    padding: 20px 18px 48px;
+  }
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .settings-tabs-wrapper {
+    width: 100%;
+  }
+  .settings-tab-btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+

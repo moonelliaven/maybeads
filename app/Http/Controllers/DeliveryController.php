@@ -45,6 +45,7 @@ class DeliveryController extends Controller
         }
 
         $rawOrders = $query->get();
+        $isDeliveryEnabled = \App\Models\SiteSetting::getSettings()->is_delivery_enabled ?? true;
 
         // Format data pengantaran dengan informasi kurir cerdas
         $deliveries = $rawOrders->map(function ($o) {
@@ -112,7 +113,33 @@ class DeliveryController extends Controller
             'terkirim'         => $allDeliveryOrders->filter(fn($o) => in_array(strtolower($o->order_status), ['selesai', 'sukses']))->count(),
         ];
 
-        return view('admin.delivery.index', compact('deliveries', 'stats', 'statusFilter', 'courierFilter', 'search'));
+        $totalDeliveries = $deliveries->count();
+        $isAllMode = $request->input('show_all') === 'true';
+        $perPage = $isAllMode ? max($totalDeliveries, 1) : 10;
+        $currentPage = (int) $request->input('page', 1);
+        $paginatedItems = $isAllMode ? $deliveries : $deliveries->forPage($currentPage, $perPage)->values();
+        $deliveries = new \Illuminate\Pagination\LengthAwarePaginator(
+            $paginatedItems,
+            $totalDeliveries,
+            $perPage,
+            $currentPage,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
+        return view('admin.delivery.index', compact('deliveries', 'stats', 'statusFilter', 'courierFilter', 'search', 'isDeliveryEnabled', 'totalDeliveries', 'isAllMode'));
+    }
+
+    /**
+     * Toggle switch untuk mengaktifkan / menonaktifkan layanan pengantaran toko
+     */
+    public function toggleStatus(Request $request)
+    {
+        $settings = \App\Models\SiteSetting::getSettings();
+        $settings->is_delivery_enabled = !$settings->is_delivery_enabled;
+        $settings->save();
+
+        $statusStr = $settings->is_delivery_enabled ? 'diaktifkan' : 'dinonaktifkan';
+        return redirect()->back()->with('success', "Layanan pengantaran toko berhasil {$statusStr}!");
     }
 
     /**

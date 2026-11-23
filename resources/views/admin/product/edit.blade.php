@@ -58,15 +58,18 @@
       </div>
 
       <div class="header-right">
-        <div class="dropdown" data-dropdown>
-          <button type="button" class="notification-btn" aria-label="Notifikasi" data-dropdown-trigger>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-            <span class="notif-badge-pill" data-notif-badge>1</span>
-          </button>
-        </div>
+        @php
+          $sidebarPendingOrders = \App\Models\Order::whereRaw('LOWER(order_status) = ?', ['pending'])->count();
+        @endphp
+        <a href="{{ route('admin.notifications') }}" class="notification-btn" aria-label="Notifikasi" title="Notifikasi">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          @if($sidebarPendingOrders > 0)
+            <span class="notification-badge">{{ $sidebarPendingOrders }}</span>
+          @endif
+        </a>
       </div>
     </header>
 
@@ -161,6 +164,7 @@
                   @endphp
                   <div class="sec-photo-thumb" id="existingSecThumb{{ $idx }}">
                     <img src="{{ $sUrl }}" alt="Foto Tambahan {{ $idx + 1 }}">
+                    <input type="hidden" name="existing_secondary_images[]" value="{{ $sImg }}">
                     <button type="button" class="sec-photo-remove" title="Hapus foto ini" onclick="document.getElementById('existingSecThumb{{ $idx }}').remove();">&times;</button>
                   </div>
                 @endforeach

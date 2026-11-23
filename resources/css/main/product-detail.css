@@ -294,11 +294,10 @@ button { font-family: inherit; }
 .main-img-box,
 .main-image-display-frame {
   width: 100%;
-  height: 440px;
-  max-height: 440px;
+  aspect-ratio: 1 / 1;
   border-radius: 12px;
   overflow: hidden;
-  background-color: #f1f5f9;
+  background-color: #f8fafc;
   position: relative;
   border: 1px solid #e2e8f0;
 }
@@ -307,8 +306,9 @@ button { font-family: inherit; }
 #mainProductImage {
   width: 100%;
   height: 100%;
-  max-height: 440px;
+  aspect-ratio: 1 / 1;
   object-fit: cover;
+  object-position: center;
   display: block;
   transition: transform 0.3s ease;
 }
@@ -343,6 +343,7 @@ button { font-family: inherit; }
 .thumb-item-btn {
   width: 72px;
   height: 72px;
+  aspect-ratio: 1 / 1;
   border-radius: 8px;
   overflow: hidden;
   border: 2px solid #e2e8f0;
@@ -360,7 +361,9 @@ button { font-family: inherit; }
 .thumb-item-btn img {
   width: 100%;
   height: 100%;
+  aspect-ratio: 1 / 1;
   object-fit: cover;
+  object-position: center;
 }
 
 /* Right Info Column */
@@ -441,11 +444,11 @@ button { font-family: inherit; }
   border-color: #2b4570;
 }
 
-/* Purchase Action Controls (legacy) */
-.purchase-action-group {
+/* Stepper Quantity & Estimation Controls */
+.stepper-quantity-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   margin-top: 22px;
   flex-wrap: wrap;
 }
@@ -453,39 +456,129 @@ button { font-family: inherit; }
 .stepper-quantity-wrap {
   display: inline-flex;
   align-items: center;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
   background: #ffffff;
-  height: 38px;
+  height: 42px;
+  transition: border-color 0.15s ease;
+}
+
+.stepper-quantity-wrap:focus-within {
+  border-color: #23477d;
 }
 
 .stepper-arrow-btn {
-  width: 32px;
+  width: 36px;
   height: 100%;
   border: none;
   background: transparent;
-  font-size: 16px;
+  font-size: 18px;
   color: #475569;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
+  transition: all 0.15s ease;
 }
 
 .stepper-arrow-btn:hover {
   background: #f1f5f9;
+  color: #23477d;
 }
 
 .stepper-number-val {
-  width: 36px;
+  width: 44px;
   border: none;
   text-align: center;
-  font-size: 13px;
-  font-weight: 700;
-  color: #141418;
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
   outline: none;
   background: transparent;
+}
+
+.qty-estimation-wrap {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 16px;
+  height: 42px;
+  box-sizing: border-box;
+}
+
+.qty-estimation-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.qty-estimation-val {
+  font-size: 16px;
+  font-weight: 800;
+  color: #23477d;
+  letter-spacing: -0.01em;
+}
+
+/* Action Button Tambah ke Keranjang (Posisi Kebawah) */
+.add-to-cart-action-row {
+  margin-top: 16px;
+  width: 100%;
+}
+
+.btn-cart-primary-block {
+  width: 100%;
+  height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border-radius: 10px;
+  border: none;
+  background: #23477d;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px rgba(35, 71, 125, 0.2);
+}
+
+.btn-cart-primary-block:hover {
+  background: #19335a;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(35, 71, 125, 0.28);
+}
+
+.btn-cart-primary-block:active {
+  transform: translateY(1px);
+}
+
+.btn-cart-primary-block:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  background: #94a3b8;
+}
+
+.cart-btn-icon {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  flex-shrink: 0;
+}
+
+/* Legacy styles compatibility */
+.purchase-action-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 22px;
+  flex-wrap: wrap;
 }
 
 .btn-cart-outline-style {
@@ -1001,8 +1094,9 @@ button { font-family: inherit; }
 @media (max-width: 640px) {
   .main-img-box,
   .main-image-display-frame {
-    height: 300px;
-    max-height: 300px;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    max-height: none;
   }
   .trust-features-grid {
     grid-template-columns: 1fr;

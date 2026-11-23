@@ -12,8 +12,96 @@ class OrderController extends Controller
      */
     public function pending(Request $request)
     {
-        $request->merge(['status' => 'pending']);
-        return $this->index($request);
+        // 1. Cek semua order yang berstatus pending:
+        // Jika sudah 3 hari belum diterima oleh admin, otomatis batalkan dan masukkan ke riwayat
+        $now = now();
+        $allPending = Order::whereIn('order_status', ['Pending', 'pending'])->get();
+        foreach ($allPending as $order) {
+            $orderTime = $order->order_at ?? $order->created_at;
+            if ($orderTime) {
+                $days = $orderTime->diffInDays($now);
+                if ($days >= 3) {
+                    $order->update(['order_status' => 'Dibatalkan']);
+                    if ($order->payment && strtolower($order->payment->payment_status) !== 'dibatalkan') {
+                        $order->payment->update(['payment_status' => 'Dibatalkan']);
+                    }
+                }
+            }
+        }
+
+        // 2. Ambil pesanan pending yang masih aktif (dalam batas 3 hari)
+        $pendingOrders = Order::with(['user', 'product.category', 'payment.paymentMethod'])
+            ->whereIn('order_status', ['Pending', 'pending'])
+            ->latest('id')
+            ->get()
+            ->map(function ($order) use ($now) {
+                $orderTime = $order->order_at ?? $order->created_at ?? $now;
+                $daysPassed = $orderTime->diffInDays($now);
+                $daysRemaining = max(0, 3 - $daysPassed);
+                $order->days_remaining = $daysRemaining;
+                $order->deadline_date = $orderTime->copy()->addDays(3);
+                return $order;
+            });
+
+        // 3. Ambil riwayat pending order (dibatalkan / ditolak)
+        $historyOrders = Order::with(['user', 'product.category', 'payment.paymentMethod'])
+            ->whereIn('order_status', ['Dibatalkan', 'Batal', 'Cancelled'])
+            ->latest('id')
+            ->take(30)
+            ->get();
+
+        return view('admin.order.pending', compact('pendingOrders', 'historyOrders'));
+    }
+
+    /**
+     * Halaman khusus detail pending order (tidak redirect ke halaman pesanan utama)
+     */
+    public function pendingDetail(Order $order)
+    {
+        $order->load(['user', 'product.category', 'payment.paymentMethod']);
+        $now = now();
+        $orderTime = $order->order_at ?? $order->created_at ?? $now;
+        $daysPassed = $orderTime->diffInDays($now);
+        $daysRemaining = max(0, 3 - $daysPassed);
+        $order->days_remaining = $daysRemaining;
+        $order->deadline_date = $orderTime->copy()->addDays(3);
+
+        return view('admin.order.pending-detail', compact('order'));
+    }
+
+    /**
+     * Admin menerima pesanan dari Pending Order -> dialihkan ke status Diproses (masuk ke data pesanan utama)
+     */
+    public function acceptOrder($id)
+    {
+        $order = Order::with('payment')->findOrFail($id);
+        $order->update([
+            'order_status' => 'Diproses',
+            'send_at'      => now(),
+        ]);
+
+        if ($order->payment && in_array(strtolower($order->payment->payment_status), ['pending', 'proses'])) {
+            $order->payment->update(['payment_status' => 'Diproses']);
+        }
+
+        return redirect()->route('admin.order.pending')->with('success', "Pesanan #ORD-{$order->id} berhasil diterima! Pesanan kini masuk ke Data Pesanan Utama (Diproses).");
+    }
+
+    /**
+     * Admin menolak pesanan dari Pending Order -> dialihkan ke status Dibatalkan (tersimpan di riwayat pending order)
+     */
+    public function rejectOrder(Request $request, $id)
+    {
+        $order = Order::with('payment')->findOrFail($id);
+        $order->update([
+            'order_status' => 'Dibatalkan',
+        ]);
+
+        if ($order->payment) {
+            $order->payment->update(['payment_status' => 'Dibatalkan']);
+        }
+
+        return redirect()->route('admin.order.pending')->with('success', "Pesanan #ORD-{$order->id} telah ditolak dan tersimpan di Riwayat Pending Order.");
     }
 
     /**
@@ -31,10 +119,13 @@ class OrderController extends Controller
             } elseif ($statusFilter === 'selesai') {
                 $query->whereIn('order_status', ['Selesai', 'Sukses', 'Success']);
             } elseif ($statusFilter === 'pending') {
-                $query->where('order_status', 'Pending');
+                $query->whereIn('order_status', ['Pending', 'pending']);
             } elseif ($statusFilter === 'dibatalkan') {
                 $query->whereIn('order_status', ['Dibatalkan', 'Batal', 'Cancelled']);
             }
+        } else {
+            // Data pesanan utama: hanya menampilkan orderan yang sudah diterima / diproses / selesai / batal (bukan pending awal)
+            $query->whereNotIn('order_status', ['Pending', 'pending']);
         }
 
         // Pencarian (Order ID, Username, dll)
@@ -76,7 +167,11 @@ class OrderController extends Controller
             'pemasukan'  => $pemasukan,
         ];
 
-        return view('admin.order.index', compact('orders', 'stats', 'statusFilter', 'search'));
+        // Hitung waktu pesanan terakhir
+        $latestOrder = Order::latest('id')->first();
+        $latestOrderTime = $latestOrder && $latestOrder->created_at ? $latestOrder->created_at->diffForHumans() : '-';
+
+        return view('admin.order.index', compact('orders', 'stats', 'statusFilter', 'search', 'latestOrderTime'));
     }
 
     /**

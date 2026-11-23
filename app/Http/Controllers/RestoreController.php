@@ -51,8 +51,36 @@ class RestoreController extends Controller
         });
 
         $activeTab = $request->query('tab', 'product');
+        $isAllMode = $request->input('show_all') === 'true';
 
-        return view('admin.restore.index', compact('trashedProducts', 'trashedCategories', 'activeTab'));
+        // Paginasi 10 item per halaman (standar admin)
+        if ($activeTab === 'category') {
+            $totalItems = $trashedCategories->count();
+            $perPage = $isAllMode ? max($totalItems, 1) : 10;
+            $currentPage = (int) $request->input('page', 1);
+            $paginatedItems = $isAllMode ? $trashedCategories : $trashedCategories->forPage($currentPage, $perPage)->values();
+            $paginatedData = new \Illuminate\Pagination\LengthAwarePaginator(
+                $paginatedItems,
+                $totalItems,
+                $perPage,
+                $currentPage,
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
+        } else {
+            $totalItems = $trashedProducts->count();
+            $perPage = $isAllMode ? max($totalItems, 1) : 10;
+            $currentPage = (int) $request->input('page', 1);
+            $paginatedItems = $isAllMode ? $trashedProducts : $trashedProducts->forPage($currentPage, $perPage)->values();
+            $paginatedData = new \Illuminate\Pagination\LengthAwarePaginator(
+                $paginatedItems,
+                $totalItems,
+                $perPage,
+                $currentPage,
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
+        }
+
+        return view('admin.restore.index', compact('trashedProducts', 'trashedCategories', 'activeTab', 'paginatedData'));
     }
 
     /**

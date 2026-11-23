@@ -18,11 +18,15 @@ return new class extends Migration
                 ->cascadeOnDelete();
             $table->integer('quantity');
             $table->decimal('subtotal', 10, 2);
-            $table->string('order_status', 20);
-            $table->string('payment_status', 20);
+            $table->string('order_status', 20)->default('Pending');
+            $table->string('payment_status', 20)->default('Pending');
             $table->text('address');
             $table->timestamp('order_at')->useCurrent();
             $table->timestamp('send_at')->nullable();
+        });
+
+        Schema::create('orders_pending', function (Blueprint $table) {
+            $table->id();
         });
     }
 

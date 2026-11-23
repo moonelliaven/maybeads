@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let state = {
     search:  '',
     page:    1,
-    perPage: 8,
+    perPage: 10,
   };
 
   /* =====================================================================
@@ -245,8 +245,14 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderTableRows(categories) {
     if (!categories.length) return renderEmpty();
     return categories.map(cat => {
-      const imgHtml = cat.image
-        ? `<img src="/storage/${cat.image}" alt="${escHtml(cat.category_name)}" style="width: 44px; height: 44px; border-radius: 8px; object-fit: cover; border: 1px solid #e2e8f0; display: block;">`
+      let imgSrc = null;
+      if (cat.image) {
+        imgSrc = (cat.image.startsWith('http://') || cat.image.startsWith('https://') || cat.image.startsWith('/'))
+          ? cat.image
+          : '/storage/' + cat.image;
+      }
+      const imgHtml = imgSrc
+        ? `<img src="${imgSrc}" alt="${escHtml(cat.category_name)}" style="width: 44px; height: 44px; border-radius: 8px; object-fit: cover; border: 1px solid #e2e8f0; display: block;" onerror="this.src='/images/logo.svg'">`
         : `<div style="width: 44px; height: 44px; border-radius: 8px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #94a3b8;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 20px; height: 20px;">
               <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
@@ -261,7 +267,6 @@ document.addEventListener('DOMContentLoaded', () => {
         <td class="col-img">${imgHtml}</td>
         <td class="col-name" style="font-weight: 600;">${escHtml(cat.category_name)}</td>
         <td class="col-count">${cat.products_count ?? 0} Produk</td>
-        <td class="col-stock"><span style="font-weight: 600; color: #0f172a;">${cat.products_stock ?? 0}</span> pcs</td>
         <td class="col-action">
           <div class="action-btns">
             <a href="${detailUrl(cat.id)}" class="btn-detail">Detail</a>
@@ -309,6 +314,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const pagesEl = el.querySelector('.pagination-pages');
     if (!pagesEl) return;
+
+    // Jika SHOW ALL aktif, sembunyikan toggle angka halaman 1,2,3
+    if (state.perPage >= 999) {
+      pagesEl.innerHTML = '';
+      pagesEl.style.display = 'none';
+      return;
+    }
+    pagesEl.style.display = 'flex';
 
     let pages = [];
     // Previous
@@ -441,7 +454,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('btnPagLess')?.addEventListener('click', () => {
-    state.perPage = 8;
+    state.perPage = 10;
     state.page    = 1;
     render();
   });

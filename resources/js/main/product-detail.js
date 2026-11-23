@@ -24,6 +24,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (mainImg && targetSrc) {
         mainImg.src = targetSrc;
       }
+
+      // Sync active variant color pill if this thumbnail matches a variant image
+      const matchingColorPill = document.querySelector(`.variant-choice-pill[data-variant-type="color"][data-variant-img="${targetSrc}"]`);
+      if (matchingColorPill) {
+        colorPills.forEach(p => p.classList.remove('selected'));
+        matchingColorPill.classList.add('selected');
+        selectedColor = matchingColorPill.dataset.variantValue || '';
+      }
     });
   });
 
@@ -37,6 +45,19 @@ document.addEventListener('DOMContentLoaded', () => {
       colorPills.forEach(p => p.classList.remove('selected'));
       pill.classList.add('selected');
       selectedColor = pill.dataset.variantValue || '';
+
+      // Switch main image to variant image if available
+      const variantImg = pill.dataset.variantImg;
+      if (mainImg && variantImg) {
+        mainImg.src = variantImg;
+        // Sync thumbnail active state
+        thumbs.forEach(t => {
+          if (t.dataset.src === variantImg) {
+            thumbs.forEach(other => other.classList.remove('active'));
+            t.classList.add('active');
+          }
+        });
+      }
     });
   });
 
@@ -56,17 +77,27 @@ document.addEventListener('DOMContentLoaded', () => {
   const initialSize = document.querySelector('.variant-choice-pill[data-variant-type="size"].selected');
   if (initialSize) selectedSize = initialSize.dataset.variantValue || '';
 
-  /* 3. Quantity Stepper */
+  /* 3. Quantity Stepper & Price Estimation */
   const qtyInput = document.getElementById('productQtyInput');
   const btnMinus = document.getElementById('btnQtyMinus');
   const btnPlus  = document.getElementById('btnQtyPlus');
   const maxStock = parseInt(qtyInput?.dataset.maxStock || '999', 10);
+  const estimatedPriceEl = document.getElementById('productEstimatedPrice');
+
+  function updatePriceEstimation() {
+    if (!qtyInput || !estimatedPriceEl) return;
+    const qty = parseInt(qtyInput.value, 10) || 1;
+    const unitPrice = parseFloat(qtyInput.dataset.unitPrice || '0') || 0;
+    const estimatedTotal = qty * unitPrice;
+    estimatedPriceEl.innerText = 'Rp ' + estimatedTotal.toLocaleString('id-ID');
+  }
 
   if (btnMinus && qtyInput) {
     btnMinus.addEventListener('click', () => {
       let val = parseInt(qtyInput.value, 10) || 1;
       if (val > 1) {
         qtyInput.value = val - 1;
+        updatePriceEstimation();
       }
     });
   }
@@ -76,6 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
       let val = parseInt(qtyInput.value, 10) || 1;
       if (val < maxStock) {
         qtyInput.value = val + 1;
+        updatePriceEstimation();
       }
     });
   }
@@ -86,8 +118,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (val < 1) val = 1;
       if (val > maxStock) val = maxStock;
       qtyInput.value = val;
+      updatePriceEstimation();
     });
   }
+
+  // Initial calculation on load
+  updatePriceEstimation();
 
   /* 4. Cart Storage & Helpers */
   const cartCountBadge = document.getElementById('cartCountBadge');
@@ -161,69 +197,54 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  function getLocalCart() {
-    try {
-      return JSON.parse(localStorage.getItem('maybeads_cart') || '[]');
-    } catch (e) {
-      return [];
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+  function updateCartBadgeUI(totalCount) {
+    const count = parseInt(totalCount, 10) || 0;
+    if (cartCountBadge) {
+      cartCountBadge.textContent = count;
+      cartCountBadge.classList.toggle('visible', count > 0);
+      cartCountBadge.style.display = count > 0 ? 'inline-flex' : 'none';
     }
   }
 
-  function saveLocalCart(cart) {
-    localStorage.setItem('maybeads_cart', JSON.stringify(cart));
-    updateCartCountBadge();
-  }
-
-  function updateCartCountBadge() {
-    if (!cartCountBadge) return;
-    const cart = getLocalCart();
-    const count = cart.reduce((sum, it) => sum + (it.qty || 1), 0);
-    cartCountBadge.textContent = count;
-    cartCountBadge.style.display = count > 0 ? 'inline-flex' : 'none';
-  }
-
-  updateCartCountBadge();
-
-  function addCurrentProductToCart() {
+  function addProductToCartApi(productId, qty = 1, callback = null) {
     if (window.isUserLoggedIn === false) {
       openLoginPromptModal();
-      return false;
+      return;
     }
 
-    const detailBox = document.getElementById('productDetailStore') || document.getElementById('productDetailCard');
-    if (!detailBox) return;
-
-    const data = detailBox.dataset;
-    const qty  = parseInt(qtyInput?.value, 10) || 1;
-    let rawPrice = parseInt(data.productPrice || data.rawPrice, 10) || 89000;
-    if (rawPrice < 1000) rawPrice *= 1000;
-
-    let variantLabel = [];
-    if (selectedColor) variantLabel.push(selectedColor);
-    if (selectedSize) variantLabel.push(selectedSize);
-    const variantStr = variantLabel.length ? variantLabel.join(', ') : (data.defaultVariant || 'Standard');
-
-    const cart = getLocalCart();
-    const existing = cart.find(it => String(it.id) === String(data.id || data.productId) && (it.color || '') === variantStr);
-
-    if (existing) {
-      existing.qty = (existing.qty || 1) + qty;
-      existing.addedAt = Date.now();
-    } else {
-      cart.unshift({
-        id: data.id || data.productId,
-        name: data.name || data.productName,
-        price: data.priceFormatted || data.formattedPrice,
-        rawPrice: rawPrice,
-        image: data.image || data.productImg,
-        color: variantStr,
-        qty: qty,
-        checked: true,
-        addedAt: Date.now()
-      });
-    }
-
-    saveLocalCart(cart);
+    fetch('/cart/add', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': csrfToken,
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        product_id: productId,
+        quantity: qty
+      })
+    })
+    .then(res => res.json())
+    .then(resData => {
+      if (resData.success) {
+        updateCartBadgeUI(resData.cartCount);
+        if (typeof callback === 'function') {
+          callback(true, resData);
+        }
+      } else if (resData.need_login) {
+        openLoginPromptModal();
+        if (typeof callback === 'function') callback(false, resData);
+      } else {
+        alert(resData.message || 'Gagal menambahkan produk ke keranjang.');
+        if (typeof callback === 'function') callback(false, resData);
+      }
+    })
+    .catch(() => {
+      alert('Terjadi kesalahan jaringan.');
+      if (typeof callback === 'function') callback(false);
+    });
   }
 
   /* 5. Add To Cart Button */
@@ -234,22 +255,29 @@ document.addEventListener('DOMContentLoaded', () => {
         openLoginPromptModal();
         return;
       }
-      addCurrentProductToCart();
+      const detailBox = document.getElementById('productDetailStore') || document.getElementById('productDetailCard');
+      const prodId = detailBox?.dataset?.id || detailBox?.dataset?.productId;
+      const qty = parseInt(qtyInput?.value, 10) || 1;
 
-      // UI Feedback on button
-      const origText = btnAddToCart.innerHTML;
-      btnAddToCart.innerHTML = `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:17px;height:17px;">
-          <polyline points="20 6 9 17 4 12"></polyline>
-        </svg>
-        <span>Berhasil Ditambahkan!</span>
-      `;
-      btnAddToCart.style.backgroundColor = '#16a34a';
+      btnAddToCart.disabled = true;
+      addProductToCartApi(prodId, qty, (success) => {
+        btnAddToCart.disabled = false;
+        if (success) {
+          const origText = btnAddToCart.innerHTML;
+          btnAddToCart.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:17px;height:17px;">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>Berhasil Ditambahkan!</span>
+          `;
+          btnAddToCart.style.backgroundColor = '#16a34a';
 
-      setTimeout(() => {
-        btnAddToCart.innerHTML = origText;
-        btnAddToCart.style.backgroundColor = '';
-      }, 1600);
+          setTimeout(() => {
+            btnAddToCart.innerHTML = origText;
+            btnAddToCart.style.backgroundColor = '';
+          }, 1600);
+        }
+      });
     });
   }
 
@@ -261,8 +289,17 @@ document.addEventListener('DOMContentLoaded', () => {
         openLoginPromptModal();
         return;
       }
-      addCurrentProductToCart();
-      window.location.href = '/cart';
+      const detailBox = document.getElementById('productDetailStore') || document.getElementById('productDetailCard');
+      const prodId = detailBox?.dataset?.id || detailBox?.dataset?.productId;
+      const qty = parseInt(qtyInput?.value, 10) || 1;
+
+      btnBuyNow.disabled = true;
+      addProductToCartApi(prodId, qty, (success) => {
+        btnBuyNow.disabled = false;
+        if (success) {
+          window.location.href = '/cart';
+        }
+      });
     });
   }
 
@@ -297,39 +334,18 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!card) return;
       const data = card.dataset;
       const id = btn.dataset.id || data.id || '1';
-      const name = card.querySelector('.card-product-title, .rel-title-text')?.textContent?.trim() || data.name || 'Produk Maybeads';
-      const priceValEl = card.querySelector('.card-price-val, .rel-current-price');
-      const priceText = priceValEl ? 'Rp ' + priceValEl.textContent.trim().replace(/^Rp\s*/i, '') : (data.formattedPrice || 'Rp 18.500');
-      const rawPrice = parseInt(data.price || priceText.replace(/[^0-9]/g, ''), 10) || 18500;
-      const img = card.querySelector('img')?.src || '';
 
-      const cart = getLocalCart();
-      const existing = cart.find(it => String(it.id) === String(id));
-
-      if (existing) {
-        existing.qty = (existing.qty || 1) + 1;
-        existing.addedAt = Date.now();
-      } else {
-        cart.unshift({
-          id: id,
-          name: name,
-          price: priceText,
-          rawPrice: rawPrice,
-          image: img,
-          color: 'Standar',
-          qty: 1,
-          checked: true,
-          addedAt: Date.now()
-        });
-      }
-
-      saveLocalCart(cart);
-
-      const origHtml = btn.innerHTML;
-      btn.innerHTML = `<span style="font-size:11px; font-weight:700; color:#16a34a;">✓</span>`;
-      setTimeout(() => {
-        btn.innerHTML = origHtml;
-      }, 1200);
+      btn.disabled = true;
+      addProductToCartApi(id, 1, (success) => {
+        btn.disabled = false;
+        if (success) {
+          const origHtml = btn.innerHTML;
+          btn.innerHTML = `<span style="font-size:11px; font-weight:700; color:#16a34a;">✓</span>`;
+          setTimeout(() => {
+            btn.innerHTML = origHtml;
+          }, 1200);
+        }
+      });
     });
   });
 

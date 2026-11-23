@@ -46,16 +46,18 @@
       </div>
 
       <div class="header-right">
-        {{-- Notifikasi --}}
-        <div class="dropdown" data-dropdown>
-          <button type="button" class="notification-btn" aria-label="Notifikasi" data-dropdown-trigger>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-            <span class="notification-badge" data-notif-badge>1</span>
-          </button>
-        </div>
+        @php
+          $sidebarPendingOrders = \App\Models\Order::whereRaw('LOWER(order_status) = ?', ['pending'])->count();
+        @endphp
+        <a href="{{ route('admin.notifications') }}" class="notification-btn" aria-label="Notifikasi" title="Notifikasi">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          @if($sidebarPendingOrders > 0)
+            <span class="notification-badge">{{ $sidebarPendingOrders }}</span>
+          @endif
+        </a>
       </div>
     </header>
 
@@ -128,9 +130,6 @@
         <table class="user-table" id="userTable">
           <thead>
             <tr>
-              <th class="cb-col">
-                <input type="checkbox" class="tbl-check" id="selectAll" aria-label="Pilih semua user">
-              </th>
               <th>ID</th>
               <th>Username</th>
               <th>Email</th>
@@ -147,9 +146,6 @@
                 $bgColor = $colors[($user['id'] ?? 1) % count($colors)];
               @endphp
               <tr data-id="{{ $user['id'] }}">
-                <td class="cb-col">
-                  <input type="checkbox" class="tbl-check row-cb" data-id="{{ $user['id'] }}" aria-label="Pilih {{ $user['name'] }}">
-                </td>
                 <td class="col-id">{{ $user['formatted_id'] ?? ('IDP' . str_pad($user['id'], 4, '0', STR_PAD_LEFT)) }}</td>
                 <td class="col-user">
                   <div class="user-meta-cell">

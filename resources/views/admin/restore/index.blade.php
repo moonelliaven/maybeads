@@ -34,15 +34,18 @@
       </div>
 
       <div class="header-right">
-        <div class="dropdown" data-dropdown>
-          <button type="button" class="notification-btn" aria-label="Notifikasi">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-            <span class="notification-badge">1</span>
-          </button>
-        </div>
+        @php
+          $sidebarPendingOrders = \App\Models\Order::whereRaw('LOWER(order_status) = ?', ['pending'])->count();
+        @endphp
+        <a href="{{ route('admin.notifications') }}" class="notification-btn" aria-label="Notifikasi" title="Notifikasi">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          @if($sidebarPendingOrders > 0)
+            <span class="notification-badge">{{ $sidebarPendingOrders }}</span>
+          @endif
+        </a>
       </div>
     </header>
 
@@ -89,7 +92,7 @@
               </tr>
             </thead>
             <tbody>
-              @forelse($trashedProducts as $p)
+              @forelse($paginatedData as $p)
                 <tr>
                   <td><strong>#{{ $p['id'] }}</strong></td>
                   <td>
@@ -143,6 +146,23 @@
               @endforelse
             </tbody>
           </table>
+
+          {{-- Pagination Bar --}}
+          <div class="pagination-bar" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-top: 1px solid #e2e8f0; flex-wrap: wrap; gap: 12px; background: #ffffff;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <a href="{{ request()->fullUrlWithQuery(['show_all' => 'true']) }}" style="padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; text-decoration: none; border: 1px solid #cbd5e1; {{ request('show_all') === 'true' ? 'background: #2563eb; color: #fff; border-color: #2563eb;' : 'background: #f8fafc; color: #475569;' }}">ALL</a>
+              <a href="{{ request()->fullUrlWithQuery(['show_all' => null]) }}" style="padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; text-decoration: none; border: 1px solid #cbd5e1; {{ request('show_all') !== 'true' ? 'background: #2563eb; color: #fff; border-color: #2563eb;' : 'background: #f8fafc; color: #475569;' }}">Show Less</a>
+              <span style="font-size: 12.5px; color: #64748b; margin-left: 8px;">
+                Menampilkan {{ $paginatedData->count() }} item dari {{ $paginatedData->total() }}
+              </span>
+            </div>
+
+            @if(request('show_all') !== 'true' && $paginatedData->hasPages())
+              <div class="pagination-wrap">
+                {{ $paginatedData->links() }}
+              </div>
+            @endif
+          </div>
         </div>
       @else
         <div class="table-card">
@@ -157,7 +177,7 @@
               </tr>
             </thead>
             <tbody>
-              @forelse($trashedCategories as $c)
+              @forelse($paginatedData as $c)
                 <tr>
                   <td><strong>#{{ $c['id'] }}</strong></td>
                   <td>
@@ -202,6 +222,23 @@
               @endforelse
             </tbody>
           </table>
+
+          {{-- Pagination Bar --}}
+          <div class="pagination-bar" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-top: 1px solid #e2e8f0; flex-wrap: wrap; gap: 12px; background: #ffffff;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <a href="{{ request()->fullUrlWithQuery(['show_all' => 'true']) }}" style="padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; text-decoration: none; border: 1px solid #cbd5e1; {{ request('show_all') === 'true' ? 'background: #2563eb; color: #fff; border-color: #2563eb;' : 'background: #f8fafc; color: #475569;' }}">ALL</a>
+              <a href="{{ request()->fullUrlWithQuery(['show_all' => null]) }}" style="padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; text-decoration: none; border: 1px solid #cbd5e1; {{ request('show_all') !== 'true' ? 'background: #2563eb; color: #fff; border-color: #2563eb;' : 'background: #f8fafc; color: #475569;' }}">Show Less</a>
+              <span style="font-size: 12.5px; color: #64748b; margin-left: 8px;">
+                Menampilkan {{ $paginatedData->count() }} item dari {{ $paginatedData->total() }}
+              </span>
+            </div>
+
+            @if(request('show_all') !== 'true' && $paginatedData->hasPages())
+              <div class="pagination-wrap">
+                {{ $paginatedData->links() }}
+              </div>
+            @endif
+          </div>
         </div>
       @endif
     </main>

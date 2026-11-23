@@ -109,10 +109,10 @@ class AdminDashboardController extends Controller
             'ewallet' => $cashierEwallet,
         ];
 
-        // 5. Riwayat Transaksi Terbaru (5 transaksi terakhir)
+        // 5. Riwayat Transaksi Terbaru (3 transaksi terakhir)
         $recentPayments = Payment::with(['order.user'])
             ->latest('id')
-            ->take(5)
+            ->take(3)
             ->get();
 
         $transactions = $recentPayments->map(function ($p) {
@@ -138,6 +138,64 @@ class AdminDashboardController extends Controller
             'transactions',
             'pendingCount'
         ));
+    }
+
+    /**
+     * Halaman khusus notifikasi admin (sederhana: judul + deskripsi kecil)
+     */
+    public function notifications(Request $request)
+    {
+        $notifications = collect();
+
+        // 1. Pending orders
+        $pending = Order::with('user')->whereIn('order_status', ['Pending', 'pending'])->latest('id')->take(10)->get();
+        foreach ($pending as $ord) {
+            $notifications->push([
+                'id'       => 'ord-' . $ord->id,
+                'type'     => 'order',
+                'title'    => 'Pesanan Pending #ORD-' . str_pad($ord->id, 4, '0', STR_PAD_LEFT),
+                'desc'     => 'Menunggu persetujuan toko dari ' . ($ord->user->name ?? 'Pelanggan') . ' sebesar Rp ' . number_format($ord->subtotal, 0, ',', '.'),
+                'time'     => $ord->order_at ? $ord->order_at->diffForHumans() : 'baru saja',
+                'link'     => route('admin.order.pendingDetail', $ord->id),
+                'badge'    => 'Pending',
+                'badge_cl' => '#ea580c',
+                'badge_bg' => '#ffedd5',
+            ]);
+        }
+
+        // 2. Pembayaran terbaru
+        $recentPayments = Payment::with('order.user')->whereIn('payment_status', ['Sukses', 'sukses', 'paid'])->latest('id')->take(10)->get();
+        foreach ($recentPayments as $pay) {
+            $notifications->push([
+                'id'       => 'pay-' . $pay->id,
+                'type'     => 'payment',
+                'title'    => 'Pembayaran Berhasil #' . ($pay->payment_code ?? ('PAY-' . $pay->id)),
+                'desc'     => 'Diterima melalui ' . strtoupper($pay->payment_method ?? 'QRIS') . ' sejumlah Rp ' . number_format($pay->amount, 0, ',', '.'),
+                'time'     => $pay->paid_at ? $pay->paid_at->diffForHumans() : ($pay->created_at ? $pay->created_at->diffForHumans() : 'baru saja'),
+                'link'     => route('admin.payment.show', $pay->id),
+                'badge'    => 'Lunas',
+                'badge_cl' => '#16a34a',
+                'badge_bg' => '#dcfce7',
+            ]);
+        }
+
+        // 3. Stok menipis
+        $lowStocks = Product::where('status', 'aktif')->where('stock', '<=', 5)->take(5)->get();
+        foreach ($lowStocks as $prod) {
+            $notifications->push([
+                'id'       => 'prod-' . $prod->id,
+                'type'     => 'stock',
+                'title'    => 'Peringatan Stok Menipis: ' . $prod->product_name,
+                'desc'     => 'Sisa stok saat ini tersisa ' . $prod->stock . ' unit. Segera perbarui inventaris.',
+                'time'     => 'Inventaris Toko',
+                'link'     => route('admin.product.show', $prod->id),
+                'badge'    => 'Stok Rendah',
+                'badge_cl' => '#dc2626',
+                'badge_bg' => '#fee2e2',
+            ]);
+        }
+
+        return view('admin.notification.index', compact('notifications'));
     }
 }
 

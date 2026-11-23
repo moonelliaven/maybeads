@@ -42,29 +42,18 @@
       </div>
 
       <div class="header-right">
-        {{-- Notifikasi --}}
-        <div class="dropdown" data-dropdown>
-          <button type="button" class="notification-btn" aria-label="Notifikasi" data-dropdown-trigger>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-            <span class="notification-badge" data-notif-badge>1</span>
-          </button>
-          <div class="dropdown-menu dropdown-menu-wide" role="menu" hidden>
-            <div class="dropdown-head">
-              <strong>Notifikasi</strong>
-              <button type="button" class="link-btn" data-mark-read>Tandai dibaca</button>
-            </div>
-            <a href="/admin/orders?status=pending" class="notif-item" role="menuitem">
-              <span class="status-dot orange"></span>
-              <span>
-                <span class="notif-title">Ada pesanan menunggu diproses</span>
-                <span class="notif-sub">Periksa dan konfirmasi pesanan pending</span>
-              </span>
-            </a>
-          </div>
-        </div>
+        @php
+          $sidebarPendingOrders = \App\Models\Order::whereRaw('LOWER(order_status) = ?', ['pending'])->count();
+        @endphp
+        <a href="{{ route('admin.notifications') }}" class="notification-btn" aria-label="Notifikasi" title="Notifikasi">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          @if($sidebarPendingOrders > 0)
+            <span class="notification-badge">{{ $sidebarPendingOrders }}</span>
+          @endif
+        </a>
       </div>
     </header>
 
@@ -78,19 +67,19 @@
         <span class="breadcrumb-current">Produk</span>
       </nav>
 
-      {{-- Success Alert (SweetAlert2) --}}
+      {{-- Success Alert (SweetAlert2 - Top Center No Backdrop) --}}
       @if (session('success'))
         <script>
           document.addEventListener('DOMContentLoaded', function() {
             if (typeof Swal !== 'undefined') {
               Swal.fire({
-                toast: true,
-                position: 'top-end',
+                position: 'top',
+                backdrop: false,
                 icon: 'success',
-                title: @json(session('success')),
+                title: 'Berhasil!',
+                text: @json(session('success')),
                 showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true,
+                timer: 2500,
                 customClass: { popup: 'admin-swal-popup' }
               });
             }
@@ -103,6 +92,8 @@
           document.addEventListener('DOMContentLoaded', function() {
             if (typeof Swal !== 'undefined') {
               Swal.fire({
+                position: 'top',
+                backdrop: false,
                 icon: 'error',
                 title: 'Gagal!',
                 text: @json(session('error')),
@@ -138,9 +129,25 @@
       <div class="product-toolbar">
         <span class="sortir-label">Sortir:</span>
 
-        {{-- Category tabs (max 6 visible) --}}
-        <div class="category-tabs" id="categoryTabs" role="tablist" aria-label="Filter kategori">
-          {{-- Dirender secara dinamis oleh JS --}}
+        {{-- Category tabs slider with mini arrows (max 5 visible at once) --}}
+        <div class="category-slider-wrapper" id="catSliderWrapper">
+          <button type="button" class="cat-nav-arrow" id="catNavPrev" title="Kategori sebelumnya" aria-label="Geser kiri">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+
+          <div class="category-tabs-scroll" id="categoryTabsScroll">
+            <div class="category-tabs" id="categoryTabs" role="tablist" aria-label="Filter kategori">
+              {{-- Dirender secara dinamis oleh JS --}}
+            </div>
+          </div>
+
+          <button type="button" class="cat-nav-arrow" id="catNavNext" title="Kategori berikutnya" aria-label="Geser kanan">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
         </div>
 
         {{-- More categories dropdown --}}

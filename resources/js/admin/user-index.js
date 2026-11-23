@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let activeTab    = 'semua';
   let searchQuery  = '';
   let currentPage  = 1;
-  let itemsPerPage = 8;
+  let itemsPerPage = 10;
   let isAllMode    = false;
 
   /* Helper Escape HTML */
@@ -207,9 +207,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return `
           <tr data-id="${user.id}">
-            <td class="cb-col">
-              <input type="checkbox" class="tbl-check row-cb" data-id="${user.id}" aria-label="Pilih ${escapeHtml(user.name)}">
-            </td>
             <td class="col-id">${escapeHtml(user.formatted_id || 'IDP' + String(user.id).padStart(4, '0'))}</td>
             <td class="col-user">
               <div class="user-meta-cell">

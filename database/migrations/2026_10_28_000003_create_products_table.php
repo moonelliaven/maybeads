@@ -19,6 +19,7 @@ return new class extends Migration
             $table->integer('stock')->default(0);
             $table->unsignedInteger('order_count')->default(0);
             $table->enum('status', ['aktif', 'tidak aktif'])->default('aktif');
+            $table->softDeletes();
             $table->timestamp('created_at')->useCurrent();
         });
 

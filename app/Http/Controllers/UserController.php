@@ -134,4 +134,103 @@ class UserController extends Controller
         return redirect()->route('admin.user.index')
             ->with('success', 'User ' . $user->name . ' berhasil dihapus.');
     }
+
+    /**
+     * Halaman Pengaturan Akun & Profil Pengguna (User Settings Hub)
+     */
+    public function userSettings(Request $request)
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('warning', 'Silakan login terlebih dahulu untuk mengakses pengaturan akun.');
+        }
+
+        $user = Auth::user();
+        
+        // Ambil status orderan yang sudah ada
+        $orders = Order::with(['product.category', 'payment'])
+            ->where('user_id', $user->id)
+            ->latest('id')
+            ->get();
+
+        // Ambil keranjang user
+        $cartItems = \App\Models\Cart::with('product')
+            ->where('user_id', $user->id)
+            ->latest('id')
+            ->get();
+        $cartCount = (int) $cartItems->sum('quantity');
+
+        // Notifikasi user terkait orderan
+        $notifications = collect();
+        foreach ($orders->take(6) as $ord) {
+            $statusText = match(strtolower($ord->order_status)) {
+                'pending' => 'menunggu konfirmasi toko',
+                'diproses', 'proses' => 'sedang dipersiapkan oleh toko',
+                'sedang perjalanan' => 'sedang dalam proses pengantaran kurir ke alamat Anda',
+                'siap diambil' => 'siap untuk diambil di Store Maybeads',
+                'selesai', 'sukses' => 'telah berhasil diselesaikan. Terima kasih!',
+                'dibatalkan', 'batal' => 'dibatalkan',
+                default => 'dalam proses'
+            };
+            $notifications->push([
+                'id' => $ord->id,
+                'title' => 'Pesanan #ORD-' . str_pad($ord->id, 4, '0', STR_PAD_LEFT),
+                'message' => "Pesanan {$ord->product?->product_name} saat ini {$statusText}.",
+                'time' => $ord->order_at ? $ord->order_at->diffForHumans() : 'baru saja',
+                'status' => $ord->order_status,
+            ]);
+        }
+
+        return view('main.account.settings', compact('user', 'orders', 'cartItems', 'cartCount', 'notifications'));
+    }
+
+    /**
+     * Update profil pengguna (Nama, Telepon, Password)
+     */
+    public function updateProfile(Request $request)
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+            'phone'    => 'nullable|string|max:25',
+            'password' => 'nullable|string|min:6|confirmed',
+        ]);
+
+        $user->name = $validated['name'];
+        if (isset($validated['phone'])) {
+            $user->phone = $validated['phone'];
+        }
+
+        if (!empty($validated['password'])) {
+            $user->password = Hash::make($validated['password']);
+        }
+
+        $user->save();
+
+        return redirect()->route('account.settings')->with('success', 'Profil Anda berhasil diperbarui!');
+    }
+
+    /**
+     * Tambah / Update alamat pengguna
+     */
+    public function updateAddress(Request $request)
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        $validated = $request->validate([
+            'address' => 'required|string|min:5|max:1000',
+        ]);
+
+        $user = Auth::user();
+        $user->address = $validated['address'];
+        $user->save();
+
+        return redirect()->route('account.settings')->with('success', 'Alamat pengiriman berhasil disimpan!');
+    }
 }

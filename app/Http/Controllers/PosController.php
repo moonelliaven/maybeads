@@ -63,7 +63,9 @@ class PosController extends Controller
     {
         $validated = $request->validate([
             'items'           => 'required|array|min:1',
-            'items.*.id'      => 'required|exists:products,id',
+            'items.*.id'      => 'nullable|exists:products,id',
+            'items.*.name'    => 'nullable|string|max:255',
+            'items.*.price'   => 'nullable|numeric|min:0',
             'items.*.qty'     => 'required|integer|min:1',
             'items.*.variant' => 'nullable|string',
             'payment_method'  => 'required|string|in:cash,qris,debit,transfer',
@@ -81,28 +83,43 @@ class PosController extends Controller
             $itemsData = [];
 
             foreach ($validated['items'] as $item) {
-                $product = Product::lockForUpdate()->findOrFail($item['id']);
+                if (!empty($item['id'])) {
+                    $product = Product::lockForUpdate()->findOrFail($item['id']);
 
-                if ($item['qty'] > $product->stock) {
-                    throw new \Exception("Stok {$product->product_name} tidak mencukupi (Tersedia: {$product->stock}).");
+                    if ($item['qty'] > $product->stock) {
+                        throw new \Exception("Stok {$product->product_name} tidak mencukupi (Tersedia: {$product->stock}).");
+                    }
+
+                    $price = (float) $product->price;
+                    $lineSubtotal = $price * $item['qty'];
+                    $subtotal += $lineSubtotal;
+
+                    $itemsData[] = [
+                        'product_id'   => $product->id,
+                        'product_name' => $product->product_name,
+                        'variant_info' => $item['variant'] ?? null,
+                        'price'        => $price,
+                        'quantity'     => $item['qty'],
+                        'subtotal'     => $lineSubtotal,
+                    ];
+
+                    // Kurangi stok produk secara real-time
+                    $product->decrement('stock', $item['qty']);
+                    $product->increment('order_count', $item['qty']);
+                } else {
+                    $price = (float) ($item['price'] ?? 0);
+                    $lineSubtotal = $price * $item['qty'];
+                    $subtotal += $lineSubtotal;
+
+                    $itemsData[] = [
+                        'product_id'   => null,
+                        'product_name' => $item['name'] ?? 'Penjualan Manual Kasir',
+                        'variant_info' => $item['variant'] ?? null,
+                        'price'        => $price,
+                        'quantity'     => $item['qty'],
+                        'subtotal'     => $lineSubtotal,
+                    ];
                 }
-
-                $price = (float) $product->price;
-                $lineSubtotal = $price * $item['qty'];
-                $subtotal += $lineSubtotal;
-
-                $itemsData[] = [
-                    'product_id'   => $product->id,
-                    'product_name' => $product->product_name,
-                    'variant_info' => $item['variant'] ?? null,
-                    'price'        => $price,
-                    'quantity'     => $item['qty'],
-                    'subtotal'     => $lineSubtotal,
-                ];
-
-                // Kurangi stok produk secara real-time
-                $product->decrement('stock', $item['qty']);
-                $product->increment('order_count', $item['qty']);
             }
 
             $discount = (float) ($validated['discount_amount'] ?? 0);
@@ -170,9 +187,36 @@ class PosController extends Controller
      */
     public function transactions(Request $request)
     {
-        $filter = strtolower($request->query('filter', 'semua'));
-        $query = CashierTransaction::with(['items', 'cashier'])->latest('id');
+        $filter    = strtolower($request->query('filter', 'semua'));
+        $search    = trim($request->query('search', ''));
+        $sort      = $request->query('sort', 'terbaru');
+        $startDate = $request->query('start_date');
+        $endDate   = $request->query('end_date');
 
+        $query = CashierTransaction::with(['items', 'cashier']);
+
+        // Filter Pencarian
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('transaction_code', 'like', "%{$search}%")
+                  ->orWhere('customer_name', 'like', "%{$search}%")
+                  ->orWhere('payment_method', 'like', "%{$search}%")
+                  ->orWhereHas('cashier', function ($sub) use ($search) {
+                      $sub->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Filter Rentang Tanggal
+        if ($startDate && $endDate) {
+            $query->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+        } elseif ($startDate) {
+            $query->where('created_at', '>=', $startDate . ' 00:00:00');
+        } elseif ($endDate) {
+            $query->where('created_at', '<=', $endDate . ' 23:59:59');
+        }
+
+        // Filter Tab Cepat
         if ($filter === 'hari_ini') {
             $query->whereDate('created_at', today());
         } elseif ($filter === 'bulan_ini') {
@@ -180,7 +224,26 @@ class PosController extends Controller
                   ->whereYear('created_at', now()->year);
         }
 
-        $transactions = $query->paginate(15)->withQueryString();
+        // Sortir
+        switch ($sort) {
+            case 'terlama':
+                $query->oldest('id');
+                break;
+            case 'nominal_tinggi':
+                $query->orderByDesc('total_amount');
+                break;
+            case 'nominal_rendah':
+                $query->orderBy('total_amount');
+                break;
+            case 'terbaru':
+            default:
+                $query->latest('id');
+                break;
+        }
+
+        $perPage = $request->input('show_all') === 'true' ? 1000 : 10;
+        $transactions = $query->paginate($perPage)->withQueryString();
+        $totalTransactions = CashierTransaction::count();
 
         // Hitung statistik ringkasan kasir
         $todayTotal = CashierTransaction::whereDate('created_at', today())->sum('total_amount');
@@ -190,14 +253,23 @@ class PosController extends Controller
         $allTotal = CashierTransaction::sum('total_amount');
 
         $stats = [
-            'today' => $todayTotal,
-            'month' => $monthTotal,
-            'all'   => $allTotal,
+            'today'       => $todayTotal,
+            'month'       => $monthTotal,
+            'all'         => $allTotal,
             'today_count' => CashierTransaction::whereDate('created_at', today())->count(),
             'month_count' => CashierTransaction::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count(),
-            'all_count'   => CashierTransaction::count(),
+            'all_count'   => $totalTransactions,
         ];
 
-        return view('admin.pos.transactions', compact('transactions', 'filter', 'stats'));
+        return view('admin.pos.transactions', compact(
+            'transactions',
+            'filter',
+            'stats',
+            'totalTransactions',
+            'search',
+            'sort',
+            'startDate',
+            'endDate'
+        ));
     }
 }

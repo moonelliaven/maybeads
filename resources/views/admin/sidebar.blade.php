@@ -84,7 +84,7 @@
           </a>
         </li>
         <li>
-          <a href="/admin/payments" data-label="Pembayaran" class="nav-item {{ ($active ?? '') === 'pembayaran' ? 'active' : '' }}">
+          <a href="/admin/payments" data-label="Pembayaran" class="nav-item {{ in_array($active ?? '', ['pembayaran', 'payments']) ? 'active' : '' }}">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <rect x="2" y="5" width="20" height="14" rx="2"></rect>
               <line x1="2" y1="10" x2="22" y2="10"></line>
@@ -184,21 +184,24 @@
       <div class="sidebar-user-menu-divider" role="separator"></div>
       <ul class="sidebar-user-menu-list">
         <li>
+          <a href="{{ route('admin.notifications') }}" class="sidebar-user-menu-item" role="menuitem">
+            <svg class="menu-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span class="menu-item-text">Notifikasi</span>
+            @if(($sidebarPendingOrders ?? 0) > 0)
+              <span class="badge-notif-count">{{ $sidebarPendingOrders }}</span>
+            @endif
+          </a>
+        </li>
+        <li>
           <a href="{{ route('admin.settings.index') }}" class="sidebar-user-menu-item" role="menuitem">
             <svg class="menu-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="3"></circle>
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
-            <span>Pengaturan Website</span>
-          </a>
-        </li>
-        <li>
-          <a href="#" class="sidebar-user-menu-item" role="menuitem">
-            <svg class="menu-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-            <span>Akun</span>
+            <span class="menu-item-text">Pengaturan Website</span>
           </a>
         </li>
         <li class="sidebar-user-menu-divider" role="separator"></li>
@@ -212,7 +215,7 @@
                 <polyline points="16 17 21 12 16 7"></polyline>
                 <line x1="21" y1="12" x2="9" y2="12"></line>
               </svg>
-              <span>Logout</span>
+              <span class="menu-item-text">Logout</span>
             </button>
           </form>
         </li>
@@ -400,31 +403,45 @@
     function initSidebarUserDropdown() {
       var badge = document.getElementById('sidebarUserBadge');
       var menu = document.getElementById('sidebarUserMenu');
+      var footer = document.getElementById('sidebarFooter');
       if (!badge || !menu) return;
 
       badge.style.cursor = 'pointer';
 
       function toggleMenu(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        var isHidden = menu.hasAttribute('hidden');
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        var isHidden = menu.hasAttribute('hidden') || !menu.classList.contains('show');
         if (isHidden) {
           menu.removeAttribute('hidden');
           menu.classList.add('show');
+          if (footer) footer.classList.add('menu-open');
           badge.setAttribute('aria-expanded', 'true');
         } else {
           menu.setAttribute('hidden', '');
           menu.classList.remove('show');
+          if (footer) footer.classList.remove('menu-open');
           badge.setAttribute('aria-expanded', 'false');
         }
       }
 
       badge.addEventListener('click', toggleMenu);
 
+      var chevronBtn = document.getElementById('sidebarChevronBtn');
+      if (chevronBtn && chevronBtn !== badge) {
+        chevronBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          toggleMenu(e);
+        });
+      }
+
       document.addEventListener('click', function(e) {
         if (!badge.contains(e.target) && !menu.contains(e.target)) {
           menu.setAttribute('hidden', '');
           menu.classList.remove('show');
+          if (footer) footer.classList.remove('menu-open');
           badge.setAttribute('aria-expanded', 'false');
         }
       });
@@ -433,6 +450,7 @@
         if (e.key === 'Escape' && !menu.hasAttribute('hidden')) {
           menu.setAttribute('hidden', '');
           menu.classList.remove('show');
+          if (footer) footer.classList.remove('menu-open');
           badge.setAttribute('aria-expanded', 'false');
         }
       });

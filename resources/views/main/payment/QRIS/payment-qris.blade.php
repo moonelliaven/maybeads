@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="{{ asset('js/qrcode.min.js') }}"></script>
 
   <style>
@@ -841,11 +842,33 @@
         });
     }
 
-    // Pembatalan manual oleh pengguna
+    // Pembatalan manual oleh pengguna dengan pop up konfirmasi
     function manualCancel() {
-      if (confirm('Apakah Anda yakin ingin membatalkan transaksi ini?')) {
+      const doCancelAndRedirect = () => {
         handleAutoExpired();
         window.location.href = '{{ route("checkout") }}';
+      };
+
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({
+          title: 'Batalkan Pembayaran?',
+          text: 'Anda akan dikembalikan ke rincian pesanan checkout sebelum pembayaran.',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d9383a',
+          cancelButtonColor: '#64748b',
+          confirmButtonText: 'Ya, Batalkan',
+          cancelButtonText: 'Lanjutkan Bayar',
+          reverseButtons: true
+        }).then((result) => {
+          if (result.isConfirmed) {
+            doCancelAndRedirect();
+          }
+        });
+      } else {
+        if (confirm('Batalkan pembayaran dan kembali ke detail data pesanan sebelum bayar?')) {
+          doCancelAndRedirect();
+        }
       }
     }
 

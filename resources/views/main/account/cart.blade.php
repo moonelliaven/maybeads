@@ -793,6 +793,10 @@
                   Admin Dashboard
                 </a>
               @endif
+              <a href="{{ route('account.settings') }}" class="acc-popover-item">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Pengaturan Akun
+              </a>
               <a href="{{ route('orders.history') }}" class="acc-popover-item">
                 <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                 Riwayat Pesanan
@@ -826,7 +830,7 @@
     <div class="cart-header-row">
       <div class="cart-header-left">
         <div style="margin-bottom: 8px;">
-          <a href="{{ route('main.dashboard') }}" class="btn-back-to-home" onclick="if(window.history.length > 1 && document.referrer && document.referrer.includes(window.location.host)){window.history.back();return false;}" style="display: inline-flex; align-items: center; gap: 7px; background: #ffffff; border: 1.5px solid #23477d; color: #23477d; font-weight: 700; font-size: 13px; padding: 6px 16px; border-radius: 9999px; text-decoration: none; transition: all 0.2s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
+          <a href="{{ route('main.dashboard') }}" class="btn-back-to-home" style="display: inline-flex; align-items: center; gap: 7px; background: #ffffff; border: 1.5px solid #23477d; color: #23477d; font-weight: 700; font-size: 13px; padding: 6px 16px; border-radius: 9999px; text-decoration: none; transition: all 0.2s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 15px; height: 15px;">
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
@@ -916,63 +920,24 @@
         });
       }
 
-      // Default sample items matching mockup exactly
-      const sampleDefaultItems = [
-        {
-          id: 101,
-          name: 'Nama Produk',
-          color: 'Biru, Kuning',
-          qty: 3,
-          price: 'Rp 92.000',
-          rawPrice: 92000,
-          image: '/images/landing/prod-hairclip.jpg',
-          checked: true,
-          addedAt: Date.now() - 3000
-        },
-        {
-          id: 102,
-          name: 'Nama Produk',
-          color: 'Biru, Kuning',
-          qty: 3,
-          price: 'Rp 92.000',
-          rawPrice: 92000,
-          image: '/images/landing/prod-ring.jpg',
-          checked: true,
-          addedAt: Date.now() - 2000
-        },
-        {
-          id: 103,
-          name: 'Nama Produk',
-          color: 'Biru, Kuning',
-          qty: 3,
-          price: 'Rp 92.000',
-          rawPrice: 92000,
-          image: '/images/landing/prod-butterfly.jpg',
-          checked: true,
-          addedAt: Date.now() - 1000
-        }
-      ];
-
-      let rawCart = localStorage.getItem('maybeads_cart');
-      let cart = rawCart !== null ? JSON.parse(rawCart) : sampleDefaultItems;
+      // Database Cart Items passed directly from CartController (Single Source of Truth)
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+      const serverCartItems = @json($cartItemsJson ?? []);
+      let cart = Array.isArray(serverCartItems) ? serverCartItems : [];
 
       // Ensure every item has a checked state & reasonable Rupiah price (min Rp 1.000)
-      cart = cart.map((it, idx) => {
+      cart = cart.map((it) => {
         if (typeof it.checked === 'undefined') {
           it.checked = true;
         }
-        if (!it.rawPrice) {
-          it.rawPrice = parseInt(String(it.price || '').replace(/[^0-9]/g, ''), 10) || 42000;
-        }
-        it.rawPrice = Number(it.rawPrice);
-        if (it.rawPrice < 1000) {
-          it.rawPrice = it.rawPrice * 1000;
-        }
-        it.price = 'Rp ' + it.rawPrice.toLocaleString('id-ID');
+        let rawPrice = parseInt(it.rawPrice || String(it.price || '').replace(/[^0-9]/g, ''), 10) || 42000;
+        if (rawPrice < 1000) rawPrice *= 1000;
+        it.rawPrice = rawPrice;
+        it.price = 'Rp ' + rawPrice.toLocaleString('id-ID');
         return it;
       });
 
-      // Always save back sanitized reasonable prices to localStorage
+      // Synchronize localStorage cache with database
       localStorage.setItem('maybeads_cart', JSON.stringify(cart));
 
       const rowsContainer      = document.getElementById('cartTableRowsContainer');
@@ -1136,16 +1101,31 @@
           btn.addEventListener('click', () => {
             const idx = parseInt(btn.dataset.idx, 10);
             if (!cart[idx]) return;
-            if (cart[idx].qty > 1) {
-              cart[idx].qty--;
+            const item = cart[idx];
+            if (item.qty > 1) {
+              item.qty--;
               saveCart();
               renderCartRows();
+              if (item.id) {
+                fetch(`/cart/update/${item.id}`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                  body: JSON.stringify({ quantity: item.qty })
+                });
+              }
             } else {
               const confirmRemove = confirm('Hapus produk ini dari keranjang?');
               if (confirmRemove) {
+                const deletedId = item.id;
                 cart.splice(idx, 1);
                 saveCart();
                 renderCartRows();
+                if (deletedId) {
+                  fetch(`/cart/item/${deletedId}`, {
+                    method: 'DELETE',
+                    headers: { 'X-CSRF-TOKEN': csrfToken }
+                  });
+                }
               }
             }
           });
@@ -1156,9 +1136,17 @@
           btn.addEventListener('click', () => {
             const idx = parseInt(btn.dataset.idx, 10);
             if (!cart[idx]) return;
-            cart[idx].qty = (parseInt(cart[idx].qty, 10) || 1) + 1;
+            const item = cart[idx];
+            item.qty = (parseInt(item.qty, 10) || 1) + 1;
             saveCart();
             renderCartRows();
+            if (item.id) {
+              fetch(`/cart/update/${item.id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                body: JSON.stringify({ quantity: item.qty })
+              });
+            }
           });
         });
 
@@ -1166,6 +1154,22 @@
         rowsContainer.querySelectorAll('.btn-action-delete').forEach(btn => {
           btn.addEventListener('click', () => {
             const idx = parseInt(btn.dataset.idx, 10);
+            const item = cart[idx];
+            if (!item) return;
+
+            const executeDelete = () => {
+              const deletedId = item.id;
+              cart.splice(idx, 1);
+              saveCart();
+              renderCartRows();
+              if (deletedId) {
+                fetch(`/cart/item/${deletedId}`, {
+                  method: 'DELETE',
+                  headers: { 'X-CSRF-TOKEN': csrfToken }
+                });
+              }
+            };
+
             if (typeof Swal !== 'undefined') {
               Swal.fire({
                 title: 'Hapus Produk',
@@ -1179,18 +1183,10 @@
                 reverseButtons: true,
                 customClass: { popup: 'maybeads-swal-popup' }
               }).then((result) => {
-                if (result.isConfirmed) {
-                  cart.splice(idx, 1);
-                  saveCart();
-                  renderCartRows();
-                }
+                if (result.isConfirmed) executeDelete();
               });
             } else {
-              if (confirm('Hapus produk ini dari keranjang?')) {
-                cart.splice(idx, 1);
-                saveCart();
-                renderCartRows();
-              }
+              if (confirm('Hapus produk ini dari keranjang?')) executeDelete();
             }
           });
         });
@@ -1215,10 +1211,11 @@
         });
       }
 
-      // Delete Selected Items
+      // Delete Selected Items (Sinkron ke Database)
       if (btnDeleteSelected) {
         btnDeleteSelected.addEventListener('click', () => {
-          const checkedCount = cart.filter(it => it.checked).length;
+          const checkedItems = cart.filter(it => it.checked);
+          const checkedCount = checkedItems.length;
           if (checkedCount === 0) {
             if (typeof Swal !== 'undefined') {
               Swal.fire({
@@ -1235,6 +1232,18 @@
             return;
           }
 
+          const executeDeleteSelected = () => {
+            const deletedIds = checkedItems.map(it => it.id).filter(Boolean);
+            cart = cart.filter(it => !it.checked);
+            saveCart();
+            renderCartRows();
+            fetch('/cart/clear', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+              body: JSON.stringify({ ids: deletedIds })
+            });
+          };
+
           if (typeof Swal !== 'undefined') {
             Swal.fire({
               title: 'Hapus Produk Terpilih',
@@ -1248,17 +1257,11 @@
               reverseButtons: true,
               customClass: { popup: 'maybeads-swal-popup' }
             }).then((result) => {
-              if (result.isConfirmed) {
-                cart = cart.filter(it => !it.checked);
-                saveCart();
-                renderCartRows();
-              }
+              if (result.isConfirmed) executeDeleteSelected();
             });
           } else {
             if (confirm(`Hapus ${checkedCount} produk yang dipilih dari keranjang?`)) {
-              cart = cart.filter(it => !it.checked);
-              saveCart();
-              renderCartRows();
+              executeDeleteSelected();
             }
           }
         });

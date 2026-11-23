@@ -14,7 +14,7 @@
   <style>
     .cat-stat-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 16px;
       margin-bottom: 24px;
     }
@@ -97,16 +97,19 @@
         <span class="header-title">Admin Dashboard</span>
       </div>
 
+      @php
+        $pendingBadgeCount = \App\Models\Order::where('order_status', 'pending')->count();
+      @endphp
       <div class="header-right">
-        <div class="dropdown" data-dropdown>
-          <button type="button" class="notification-btn" aria-label="Notifikasi" data-dropdown-trigger>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-            <span class="notif-badge-pill" data-notif-badge>1</span>
-          </button>
-        </div>
+        <a href="{{ route('admin.notifications') }}" class="notification-btn" aria-label="Notifikasi" title="Notifikasi">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          @if($pendingBadgeCount > 0)
+            <span class="notif-badge-pill">{{ $pendingBadgeCount > 99 ? '99+' : $pendingBadgeCount }}</span>
+          @endif
+        </a>
       </div>
     </header>
 
@@ -125,8 +128,18 @@
         </div>
 
         <div style="display: flex; align-items: center; gap: 16px; margin-top: 10px;">
-          @if($category->image)
-            <img src="{{ asset('storage/' . $category->image) }}" alt="{{ $category->category_name }}" style="width: 56px; height: 56px; border-radius: 10px; object-fit: cover; border: 1.5px solid #cbd5e1;">
+          @php
+            $catImg = $category->image;
+            if ($catImg && !str_starts_with($catImg, 'http') && !str_starts_with($catImg, '/')) {
+                $catImg = asset('storage/' . $catImg);
+            }
+          @endphp
+          @if($catImg)
+            <img src="{{ $catImg }}" alt="{{ $category->category_name }}" style="width: 56px; height: 56px; border-radius: 10px; object-fit: cover; border: 1.5px solid #cbd5e1;" onerror="this.src='{{ asset('images/logo.svg') }}'">
+          @else
+            <div style="width: 56px; height: 56px; border-radius: 10px; background: #e2e8f0; display: flex; align-items: center; justify-content: center; color: #64748b; font-weight: 700; font-size: 20px;">
+              {{ strtoupper(substr($category->category_name, 0, 1)) }}
+            </div>
           @endif
           <div>
             <h1 class="form-main-heading" style="margin: 0;">{{ $category->category_name }}</h1>
@@ -142,11 +155,7 @@
         </div>
         <div class="cat-stat-card">
           <div class="cat-stat-label">Total Produk</div>
-          <div class="cat-stat-value">{{ $category->products_count ?? 0 }}</div>
-        </div>
-        <div class="cat-stat-card">
-          <div class="cat-stat-label">Total Stok</div>
-          <div class="cat-stat-value">{{ $category->products_sum_stock ?? 0 }}</div>
+          <div class="cat-stat-value">{{ $category->products_count ?? 0 }} Produk</div>
         </div>
       </div>
 

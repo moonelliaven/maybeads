@@ -11,10 +11,11 @@ class SettingController extends Controller
     /**
      * Tampilkan form pengaturan website
      */
-    public function index()
+    public function index(Request $request)
     {
         $settings = SiteSetting::getSettings();
-        return view('admin.settings', compact('settings'));
+        $currentTab = $request->query('tab', 'website');
+        return view('admin.settings', compact('settings', 'currentTab'));
     }
 
     /**

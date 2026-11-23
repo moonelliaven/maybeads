@@ -22,6 +22,8 @@ export const MaybeadsAlert = {
     onCancel = null
   } = {}) {
     return Swal.fire({
+      position: 'top',
+      backdrop: false,
       title: title,
       text: text,
       icon: 'warning',
@@ -113,35 +115,39 @@ export const MaybeadsAlert = {
   },
 
   /**
-   * Notifikasi Sukses / Berhasil
+   * Notifikasi Sukses / Berhasil (Top-center, no backdrop)
    */
   success({
     title = 'Berhasil!',
     text = 'Aksi telah berhasil dilakukan.',
-    confirmButtonText = 'Selesai'
+    confirmButtonText = 'Selesai',
+    timer = 2500
   } = {}) {
     return Swal.fire({
+      position: 'top',
+      backdrop: false,
       icon: 'success',
       title: title,
       text: text,
-      confirmButtonText: confirmButtonText,
-      confirmButtonColor: '#244173',
+      showConfirmButton: false,
+      timer: timer,
       customClass: {
-        popup: 'maybeads-swal-popup',
-        confirmButton: 'swal-btn-navy'
+        popup: 'maybeads-swal-popup'
       }
     });
   },
 
   /**
-   * Notifikasi Error / Gagal
+   * Notifikasi Error / Gagal (Top-center, no backdrop)
    */
   error({
     title = 'Gagal!',
     text = 'Terjadi kesalahan saat memproses data.',
-    confirmButtonText: confirmButtonText = 'Kembali'
+    confirmButtonText = 'Kembali'
   } = {}) {
     return Swal.fire({
+      position: 'top',
+      backdrop: false,
       icon: 'error',
       title: title,
       text: text,

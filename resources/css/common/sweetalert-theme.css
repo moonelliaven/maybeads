@@ -13,8 +13,55 @@ div:where(.swal2-container) {
 }
 
 div:where(.swal2-container).swal2-backdrop-show {
-  background: rgba(15, 23, 42, 0.6) !important;
-  backdrop-filter: blur(4px) !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+}
+
+div:where(.swal2-container).swal2-top,
+div:where(.swal2-container).swal2-center {
+  background: transparent !important;
+}
+
+/* Compact Top-Center Popup for Cart Success */
+div:where(.swal2-container) .swal2-popup.swal-compact-top-popup,
+div:where(.swal2-container) .swal2-popup.swal-compact-center-popup {
+  width: 280px !important;
+  max-width: 90vw !important;
+  padding: 18px 18px 16px 18px !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+  background: #ffffff !important;
+  text-align: center !important;
+  margin: 20px auto 0 auto !important;
+}
+
+div:where(.swal2-container) .swal2-popup.swal-compact-top-popup .swal2-icon.swal2-success,
+div:where(.swal2-container) .swal2-popup.swal-compact-center-popup .swal2-icon.swal2-success {
+  width: 42px !important;
+  height: 42px !important;
+  margin: 0 auto 10px auto !important;
+  border-color: #22c55e !important;
+  color: #22c55e !important;
+}
+
+div:where(.swal2-container) .swal2-popup.swal-compact-top-popup .swal2-icon.swal2-success .swal2-success-ring,
+div:where(.swal2-container) .swal2-popup.swal-compact-center-popup .swal2-icon.swal2-success .swal2-success-ring {
+  width: 42px !important;
+  height: 42px !important;
+}
+
+div:where(.swal2-container) .swal2-popup.swal-compact-top-popup .swal2-title,
+div:where(.swal2-container) .swal2-popup.swal-compact-center-popup .swal2-title,
+div:where(.swal2-container) .swal-compact-top-title,
+div:where(.swal2-container) .swal-compact-center-title {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  line-height: 1.4 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: center !important;
 }
 
 /* Card Popup (Modal non-toast) */
@@ -24,14 +71,54 @@ div:where(.swal2-container) .maybeads-swal-popup:not(.swal2-toast),
 div:where(.swal2-container) .y2k-swal-popup:not(.swal2-toast) {
   background: #ffffff !important;
   border-radius: 16px !important;
-  box-shadow: 0 25px 40px -10px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
-  padding: 36px 28px 30px 28px !important;
+  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
+  padding: 30px 24px 24px 24px !important;
   width: 100% !important;
   max-width: 440px !important;
+  margin-top: 24px !important;
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
   border: none !important;
   text-align: center !important;
   box-sizing: border-box !important;
+}
+
+/* Compact Success Pop-up (Proporsi 2:4 / vertikal compact untuk feedback sukses tambah/hapus/edit) */
+div:where(.swal2-container) .swal2-popup:has(.swal2-icon.swal2-success),
+div:where(.swal2-container) .admin-swal-popup:has(.swal2-icon.swal2-success),
+div:where(.swal2-container) .maybeads-swal-popup:has(.swal2-icon.swal2-success),
+div:where(.swal2-container) .swal-compact-success {
+  max-width: 260px !important;
+  width: 260px !important;
+  padding: 24px 18px 20px 18px !important;
+  border-radius: 14px !important;
+  margin-top: 24px !important;
+}
+
+div:where(.swal2-container) .swal2-popup:has(.swal2-icon.swal2-success) .swal2-icon.swal2-success,
+div:where(.swal2-container) .admin-swal-popup:has(.swal2-icon.swal2-success) .swal2-icon.swal2-success,
+div:where(.swal2-container) .swal-compact-success .swal2-icon.swal2-success {
+  width: 52px !important;
+  height: 52px !important;
+  margin: 0 auto 12px auto !important;
+  border-width: 2.5px !important;
+  background-size: 26px 26px !important;
+}
+
+div:where(.swal2-container) .swal2-popup:has(.swal2-icon.swal2-success) .swal2-title,
+div:where(.swal2-container) .admin-swal-popup:has(.swal2-icon.swal2-success) .swal2-title,
+div:where(.swal2-container) .swal-compact-success .swal2-title {
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  margin-bottom: 6px !important;
+}
+
+div:where(.swal2-container) .swal2-popup:has(.swal2-icon.swal2-success) .swal2-html-container,
+div:where(.swal2-container) .admin-swal-popup:has(.swal2-icon.swal2-success) .swal2-html-container,
+div:where(.swal2-container) .swal-compact-success .swal2-html-container {
+  font-size: 12.5px !important;
+  line-height: 1.4 !important;
+  margin: 0 !important;
+  color: #64748b !important;
 }
 
 /* 1. ICONS STYLING (Warning, Success, Error, Info, Question) */

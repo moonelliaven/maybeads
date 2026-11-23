@@ -31,6 +31,21 @@
         </button>
         <span class="header-title">Admin Dashboard / Metode Pembayaran</span>
       </div>
+
+      @php
+        $pendingBadgeCount = \App\Models\Order::where('order_status', 'pending')->count();
+      @endphp
+      <div class="header-right">
+        <a href="{{ route('admin.notifications') }}" class="notification-btn" aria-label="Notifikasi" title="Notifikasi">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          @if($pendingBadgeCount > 0)
+            <span class="notification-badge">{{ $pendingBadgeCount > 99 ? '99+' : $pendingBadgeCount }}</span>
+          @endif
+        </a>
+      </div>
     </header>
 
     <main class="form-content-area" style="max-width: 760px;">

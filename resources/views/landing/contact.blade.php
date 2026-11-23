@@ -11,7 +11,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-  @vite(['resources/css/landing/contact.css'])
+  <script>document.documentElement.classList.add('js');</script>
+  @vite(['resources/css/lenis.css', 'resources/css/landing/contact.css'])
 </head>
 <body>
 
@@ -34,16 +35,7 @@
 
       <!-- Map Embed Container -->
       <div class="contact-map-wrapper">
-        <iframe 
-          src="https://maps.google.com/maps?q=Jl.+Pangeran+Suriansyah,+Loktabat+Utara,+Kec.+Banjarbaru+Utara,+Kota+Banjar+Baru,+Kalimantan+Selatan+70714&t=&z=16&ie=UTF8&iwloc=&output=embed" 
-          width="100%" 
-          height="100%" 
-          style="border:0;" 
-          allowfullscreen="" 
-          loading="lazy" 
-          referrerpolicy="no-referrer-when-downgrade"
-          title="Lokasi Toko Maybeads">
-        </iframe>
+        <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d3982.6472508783672!2d114.8323272!3d-3.4357227!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2de681005afce817%3A0xcfb5c9ba66654118!2sMaybead.s!5e0!3m2!1sid!2sid!4v1795393553134!5m2!1sid!2sid" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
       </div>
 
       <!-- Bottom Info Row: Address (Left) & Opening Hours (Right) -->
@@ -112,6 +104,7 @@
     </div>
   </footer>
 
+  @vite(['resources/js/landing/contact.js'])
 </body>
 </html>
 

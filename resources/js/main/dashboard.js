@@ -42,21 +42,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const inputSort       = document.getElementById('inputSort');
   const inputCategory   = document.getElementById('inputCategory');
 
-  // Dropdown Sort Change
+  // Mobile Dropdown Sort Change
   if (selectSort && filterForm) {
     selectSort.addEventListener('change', () => {
+      if (inputSort) inputSort.value = selectSort.value;
       filterForm.submit();
     });
   }
 
-  // Dropdown Category Change
+  // Mobile Dropdown Category Change
   if (selectCategory && filterForm) {
     selectCategory.addEventListener('change', () => {
+      if (inputCategory) inputCategory.value = selectCategory.value;
       filterForm.submit();
     });
   }
 
-  // Legacy fallback Sort Radio Options
+  // Desktop Sort Radio Options
   document.querySelectorAll('.sort-radio-option[data-sort]').forEach(btn => {
     btn.addEventListener('click', () => {
       if (inputSort && filterForm) {
@@ -66,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Legacy fallback Category Options
+  // Desktop Category Options
   document.querySelectorAll('.category-option-item[data-category]').forEach(btn => {
     btn.addEventListener('click', () => {
       if (inputCategory && filterForm) {
@@ -76,101 +78,89 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // Expand Categories Toggle (Desktop)
+  const btnToggleCategories = document.getElementById('btnToggleCategories');
+  if (btnToggleCategories) {
+    btnToggleCategories.addEventListener('click', () => {
+      const extraItems = document.querySelectorAll('.cat-extra-item');
+      const isExpanded = btnToggleCategories.classList.toggle('expanded');
+      extraItems.forEach(item => item.classList.toggle('is-hidden', !isExpanded));
+      const toggleText = btnToggleCategories.querySelector('.toggle-text');
+      if (toggleText) {
+        toggleText.textContent = isExpanded ? 'Tutup' : 'Lihat lebih banyak';
+      }
+    });
+  }
+
 
   /* ==========================================================================
-     3. CART LOGIC (Direct Navigation to Cart Detail)
+     3. CART LOGIC (Database Synchronized)
      ========================================================================== */
   const cartOpenBtn    = document.getElementById('cartOpenBtn');
   const cartCountBadge = document.getElementById('cartCountBadge');
+  const csrfToken      = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
-  // Default sample items matching mockup if empty
-  const defaultSampleCart = [
-    {
-      id: 991,
-      name: 'Nama Produk',
-      color: 'Biru, Kuning',
-      qty: 3,
-      price: 'Rp 92.000',
-      rawPrice: 92000,
-      image: '/images/landing/prod-hairclip.jpg',
-      addedAt: Date.now() - 4000
-    },
-    {
-      id: 992,
-      name: 'Nama Produk',
-      color: 'Biru, Kuning',
-      qty: 3,
-      price: 'Rp 92.000',
-      rawPrice: 92000,
-      image: '/images/landing/prod-ring.jpg',
-      addedAt: Date.now() - 3000
-    },
-    {
-      id: 993,
-      name: 'Nama Produk',
-      color: 'Biru, Kuning',
-      qty: 3,
-      price: 'Rp 92.000',
-      rawPrice: 92000,
-      image: '/images/landing/prod-butterfly.jpg',
-      addedAt: Date.now() - 2000
-    },
-    {
-      id: 994,
-      name: 'Nama Produk',
-      color: 'Biru, Kuning',
-      qty: 3,
-      price: 'Rp 92.000',
-      rawPrice: 92000,
-      image: '/images/landing/prod-keychain.jpg',
-      addedAt: Date.now() - 1000
-    }
-  ];
-
-  let rawCart = localStorage.getItem('maybeads_cart');
-  let localCart = rawCart !== null ? JSON.parse(rawCart) : defaultSampleCart;
-  if (rawCart === null) {
-    localStorage.setItem('maybeads_cart', JSON.stringify(localCart));
-  }
-
-  function updateCartUI() {
-    const totalItems = localCart.reduce((sum, item) => sum + (item.qty || 1), 0);
+  function updateCartBadgeUI(totalCount) {
+    const count = parseInt(totalCount, 10) || 0;
     if (cartCountBadge) {
-      cartCountBadge.textContent = totalItems;
-      cartCountBadge.classList.toggle('visible', totalItems > 0);
+      cartCountBadge.textContent = count;
+      cartCountBadge.classList.toggle('visible', count > 0);
+      cartCountBadge.style.display = count > 0 ? 'inline-flex' : 'none';
     }
   }
 
-  updateCartUI();
-
-  // Helper: Add product to cart and redirect directly to cart detail
-  function addItemToCart(data) {
-    if (!data) return;
-    let rawNum = parseInt(String(data.price || '').replace(/[^0-9]/g, ''), 10) || 42000;
-    if (rawNum < 1000) rawNum *= 1000;
-    const existing = localCart.find(it => String(it.id) === String(data.id));
-    if (existing) {
-      existing.qty = (existing.qty || 1) + 1;
-      existing.addedAt = Date.now();
-    } else {
-      localCart.unshift({
-        id: data.id,
-        name: data.name,
-        price: data.price,
-        rawPrice: rawNum,
-        image: data.image,
-        color: data.color || 'Biru, Kuning',
-        qty: 1,
-        checked: true,
-        addedAt: Date.now()
-      });
+  // Helper: Add product to cart via database API
+  function addItemToCart(data, qty = 1, redirect = true) {
+    if (!data || !data.id) return;
+    if (window.isUserLoggedIn === false) {
+      openLoginPromptModal();
+      return;
     }
-    localStorage.setItem('maybeads_cart', JSON.stringify(localCart));
-    updateCartUI();
 
-    // Redirect langsung ke halaman detail keranjang
-    const targetCartUrl = cartOpenBtn ? cartOpenBtn.getAttribute('href') : '/cart';
-    window.location.href = targetCartUrl;
+    fetch('/cart/add', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': csrfToken,
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        product_id: data.id,
+        quantity: qty
+      })
+    })
+    .then(res => res.json())
+    .then(resData => {
+      if (resData.success) {
+        updateCartBadgeUI(resData.cartCount);
+        if (redirect) {
+          const targetCartUrl = cartOpenBtn ? cartOpenBtn.getAttribute('href') : '/cart';
+          window.location.href = targetCartUrl;
+        } else {
+          if (typeof Swal !== 'undefined') {
+            Swal.fire({
+              position: 'top',
+              backdrop: false,
+              icon: 'success',
+              title: 'berhasil menambahkan produk ke keranjang',
+              showConfirmButton: false,
+              timer: 1600,
+              customClass: {
+                popup: 'swal-compact-top-popup',
+                title: 'swal-compact-top-title'
+              }
+            });
+          }
+        }
+      } else if (resData.need_login) {
+        openLoginPromptModal();
+      } else {
+        alert(resData.message || 'Gagal menambahkan produk ke keranjang.');
+      }
+    })
+    .catch(() => {
+      alert('Terjadi kesalahan jaringan.');
+    });
   }
 
 
@@ -325,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Submit trigger (Tambahkan ke Keranjang)
+  // Submit trigger (Tambahkan ke Keranjang via API Database)
   if (btnCartModalSubmit) {
     btnCartModalSubmit.addEventListener('click', () => {
       if (window.isUserLoggedIn === false) {
@@ -336,53 +326,59 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!currentModalProduct) return;
 
-      let rawUnitPrice = parseFloat(currentModalProduct.price) || 0;
-      if (rawUnitPrice < 1000) rawUnitPrice *= 1000;
-      const formattedUnitPrice = 'Rp ' + Math.round(rawUnitPrice).toLocaleString('id-ID');
+      const prodName = currentModalProduct.name || 'Produk';
+      const prodId = currentModalProduct.id;
+      const qty = currentModalQty;
 
-      // Cek apakah item serupa (id, warna, ukuran) sudah ada di keranjang
-      const existing = localCart.find(it =>
-        String(it.id) === String(currentModalProduct.id) &&
-        it.color === selectedColor &&
-        it.size === selectedSize
-      );
+      btnCartModalSubmit.disabled = true;
 
-      if (existing) {
-        existing.qty = (existing.qty || 1) + currentModalQty;
-        existing.addedAt = Date.now();
-      } else {
-        localCart.unshift({
-          id: currentModalProduct.id,
-          name: currentModalProduct.name,
-          price: formattedUnitPrice,
-          rawPrice: rawUnitPrice,
-          image: currentModalProduct.image,
-          color: selectedColor,
-          size: selectedSize,
-          qty: currentModalQty,
-          checked: true,
-          addedAt: Date.now()
-        });
-      }
+      fetch('/cart/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrfToken,
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          product_id: prodId,
+          quantity: qty
+        })
+      })
+      .then(res => res.json())
+      .then(resData => {
+        if (resData.success) {
+          updateCartBadgeUI(resData.cartCount);
+          closeCartModal();
 
-      localStorage.setItem('maybeads_cart', JSON.stringify(localCart));
-      updateCartUI();
-      closeCartModal();
-
-      // Feedback toast jika SweetAlert2 tersedia, atau feedback notification
-      if (typeof Swal !== 'undefined') {
-        Swal.fire({
-          toast: true,
-          position: 'top-end',
-          icon: 'success',
-          title: `"${currentModalProduct.name}" berhasil ditambahkan ke keranjang!`,
-          showConfirmButton: false,
-          timer: 2500,
-          timerProgressBar: true
-        });
-      } else {
-        alert(`"${currentModalProduct.name}" berhasil ditambahkan ke keranjang!`);
-      }
+          if (typeof Swal !== 'undefined') {
+            Swal.fire({
+              position: 'top',
+              backdrop: false,
+              icon: 'success',
+              title: 'berhasil menambahkan produk ke keranjang',
+              showConfirmButton: false,
+              timer: 1600,
+              customClass: {
+                popup: 'swal-compact-top-popup',
+                title: 'swal-compact-top-title'
+              }
+            });
+          } else {
+            alert('berhasil menambahkan produk ke keranjang');
+          }
+        } else if (resData.need_login) {
+          closeCartModal();
+          openLoginPromptModal();
+        } else {
+          alert(resData.message || 'Gagal menambahkan produk.');
+        }
+      })
+      .catch(() => {
+        alert('Terjadi kesalahan jaringan.');
+      })
+      .finally(() => {
+        btnCartModalSubmit.disabled = false;
+      });
     });
   }
 

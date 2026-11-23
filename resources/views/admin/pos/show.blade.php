@@ -56,15 +56,30 @@
       }
     }
   </style>
+  @if(request('auto_print'))
+    <script>
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          window.print();
+        }, 400);
+      });
+    </script>
+  @endif
 </head>
 <body style="background: #f1f5f9; padding: 20px;">
 
   <div class="pos-receipt-page">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;" class="no-print">
-      <a href="{{ route('admin.pos.index') }}" style="font-size: 12.5px; font-weight: 600; color: #475569; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
-        &larr; Kembali ke Kasir
-      </a>
-      <button type="button" onclick="window.print()" style="background: #0f172a; color: #fff; border: none; padding: 6px 14px; border-radius: 6px; font-size: 12.5px; font-weight: 600; cursor: pointer;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <a href="{{ route('admin.pos.transactions') }}" style="font-size: 12.5px; font-weight: 600; color: #475569; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+          &larr; Riwayat Kasir
+        </a>
+        <span style="color: #cbd5e1;">|</span>
+        <a href="{{ route('admin.pos.index') }}" style="font-size: 12.5px; font-weight: 600; color: #244173; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+          Mesin Kasir
+        </a>
+      </div>
+      <button type="button" onclick="window.print()" style="background: #244173; color: #fff; border: none; padding: 6px 14px; border-radius: 6px; font-size: 12.5px; font-weight: 600; cursor: pointer;">
         Cetak Struk
       </button>
     </div>

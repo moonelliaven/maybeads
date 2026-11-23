@@ -11,12 +11,25 @@ return new class extends Migration
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
             $table->string('category_name', 100);
+            $table->string('image')->nullable();
+            $table->softDeletes();
             $table->timestamp('created_at')->useCurrent();
+        });
+
+        Schema::table('categories', function (Blueprint $table) {
+            if (!Schema::hasColumn('categories', 'image')) {
+                $table->string('image')->nullable()->after('category_name');
+            }
         });
     }
 
     public function down(): void
     {
         Schema::dropIfExists('categories');
+        Schema::table('categories', function (Blueprint $table) {
+            if (Schema::hasColumn('categories', 'image')) {
+                $table->dropColumn('image');
+            }
+        });
     }
 };

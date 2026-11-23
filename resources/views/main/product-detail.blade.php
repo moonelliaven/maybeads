@@ -45,21 +45,30 @@
   }
   $defaultVariantStr = $colors->first() . ' - ' . $sizes->first();
 
-  // 5 Gallery images for thumbnail showcase matching design
+  // Gallery images: Foto utama, varian warna, dan foto sekunder milik produk ini
   $galleryImages = [];
   $galleryImages[] = $mainProductImg;
+
+  if ($product->variants) {
+      foreach ($product->variants as $v) {
+          if (!empty($v->image)) {
+              $vu = $resolveImg($v->image, count($galleryImages));
+              if (!in_array($vu, $galleryImages)) {
+                  $galleryImages[] = $vu;
+              }
+          }
+      }
+  }
+
   $secImages = is_string($product->secondary_images) ? json_decode($product->secondary_images, true) : $product->secondary_images;
   if (!empty($secImages) && is_array($secImages)) {
       foreach ($secImages as $idx => $sImg) {
-          $galleryImages[] = $resolveImg($sImg, $idx + 1);
-      }
-  }
-  $extraFallbacks = ['prod-ring.jpg', 'prod-butterfly.jpg', 'prod-keychain.jpg', 'prod-hairclip.jpg', 'hero-main.jpg', 'keychain-01.jpg'];
-  foreach ($extraFallbacks as $fb) {
-      if (count($galleryImages) >= 5) break;
-      $u = $resolveImg($fb, count($galleryImages));
-      if (!in_array($u, $galleryImages)) {
-          $galleryImages[] = $u;
+          if (!empty($sImg)) {
+              $u = $resolveImg($sImg, count($galleryImages));
+              if (!in_array($u, $galleryImages)) {
+                  $galleryImages[] = $u;
+              }
+          }
       }
   }
 @endphp
@@ -184,6 +193,10 @@
                   Admin Dashboard
                 </a>
               @endif
+              <a href="{{ route('account.settings') }}" class="acc-popover-item">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Pengaturan Akun
+              </a>
               <a href="{{ route('orders.history') }}" class="acc-popover-item">
                 <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                 Riwayat Pesanan
@@ -287,10 +300,15 @@
             <div class="variant-title-caption">Warna</div>
             <div class="variant-buttons-row">
               @foreach($colors as $cIdx => $color)
+                @php
+                  $varObj = $product->variants ? $product->variants->firstWhere('color', $color) : null;
+                  $varImgUrl = ($varObj && !empty($varObj->image)) ? $resolveImg($varObj->image, 0) : null;
+                @endphp
                 <button type="button"
                         class="variant-choice-pill pill-variant-btn {{ $cIdx === 0 ? 'selected' : '' }}"
                         data-variant-type="color"
-                        data-variant-value="{{ $color }}">
+                        data-variant-value="{{ $color }}"
+                        @if($varImgUrl) data-variant-img="{{ $varImgUrl }}" @endif>
                   {{ $color }}
                 </button>
               @endforeach
@@ -312,8 +330,8 @@
             </div>
           </div>
 
-          <!-- Stepper, Tambah Keranjang, Pesan Sekarang -->
-          <div class="purchase-action-group">
+          <!-- Stepper Quantity & Estimasi Harga -->
+          <div class="stepper-quantity-row">
             <div class="stepper-quantity-wrap">
               <button type="button" class="stepper-arrow-btn" id="btnQtyMinus" aria-label="Kurangi">&minus;</button>
               <input type="number"
@@ -323,33 +341,33 @@
                      min="1"
                      max="{{ max(1, (int)$product->stock) }}"
                      data-max-stock="{{ max(1, (int)$product->stock) }}"
+                     data-unit-price="{{ (float)$product->price }}"
                      readonly>
               <button type="button" class="stepper-arrow-btn" id="btnQtyPlus" aria-label="Tambah">&plus;</button>
             </div>
 
+            <!-- Estimasi Harga Berdasarkan Quantity -->
+            <div class="qty-estimation-wrap">
+              <span class="qty-estimation-label">Estimasi Harga:</span>
+              <span class="qty-estimation-val" id="productEstimatedPrice">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
+            </div>
+          </div>
+
+          <!-- Tombol Tambahkan ke Keranjang (Kebawah) -->
+          <div class="add-to-cart-action-row">
             @auth
               <button type="button"
-                      class="btn-cart-outline-style"
+                      class="btn-cart-primary-block"
                       id="btnAddToCartMain"
                       {{ $product->stock <= 0 ? 'disabled' : '' }}>
-                Tambahkan ke keranjang
-              </button>
-
-              <button type="button"
-                      class="btn-buy-solid-style"
-                      id="btnBuyNow"
-                      {{ $product->stock <= 0 ? 'disabled' : '' }}>
-                Pesan Sekarang
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="cart-btn-icon"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                <span>Tambahkan ke Keranjang</span>
               </button>
             @else
               <button type="button"
-                      class="btn-cart-outline-style btn-trigger-login-prompt">
-                Tambahkan ke keranjang
-              </button>
-
-              <button type="button"
-                      class="btn-buy-solid-style btn-trigger-login-prompt">
-                Pesan Sekarang
+                      class="btn-cart-primary-block btn-trigger-login-prompt">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="cart-btn-icon"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                <span>Tambahkan ke Keranjang</span>
               </button>
             @endauth
           </div>

@@ -775,12 +775,15 @@
           <span class="radio-cost-text">+ Rp 1.000</span>
         </label>
 
-        <label class="radio-option-item">
+        @php
+          $isDeliveryEnabled = \App\Models\SiteSetting::getSettings()->is_delivery_enabled ?? true;
+        @endphp
+        <label class="radio-option-item {{ !$isDeliveryEnabled ? 'disabled' : '' }}" style="{{ !$isDeliveryEnabled ? 'opacity: 0.6; cursor: not-allowed;' : '' }}">
           <span class="radio-left-label">
-            <input type="radio" name="pickup_type" value="delivery" id="radioDelivery">
-            <span>Diantar</span>
+            <input type="radio" name="pickup_type" value="delivery" id="radioDelivery" {{ !$isDeliveryEnabled ? 'disabled' : '' }}>
+            <span>Diantar {{ !$isDeliveryEnabled ? '(Nonaktif)' : '' }}</span>
           </span>
-          <span class="radio-cost-text" id="deliveryHintText">Menghitung...</span>
+          <span class="radio-cost-text" id="deliveryHintText">{{ !$isDeliveryEnabled ? 'Layanan Tidak Tersedia' : 'Menghitung...' }}</span>
         </label>
 
         <!-- Address Box with Integrated Button -->
@@ -827,7 +830,7 @@
   <footer class="sticky-checkout-footer">
     <div class="total-footer-label">Total</div>
     <div class="total-footer-val" id="footerTotalDisplay">Rp. 48.000</div>
-    <a href="{{ route('cart.index') }}" class="btn-footer-cancel" onclick="if(window.history.length > 1 && document.referrer && document.referrer.includes(window.location.host)){window.history.back();return false;}">Batal</a>
+    <a href="{{ route('cart.index') }}" class="btn-footer-cancel" id="btnCancelCheckout">Batal</a>
     <a href="{{ route('payment.qris') }}" class="btn-footer-proceed" id="btnGoToPayment">
       <span>Lanjut Ke Pembayaran</span>
       <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
@@ -1103,9 +1106,13 @@
           const isQris = document.getElementById('radioQris').checked;
           localStorage.setItem('maybeads_order_address', address || storeAddress);
           localStorage.setItem('maybeads_order_pickup', isDelivery ? 'delivery' : 'pickup');
-          localStorage.setItem('maybeads_order_payment_method', isQris ? 'qris' : 'ewallet');
+          localStorage.setItem('maybeads_order_payment_method', isQris ? 'qris' : 'transfer');
 
-          window.location.href = "{{ route('payment.qris') }}";
+          if (isQris) {
+            window.location.href = "{{ route('payment.qris') }}";
+          } else {
+            window.location.href = "{{ route('payment.transfer') }}";
+          }
         });
       }
 

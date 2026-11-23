@@ -65,29 +65,18 @@
         </div>
 
         <div class="header-right">
-          <!-- Notifikasi -->
-          <div class="dropdown" data-dropdown>
-            <button type="button" class="notification-btn" aria-label="Notifikasi" aria-haspopup="true" aria-expanded="false" data-dropdown-trigger>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-              </svg>
-              <span class="notification-badge" data-notif-badge>{{ $pendingCount ?? ($stats['pending'] ?? 0) }}</span>
-            </button>
-            <div class="dropdown-menu dropdown-menu-wide" role="menu" hidden>
-              <div class="dropdown-head">
-                <strong>Notifikasi</strong>
-                <button type="button" class="link-btn" data-mark-read>Tandai dibaca</button>
-              </div>
-              <a href="/admin/orders?status=pending" class="notif-item" role="menuitem">
-                <span class="status-dot orange"></span>
-                <span>
-                  <span class="notif-title">{{ $stats['pending'] ?? 0 }} pesanan menunggu diproses</span>
-                  <span class="notif-sub">Periksa dan konfirmasi pesanan pending</span>
-                </span>
-              </a>
-            </div>
-          </div>
+          @php
+            $unreadPendingCount = \App\Models\Order::whereRaw('LOWER(order_status) = ?', ['pending'])->count();
+          @endphp
+          <a href="{{ route('admin.notifications') }}" class="notification-btn" aria-label="Notifikasi" title="Notifikasi">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            @if($unreadPendingCount > 0)
+              <span class="notification-badge">{{ $unreadPendingCount }}</span>
+            @endif
+          </a>
         </div>
       </header>
 
@@ -143,15 +132,15 @@
             </div>
 
             <div class="status-counts-grid">
-              <a href="/admin/orders?status=selesai" class="status-badge-item">
+              <a href="{{ route('admin.order.index', ['status' => 'selesai']) }}" class="status-badge-item">
                 <span class="status-dot green"></span>
                 <span><b data-count="{{ $stats['selesai'] }}">{{ $stats['selesai'] }}</b> Selesai</span>
               </a>
-              <a href="/admin/orders?status=proses" class="status-badge-item">
+              <a href="{{ route('admin.order.index', ['status' => 'proses']) }}" class="status-badge-item">
                 <span class="status-dot yellow"></span>
                 <span><b data-count="{{ $stats['proses'] }}">{{ $stats['proses'] }}</b> Proses</span>
               </a>
-              <a href="/admin/orders?status=pending" class="status-badge-item">
+              <a href="{{ route('admin.order.pending') }}" class="status-badge-item">
                 <span class="status-dot orange"></span>
                 <span><b data-count="{{ $stats['pending'] }}">{{ $stats['pending'] }}</b> Pending</span>
               </a>

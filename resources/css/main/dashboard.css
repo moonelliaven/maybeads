@@ -428,17 +428,27 @@ input {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
+/* Visibility Toggle for Desktop List vs Mobile Dropdown Filters */
+.filter-desktop-view {
+  display: block;
+}
+.filter-mobile-view {
+  display: none;
+}
+
 /* Dropdown Filters */
 .filters-dropdowns-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .filter-dropdown-item {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
+  width: 100%;
 }
 
 .filter-dropdown-label {
@@ -450,36 +460,51 @@ input {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .filter-dropdown-icon {
-  width: 14px;
-  height: 14px;
+  width: 14px !important;
+  height: 14px !important;
+  max-width: 14px !important;
+  max-height: 14px !important;
   stroke: var(--color-navy);
   fill: none;
   stroke-width: 2.2;
+  flex-shrink: 0;
 }
 
 .filter-select-wrapper {
   position: relative;
   width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
 }
 
 .filter-dropdown-select {
   width: 100%;
+  min-width: 0;
+  height: 40px;
+  box-sizing: border-box;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
   background-color: #f8fafc;
   border: 1.5px solid #cbd5e1;
   border-radius: 8px;
-  padding: 9px 34px 9px 12px;
+  padding: 0 32px 0 12px;
   font-family: var(--font-sans);
   font-size: 12.5px;
   font-weight: 600;
   color: #1e293b;
   outline: none;
   cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: all 0.15s ease;
 }
 
@@ -496,11 +521,13 @@ input {
 
 .select-arrow-icon {
   position: absolute;
-  right: 12px;
+  right: 10px;
   top: 50%;
   transform: translateY(-50%);
-  width: 14px;
-  height: 14px;
+  width: 14px !important;
+  height: 14px !important;
+  max-width: 14px !important;
+  max-height: 14px !important;
   stroke: #64748b;
   stroke-width: 2.2;
   fill: none;
@@ -664,7 +691,8 @@ input {
   display: none;
 }
 
-/* Expand Outline Button */
+/* Expand Categories Button in Sidebar */
+.btn-toggle-categories,
 .btn-expand-outline {
   width: 100%;
   border: 1px solid var(--color-border);
@@ -675,26 +703,34 @@ input {
   align-items: center;
   justify-content: space-between;
   font-size: 11.5px;
+  font-weight: 600;
   color: var(--color-text-muted);
   background: #ffffff;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
+.btn-toggle-categories:hover,
 .btn-expand-outline:hover {
   background: #f8fafc;
   border-color: #cbd5e1;
+  color: var(--color-brand-blue);
 }
 
-.chevron-expand {
-  width: 13px;
-  height: 13px;
+.btn-toggle-categories .toggle-icon,
+.btn-expand-outline .chevron-expand {
+  width: 14px !important;
+  height: 14px !important;
+  max-width: 14px !important;
+  max-height: 14px !important;
   stroke: currentColor;
   fill: none;
-  stroke-width: 2;
+  stroke-width: 2.2;
+  flex-shrink: 0;
   transition: transform 0.2s ease;
 }
 
+.btn-toggle-categories.expanded .toggle-icon,
 .btn-expand-outline.expanded .chevron-expand {
   transform: rotate(180deg);
 }
@@ -1953,6 +1989,14 @@ input {
 }
 
 @media (max-width: 900px) {
+  .filter-desktop-view {
+    display: none !important;
+  }
+
+  .filter-mobile-view {
+    display: block !important;
+  }
+
   .catalog-main-container {
     flex-direction: column;
   }
@@ -2003,11 +2047,35 @@ input {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
+    width: 100%;
+  }
+
+  .filter-dropdown-item {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .filter-dropdown-label {
+    font-size: 10.5px;
+    letter-spacing: 0.3px;
   }
 
   .filter-dropdown-select {
-    padding: 8px 28px 8px 10px;
+    height: 38px;
+    padding: 0 28px 0 10px;
     font-size: 11.5px;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .select-arrow-icon {
+    right: 8px;
+    width: 13px;
+    height: 13px;
   }
 
   /* Komposisi card produk HP: kanan-kiri 2 dan ke bawah menyesuaikan data */
@@ -2022,7 +2090,9 @@ input {
   }
 
   .card-media-wrap {
-    height: 135px;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    height: auto;
     border-radius: 8px;
     margin-bottom: 8px;
   }

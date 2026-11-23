@@ -36,16 +36,18 @@
       </div>
 
       <div class="header-right">
-        {{-- Notifikasi --}}
-        <div class="dropdown" data-dropdown>
-          <button type="button" class="notification-btn" aria-label="Notifikasi">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-            <span class="notification-badge">1</span>
-          </button>
-        </div>
+        @php
+          $sidebarPendingOrders = \App\Models\Order::whereRaw('LOWER(order_status) = ?', ['pending'])->count();
+        @endphp
+        <a href="{{ route('admin.notifications') }}" class="notification-btn" aria-label="Notifikasi" title="Notifikasi">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          @if($sidebarPendingOrders > 0)
+            <span class="notification-badge">{{ $sidebarPendingOrders }}</span>
+          @endif
+        </a>
       </div>
     </header>
 
@@ -59,10 +61,10 @@
         <span class="breadcrumb-current">{{ ($statusFilter ?? '') === 'pending' ? 'Pending Order' : 'Pesanan' }}</span>
       </nav>
 
-      {{-- Page Heading + Ekspor CSV Sejajar --}}
-      <div class="order-page-head">
+      {{-- Page Heading + Ekspor CSV + Search Sejajar Satu Level --}}
+      <div class="order-page-head" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;">
         <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
-          <h1 class="order-page-title">{{ ($statusFilter ?? '') === 'pending' ? 'Pending Order' : 'Semua Pesanan' }}</h1>
+          <h1 class="order-page-title" style="margin: 0;">{{ ($statusFilter ?? '') === 'pending' ? 'Pending Order' : 'Semua Pesanan' }}</h1>
 
           <a href="{{ route('admin.order.export', ['status' => request('status', 'semua')]) }}" class="btn-export-orders" style="display: inline-flex; align-items: center; gap: 7px; background: #ffffff; border: 1.5px solid #cbd5e1; color: #1e293b; padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px; color: #2563eb;">
@@ -73,9 +75,26 @@
             <span>Ekspor CSV</span>
           </a>
         </div>
+
+        {{-- Search dipindah ke sini (satu level dengan teks Semua Pesanan) --}}
+        <div class="order-search-wrap" style="max-width: 320px; width: 100%;">
+          <span class="search-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </span>
+          <input type="text"
+                 id="orderSearchInput"
+                 class="order-search-input"
+                 value="{{ $search ?? '' }}"
+                 placeholder="Cari Pesanan..."
+                 autocomplete="off"
+                 aria-label="Cari data pesanan">
+        </div>
       </div>
 
-      {{-- Stat Cards (5 Kotak Statistik — Bagian Pemasukan Dihapus) --}}
+      {{-- Stat Cards (5 Kotak Statistik: Total Pesanan, Pending, Process, Selesai, Dibatalkan) --}}
       <div class="order-stats-grid" style="grid-template-columns: repeat(5, 1fr);">
         {{-- 1. Total Pesanan --}}
         <div class="stat-card">
@@ -133,8 +152,8 @@
         </div>
       </div>
 
-      {{-- Filter Tabs (Sortir) & Search Bar Sejajar --}}
-      <div class="order-filter-row" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+      {{-- Filter Tabs (Sortir Status) & Rentang Waktu Kalender (Dari - Sampai) Sejajar --}}
+      <div class="order-filter-row" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;">
         <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
           <span class="filter-sort-label">Sortir:</span>
           <div class="filter-tabs" role="tablist">
@@ -146,20 +165,26 @@
           </div>
         </div>
 
-        <div class="order-search-wrap" style="max-width: 300px; width: 100%;">
-          <span class="search-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        {{-- Filter Rentang Tanggal Kalender (Dari Tanggal s/d Tanggal Berapa) & Sortir Waktu --}}
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 6px; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 4px 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px; color: #2563eb; flex-shrink: 0;">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
-          </span>
-          <input type="text"
-                 id="orderSearchInput"
-                 class="order-search-input"
-                 value="{{ $search ?? '' }}"
-                 placeholder="Cari Pesanan..."
-                 autocomplete="off"
-                 aria-label="Cari data pesanan">
+            <span style="font-size: 12px; font-weight: 700; color: #475569;">Dari:</span>
+            <input type="date" id="orderStartDate" style="border: none; background: transparent; font-size: 12.5px; font-weight: 600; color: #1e293b; outline: none; cursor: pointer;">
+            <span style="font-size: 12px; font-weight: 700; color: #94a3b8; margin: 0 2px;">s/d</span>
+            <input type="date" id="orderEndDate" style="border: none; background: transparent; font-size: 12.5px; font-weight: 600; color: #1e293b; outline: none; cursor: pointer;">
+            <button type="button" id="btnResetDateFilter" title="Reset Rentang Tanggal" style="background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 16px; font-weight: 800; line-height: 1; padding: 0 4px; display: none;">&times;</button>
+          </div>
+
+          <select id="orderDateSort" class="form-select-sort" style="padding: 7px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 13px; font-weight: 600; color: #1e293b; background: #ffffff; cursor: pointer; outline: none;">
+            <option value="terbaru">Terbaru (Terbaru ke Terlama)</option>
+            <option value="terlama">Terlama (Terlama ke Terbaru)</option>
+          </select>
         </div>
       </div>
 
@@ -170,6 +195,7 @@
             <tr>
               <th>Order ID</th>
               <th>Username</th>
+              <th>Waktu Pesanan</th>
               <th>Jenis Pengantaran</th>
               <th>Total Harga</th>
               <th>Status Pembayaran</th>
@@ -201,8 +227,12 @@
                   'dibatalkan', 'cancelled'      => 'status-dibatalkan',
                   default                        => 'status-pending',
                 };
+
+                $orderTime = $order->order_at ?? $order->created_at;
+                $rowDateIso = $orderTime ? $orderTime->format('Y-m-d') : '';
+                $timestamp = $orderTime ? $orderTime->timestamp : $order->id;
               @endphp
-              <tr data-id="{{ $order->id }}" data-status="{{ strtolower($order->order_status) }}">
+              <tr data-id="{{ $order->id }}" data-status="{{ strtolower($order->order_status) }}" data-date="{{ $rowDateIso }}" data-created-at="{{ $timestamp }}">
                 <td class="col-id">{{ $order->formatted_id }}</td>
                 <td class="col-user">
                   <div class="user-meta-cell">
@@ -215,6 +245,9 @@
                     </div>
                     <span class="user-cell-name">{{ $order->user->name ?? 'User' }}</span>
                   </div>
+                </td>
+                <td class="col-time" style="font-size: 13px; color: #475569; font-weight: 500;">
+                  {{ $orderTime ? $orderTime->format('d M Y, H:i') : '-' }}
                 </td>
                 <td class="col-delivery">{{ $order->delivery_type }}</td>
                 <td class="col-price">{{ number_format($order->subtotal, 2, ',', '.') }}</td>

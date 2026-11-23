@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\LoginController;
@@ -42,8 +43,13 @@ Route::get('/produk/{product}',        [MainController::class, 'productDetail'])
 Route::get('/main/product/{product}',  [MainController::class, 'productDetail'])->name('main.product.detail');
 
 // Cart & Order Detail
-Route::get('/cart',                    [MainController::class, 'cart'])->name('cart.index');
-Route::get('/main/cart',               [MainController::class, 'cart'])->name('main.cart');
+Route::get('/cart',                    [CartController::class, 'index'])->name('cart.index');
+Route::get('/main/cart',               [CartController::class, 'index'])->name('main.cart');
+Route::post('/cart/add',               [CartController::class, 'add'])->name('cart.add');
+Route::match(['put', 'post'], '/cart/update/{id}', [CartController::class, 'updateQty'])->name('cart.update');
+Route::delete('/cart/item/{id}',       [CartController::class, 'destroy'])->name('cart.destroy');
+Route::post('/cart/clear',             [CartController::class, 'clear'])->name('cart.clear');
+Route::get('/cart/items',              [CartController::class, 'items'])->name('cart.items');
 
 Route::get('/order-detail',            [MainController::class, 'orderDetail'])->name('order.checkout.detail');
 Route::get('/order/detail/{order_id?}',[MainController::class, 'orderDetail'])->name('order.detail');
@@ -62,13 +68,17 @@ Route::get('/payment/success/{order_id?}',  [MainController::class, 'paymentSucc
 
 // ─── User Protected Routes (Wajib Login) ────────────────────────────────────
 Route::middleware(['auth'])->group(function () {
-    Route::get('/orders',              [MainController::class, 'myOrders'])->name('orders.history');
+    Route::get('/orders',                    [MainController::class, 'myOrders'])->name('orders.history');
+    Route::get('/account/settings',          [UserController::class, 'userSettings'])->name('account.settings');
+    Route::post('/account/settings/profile', [UserController::class, 'updateProfile'])->name('account.settings.profile');
+    Route::post('/account/settings/address', [UserController::class, 'updateAddress'])->name('account.settings.address');
 });
 
 // ─── Admin Routes ─────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
 
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/notifications', [AdminDashboardController::class, 'notifications'])->name('notifications');
 
     // Products
     Route::prefix('product')->name('product.')->controller(ProductController::class)->group(function () {
@@ -94,13 +104,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Orders
     Route::prefix('order')->name('order.')->controller(OrderController::class)->group(function () {
-        Route::get('/',               'index')->name('index');
-        Route::get('/pending',        'pending')->name('pending');
-        Route::get('/export',         'export')->name('export');
-        Route::get('/detail/{order}', 'show')->name('detail');
-        Route::get('/{order}',        'show')->name('show');
+        Route::get('/',                 'index')->name('index');
+        Route::get('/pending',          'pending')->name('pending');
+        Route::get('/pending/{order}',  'pendingDetail')->name('pendingDetail');
+        Route::get('/export',           'export')->name('export');
+        Route::get('/detail/{order}',   'show')->name('detail');
+        Route::get('/{order}',          'show')->name('show');
         Route::put('/{order}',        'update')->name('update');
         Route::patch('/{order}/status','updateStatus')->name('updateStatus');
+        Route::post('/{order}/accept','acceptOrder')->name('accept');
+        Route::post('/{order}/reject','rejectOrder')->name('reject');
         Route::post('/{order}/cancel','cancelOrder')->name('cancel');
         // Fitur hapus pesanan sengaja ditiadakan demi integritas data audit
     });
@@ -152,6 +165,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Data Pengantaran (Delivery)
     Route::prefix('delivery')->name('delivery.')->controller(DeliveryController::class)->group(function () {
         Route::get('/',                       'index')->name('index');
+        Route::post('/toggle',                'toggleStatus')->name('toggle');
         Route::post('/{order}/update-courier','updateCourier')->name('updateCourier');
     });
 

@@ -53,6 +53,21 @@ class ProductController extends Controller
             $data['image']  = $filename;
         }
 
+        if ($request->hasFile('secondary_images')) {
+            $secImages = [];
+            foreach ($request->file('secondary_images') as $secFile) {
+                $secName = time() . '_' . uniqid() . '_' . $secFile->getClientOriginalName();
+                $secFile->storeAs('product', $secName, 'public');
+                $secImages[] = $secName;
+            }
+            $data['secondary_images'] = $secImages;
+        }
+
+        if ($request->filled('secondary_category_ids')) {
+            $secCatIds = array_filter(array_map('intval', (array) $request->secondary_category_ids));
+            $data['secondary_categories'] = array_values($secCatIds);
+        }
+
         DB::transaction(function () use ($data) {
             $product = Product::create($data);
             foreach ($data['variants'] ?? [] as $v) {
@@ -114,6 +129,24 @@ class ProductController extends Controller
             $data['image']  = $filename;
         } else {
             unset($data['image']);
+        }
+
+        $existingSec = (array) $request->input('existing_secondary_images', []);
+        $newSec = [];
+        if ($request->hasFile('secondary_images')) {
+            foreach ($request->file('secondary_images') as $secFile) {
+                $secName = time() . '_' . uniqid() . '_' . $secFile->getClientOriginalName();
+                $secFile->storeAs('product', $secName, 'public');
+                $newSec[] = $secName;
+            }
+        }
+        if ($request->has('existing_secondary_images') || $request->hasFile('secondary_images')) {
+            $data['secondary_images'] = array_values(array_merge($existingSec, $newSec));
+        }
+
+        if ($request->has('secondary_category_ids')) {
+            $secCatIds = array_filter(array_map('intval', (array) $request->secondary_category_ids));
+            $data['secondary_categories'] = array_values($secCatIds);
         }
 
         DB::transaction(function () use ($data, $product) {

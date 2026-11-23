@@ -17,7 +17,7 @@ class CategoryController extends Controller
                 return [
                     'id'             => $c->id,
                     'category_name'  => $c->category_name,
-                    'image'          => $c->image ? asset('storage/' . $c->image) : null,
+                    'image'          => $c->image_url ?? ($c->image ? asset('storage/' . $c->image) : asset('images/products/sample-hub.jpg')),
                     'raw_image'      => $c->image,
                     'products_count' => (int) ($c->products_count ?? 0),
                     'products_stock' => (int) $c->products()->sum('stock'),

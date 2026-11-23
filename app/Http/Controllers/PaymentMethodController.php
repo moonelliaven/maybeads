@@ -89,6 +89,19 @@ class PaymentMethodController extends Controller
         $activeMethodsCount = PaymentMethod::where('status', 'active')->count();
         $totalMethodsCount  = PaymentMethod::count();
 
+        $totalMethods = $methods->count();
+        $isAllMode = $request->input('show_all') === 'true';
+        $perPage = $isAllMode ? max($totalMethods, 1) : 10;
+        $currentPage = (int) $request->input('page', 1);
+        $paginatedItems = $isAllMode ? $methods : $methods->forPage($currentPage, $perPage)->values();
+        $methods = new \Illuminate\Pagination\LengthAwarePaginator(
+            $paginatedItems,
+            $totalMethods,
+            $perPage,
+            $currentPage,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
         $stats = [
             'total_revenue_all' => $totalRevenueAll,
             'month_revenue_all' => $monthRevenueAll,
@@ -96,6 +109,7 @@ class PaymentMethodController extends Controller
             'selected_year'     => $selectedYear,
             'active_count'      => $activeMethodsCount,
             'total_count'       => $totalMethodsCount,
+            'total_methods'     => $totalMethods,
         ];
 
         return view('admin.payment-method.index', compact(
@@ -190,12 +204,20 @@ class PaymentMethodController extends Controller
     /**
      * Toggle status aktif / non-aktif
      */
-    public function toggleStatus(PaymentMethod $paymentMethod)
+    public function toggleStatus(Request $request, PaymentMethod $paymentMethod)
     {
         $newStatus = $paymentMethod->status === 'active' ? 'non-active' : 'active';
         $paymentMethod->update(['status' => $newStatus]);
 
         $statusText = $newStatus === 'active' ? 'diaktifkan' : 'dinonaktifkan';
+
+        if ($request->wantsJson() || $request->ajax() || $request->header('Accept') === 'application/json') {
+            return response()->json([
+                'success' => true,
+                'status'  => $newStatus,
+                'message' => "Metode '{$paymentMethod->name}' berhasil {$statusText}."
+            ]);
+        }
 
         return redirect()->back()
             ->with('success', "Status metode '{$paymentMethod->name}' berhasil {$statusText}.");

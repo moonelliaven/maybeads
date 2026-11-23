@@ -198,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
     category: 'all',   // 'all' or category id string
     layout:   'table', // 'table' | 'grid'
     page:     1,
-    perPage:  8,
+    perPage:  10,
   };
 
   /* =====================================================================
@@ -392,6 +392,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const pagesEl = el.querySelector('.pagination-pages');
     if (!pagesEl) return;
 
+    // Jika SHOW ALL aktif, toggle angka halaman 1,2,3 tidak ditampilkan
+    if (state.perPage >= 9999) {
+      pagesEl.innerHTML = '';
+      pagesEl.style.display = 'none';
+      return;
+    }
+    pagesEl.style.display = 'flex';
+
     // Buat tombol halaman
     let pages = [];
     // Previous
@@ -525,19 +533,19 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* =====================================================================
-     14. CATEGORY FILTER TABS
+     14. CATEGORY FILTER TABS (Max 5 Visible with Mini Arrows Slider)
   ===================================================================== */
-  const MAX_VISIBLE_CATS = 6; // include "Semua"
-
   function buildCategoryTabs() {
     const tabsWrap = document.getElementById('categoryTabs');
+    const scrollContainer = document.getElementById('categoryTabsScroll');
+    const prevBtn = document.getElementById('catNavPrev');
+    const nextBtn = document.getElementById('catNavNext');
     const moreWrap = document.getElementById('catMoreWrap');
     if (!tabsWrap) return;
 
-    const visibleCats  = allCategories.slice(0, MAX_VISIBLE_CATS - 1); // -1 for "Semua"
-    const hiddenCats   = allCategories.slice(MAX_VISIBLE_CATS - 1);
+    if (moreWrap) moreWrap.hidden = true;
 
-    // Build visible tabs
+    // Build visible tabs: All categories rendered in scrollable track
     const allTab = document.createElement('button');
     allTab.className = 'cat-tab ' + (state.category === 'all' ? 'active' : '');
     allTab.dataset.catId = 'all';
@@ -545,7 +553,7 @@ document.addEventListener('DOMContentLoaded', () => {
     tabsWrap.innerHTML = '';
     tabsWrap.appendChild(allTab);
 
-    visibleCats.forEach(cat => {
+    allCategories.forEach(cat => {
       const btn = document.createElement('button');
       btn.className = 'cat-tab ' + (String(state.category) === String(cat.id) ? 'active' : '');
       btn.dataset.catId = cat.id;
@@ -560,79 +568,27 @@ document.addEventListener('DOMContentLoaded', () => {
         state.page     = 1;
         tabsWrap.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
-        // Juga update dropdown jika ada
-        document.querySelectorAll('.cat-dropdown-item').forEach(i => {
-          i.classList.toggle('active', String(i.dataset.catId) === String(state.category));
-        });
+        if (typeof tab.scrollIntoView === 'function') {
+          tab.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+        }
         render();
       });
     });
 
-    // More dropdown
-    if (!moreWrap) return;
-
-    if (hiddenCats.length === 0) {
-      moreWrap.hidden = true;
-      return;
-    }
-    moreWrap.hidden = false;
-
-    const moreBtn     = document.getElementById('catMoreBtn');
-    const dropdown    = document.getElementById('catDropdown');
-    const dropSearch  = document.getElementById('catDropdownSearch');
-    const dropList    = document.getElementById('catDropdownList');
-    if (!moreBtn || !dropdown || !dropList) return;
-
-    function renderDropdownList(filter = '') {
-      const filtered = hiddenCats.filter(c =>
-        c.category_name.toLowerCase().includes(filter.toLowerCase())
-      );
-      if (!filtered.length) {
-        dropList.innerHTML = `<div style="font-size:12px;color:var(--muted);padding:8px 10px">Tidak ada kategori</div>`;
-        return;
-      }
-      dropList.innerHTML = filtered.map(cat => `
-        <button class="cat-dropdown-item ${String(state.category) === String(cat.id) ? 'active' : ''}" data-cat-id="${cat.id}">
-          ${escHtml(cat.category_name)}
-        </button>
-      `).join('');
-      dropList.querySelectorAll('.cat-dropdown-item').forEach(item => {
-        item.addEventListener('click', () => {
-          state.category = item.dataset.catId;
-          state.page     = 1;
-          tabsWrap.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
-          renderDropdownList(dropSearch?.value || '');
-          dropdown.hidden = true;
-          moreBtn.classList.remove('active');
-          render();
-        });
+    // Mini Arrows Event Listeners
+    if (prevBtn && scrollContainer && !prevBtn._hasCatSliderHandler) {
+      prevBtn._hasCatSliderHandler = true;
+      prevBtn.addEventListener('click', () => {
+        scrollContainer.scrollBy({ left: -140, behavior: 'smooth' });
       });
     }
 
-    moreBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isOpen = !dropdown.hidden;
-      dropdown.hidden = isOpen;
-      moreBtn.classList.toggle('active', !isOpen);
-      if (!isOpen && dropSearch) {
-        dropSearch.value = '';
-        renderDropdownList('');
-        setTimeout(() => dropSearch.focus(), 50);
-      }
-    });
-
-    dropSearch?.addEventListener('input', () => {
-      renderDropdownList(dropSearch.value);
-    });
-
-    document.addEventListener('click', (e) => {
-      if (!moreWrap.contains(e.target)) {
-        dropdown.hidden = true;
-        moreBtn.classList.remove('active');
-      }
-    });
-
-    renderDropdownList('');
+    if (nextBtn && scrollContainer && !nextBtn._hasCatSliderHandler) {
+      nextBtn._hasCatSliderHandler = true;
+      nextBtn.addEventListener('click', () => {
+        scrollContainer.scrollBy({ left: 140, behavior: 'smooth' });
+      });
+    }
   }
 
   buildCategoryTabs();
@@ -682,7 +638,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   btnLess?.addEventListener('click', () => {
-    state.perPage = 8;
+    state.perPage = 10;
     state.page    = 1;
     btnLess?.classList.add('active');
     btnAll?.classList.remove('active');

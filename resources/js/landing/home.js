@@ -38,18 +38,15 @@ $$('a[href^="#"]').forEach((a) => {
 });
 
 /* ---------------------------------------------------------------------------
-   Navigation: shadow on scroll + hide on scroll down
+   Navigation: smooth condensation + shadow on scroll (identik login & register)
    --------------------------------------------------------------------------- */
 const nav = $('#nav');
-let lastY = 0;
 const onScroll = (y) => {
-  nav.classList.toggle('scrolled', y > 20);
-  nav.classList.toggle('hidden', y > 400 && y > lastY + 2);
-  if (y < lastY - 2) nav.classList.remove('hidden');
-  lastY = y;
+  if (nav) nav.classList.toggle('scrolled', y > 40);
 };
 if (lenis) lenis.on('scroll', ({ scroll: y }) => onScroll(y));
 else addEventListener('scroll', () => onScroll(scrollY), { passive: true });
+onScroll(window.scrollY);
 
 /* ---------------------------------------------------------------------------
    Scroll progress bar
@@ -107,6 +104,11 @@ const slideInRight = (els, delay = 0) =>
   animate(els, { opacity: [0, 1], x: [40, 0] }, { duration: 0.8, ease: easeOut, delay: stagger(0.1, { startDelay: delay }) });
 
 if (!reduce) {
+  /* Header entrance animation on page load */
+  if (nav) {
+    animate(nav, { opacity: [0, 1], y: [-20, 0] }, { duration: 0.75, ease: easeOut });
+  }
+
   /* Hero intro — enhanced with staggered reveals */
   revealLines($('.hero-title'), 0.15);
   fadeUp($$('.hero-copy [data-fade]'), 0.55);

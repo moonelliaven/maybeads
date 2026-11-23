@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('tiktok')->nullable()->default('@maybeads.official');
             $table->string('logo')->nullable();
             $table->text('bank_info')->nullable();
+            $table->boolean('is_delivery_enabled')->default(true);
             $table->timestamps();
         });
     }

@@ -11,15 +11,17 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  @vite(['resources/css/admin/management.css', 'resources/js/admin/dashboard.js'])
+  @vite(['resources/css/admin/payment-index.css', 'resources/js/admin/dashboard.js'])
 </head>
 <body>
 
 <div class="admin-layout">
   @include('admin.sidebar', ['active' => 'pos_transactions'])
+
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
   <div class="admin-main">
+    <!-- Header -->
     <header class="admin-header">
       <div class="header-left">
         <button type="button" class="btn-sidebar-toggle" id="sidebarToggle" aria-label="Buka navigasi">
@@ -29,122 +31,311 @@
             <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
         </button>
-        <span class="header-title">Admin Dashboard / Riwayat Kasir</span>
+        <span class="header-title">Admin Dashboard / Transaksi Kasir</span>
       </div>
+
       <div class="header-right">
-        <div class="dropdown" data-dropdown>
-          <button type="button" class="notification-btn" aria-label="Notifikasi">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-            <span class="notification-badge">1</span>
-          </button>
-        </div>
+        @php
+          $sidebarPendingOrders = \App\Models\Order::whereRaw('LOWER(order_status) = ?', ['pending'])->count();
+        @endphp
+        <a href="{{ route('admin.notifications') }}" class="notification-btn" aria-label="Notifikasi" title="Notifikasi">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          @if($sidebarPendingOrders > 0)
+            <span class="notification-badge">{{ $sidebarPendingOrders }}</span>
+          @endif
+        </a>
       </div>
     </header>
 
-    <main class="page-container" style="padding: 24px 36px 60px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
-        <div>
-          <h1 class="page-title" style="font-size: 26px; font-weight: 800; color: #0f172a; margin-bottom: 4px;">Riwayat Transaksi Kasir</h1>
-          <p class="page-subtitle" style="font-size: 13.5px; color: #64748b;">Pantauan transaksi offline dan in-store dari mesin kasir toko.</p>
-        </div>
-        <div>
-          <a href="{{ route('admin.pos.index') }}" style="display: inline-flex; align-items: center; gap: 8px; background: #2563eb; color: #fff; padding: 10px 18px; border-radius: 8px; font-size: 13.5px; font-weight: 600; text-decoration: none;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
+    <!-- Main Content -->
+    <main class="payment-content">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="{{ route('admin.dashboard') }}">Dashboard</a>
+        <span class="breadcrumb-sep">&gt;</span>
+        <a href="{{ route('admin.pos.index') }}">Menu Kasir</a>
+        <span class="breadcrumb-sep">&gt;</span>
+        <span class="breadcrumb-current">Riwayat Transaksi Kasir</span>
+      </nav>
+
+      {{-- Page Heading + Button POS + Search Row (Sejajar satu level horizontal) --}}
+      <div class="payment-page-head">
+        <div class="payment-head-left">
+          <h1 class="payment-page-title">Riwayat Transaksi Kasir</h1>
+
+          <a href="{{ route('admin.pos.index') }}" class="btn-pos-primary" title="Buka Mesin Kasir">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="export-icon">
               <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
               <line x1="8" y1="21" x2="16" y2="21"></line>
               <line x1="12" y1="17" x2="12" y2="21"></line>
             </svg>
-            Buka Mesin Kasir (POS)
+            <span>Buka Mesin Kasir</span>
           </a>
         </div>
+
+        {{-- Search Input (Satu level di kanan) --}}
+        <form method="GET" action="{{ route('admin.pos.transactions') }}" class="payment-search-wrap">
+          @if(request('filter'))
+            <input type="hidden" name="filter" value="{{ request('filter') }}">
+          @endif
+          @if(request('sort'))
+            <input type="hidden" name="sort" value="{{ request('sort') }}">
+          @endif
+          @if(request('start_date'))
+            <input type="hidden" name="start_date" value="{{ request('start_date') }}">
+          @endif
+          @if(request('end_date'))
+            <input type="hidden" name="end_date" value="{{ request('end_date') }}">
+          @endif
+          @if(request('show_all'))
+            <input type="hidden" name="show_all" value="{{ request('show_all') }}">
+          @endif
+          <span class="payment-search-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </span>
+          <input type="text" name="search" class="payment-search-input" placeholder="Cari kode, kasir, pelanggan..." value="{{ request('search') }}" autocomplete="off">
+        </form>
       </div>
 
-      {{-- 3 Kartu Ringkasan Penjualan Kasir --}}
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 22px;">
-        <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 18px 20px;">
-          <div style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase;">Hari Ini</div>
-          <div style="font-size: 22px; font-weight: 800; color: #0f172a; margin: 4px 0;">Rp {{ number_format($stats['today'] ?? 0, 0, ',', '.') }}</div>
-          <div style="font-size: 12px; color: #94a3b8;">{{ $stats['today_count'] ?? 0 }} transaksi selesai</div>
-        </div>
-
-        <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 18px 20px;">
-          <div style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase;">Bulan Ini</div>
-          <div style="font-size: 22px; font-weight: 800; color: #2563eb; margin: 4px 0;">Rp {{ number_format($stats['month'] ?? 0, 0, ',', '.') }}</div>
-          <div style="font-size: 12px; color: #94a3b8;">{{ $stats['month_count'] ?? 0 }} transaksi selesai</div>
-        </div>
-
-        <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 18px 20px;">
-          <div style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase;">Keseluruhan</div>
-          <div style="font-size: 22px; font-weight: 800; color: #059669; margin: 4px 0;">Rp {{ number_format($stats['all'] ?? 0, 0, ',', '.') }}</div>
-          <div style="font-size: 12px; color: #94a3b8;">{{ $stats['all_count'] ?? 0 }} total transaksi</div>
-        </div>
-      </div>
-
-      {{-- Sortir Filter Tabs --}}
-      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
-        <span style="font-size: 13px; font-weight: 700; color: #475569;">Sortir Riwayat:</span>
-        <div style="display: inline-flex; background: #f1f5f9; padding: 4px; border-radius: 8px; gap: 4px;">
-          <a href="{{ route('admin.pos.transactions', ['filter' => 'semua']) }}" style="padding: 6px 14px; border-radius: 6px; font-size: 12.5px; font-weight: 700; text-decoration: none; {{ ($filter ?? 'semua') === 'semua' ? 'background: #ffffff; color: #0f172a; box-shadow: 0 1px 2px rgba(0,0,0,0.05);' : 'color: #64748b;' }}">Semua Transaksi</a>
-          <a href="{{ route('admin.pos.transactions', ['filter' => 'hari_ini']) }}" style="padding: 6px 14px; border-radius: 6px; font-size: 12.5px; font-weight: 700; text-decoration: none; {{ ($filter ?? '') === 'hari_ini' ? 'background: #ffffff; color: #0f172a; box-shadow: 0 1px 2px rgba(0,0,0,0.05);' : 'color: #64748b;' }}">Hari Ini</a>
-          <a href="{{ route('admin.pos.transactions', ['filter' => 'bulan_ini']) }}" style="padding: 6px 14px; border-radius: 6px; font-size: 12.5px; font-weight: 700; text-decoration: none; {{ ($filter ?? '') === 'bulan_ini' ? 'background: #ffffff; color: #0f172a; box-shadow: 0 1px 2px rgba(0,0,0,0.05);' : 'color: #64748b;' }}">Bulan Ini</a>
-        </div>
-      </div>
-
-      <div class="table-card" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
-        <table class="data-table" style="width: 100%;">
-          <thead>
-            <tr>
-              <th>Kode Transaksi</th>
-              <th>Waktu</th>
-              <th>Kasir</th>
-              <th>Pelanggan</th>
-              <th>Items</th>
-              <th>Total</th>
-              <th>Metode</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            @forelse($transactions as $t)
-              <tr>
-                <td><strong>{{ $t->transaction_code }}</strong></td>
-                <td style="font-size: 12.5px; color: #64748b;">{{ $t->created_at ? $t->created_at->format('d/m/Y H:i') : '-' }}</td>
-                <td>{{ $t->cashier->name ?? 'Admin Kasir' }}</td>
-                <td>{{ $t->customer_name ?: 'Pelanggan Langsung' }}</td>
-                <td>
-                  <span style="font-weight: 600;">{{ $t->items->sum('quantity') }} pcs</span>
-                  <div style="font-size: 11px; color: #94a3b8;">{{ $t->items->count() }} jenis produk</div>
-                </td>
-                <td><strong style="color: #0f172a;">Rp {{ number_format($t->total_amount, 0, ',', '.') }}</strong></td>
-                <td>
-                  <span class="badge" style="background: #eff6ff; color: #1e40af; font-weight: 700; text-transform: uppercase;">
-                    {{ $t->payment_method }}
-                  </span>
-                </td>
-                <td>
-                  <a href="{{ route('admin.pos.show', $t->id) }}" style="background: #f1f5f9; color: #1e293b; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; text-decoration: none; border: 1px solid #cbd5e1;">
-                    Lihat Struk
-                  </a>
-                </td>
-              </tr>
-            @empty
-              <tr>
-                <td colspan="8" style="text-align: center; padding: 40px; color: #94a3b8;">
-                  Belum ada transaksi kasir yang tercatat.
-                </td>
-              </tr>
-            @endforelse
-          </tbody>
-        </table>
-
-        @if($transactions->hasPages())
-          <div style="padding: 16px;">
-            {{ $transactions->links() }}
+      <!-- Stats Grid (4 Kotak Ringkasan Penjualan Kasir) -->
+      <div class="payment-stats-grid">
+        <div class="payment-stat-card">
+          <div class="payment-stat-info">
+            <span class="payment-stat-label">Total Omset Kasir</span>
+            <span class="payment-stat-value val-navy">Rp {{ number_format($stats['all'] ?? 0, 0, ',', '.') }}</span>
+            <span class="payment-stat-sub">{{ number_format($stats['all_count'] ?? 0) }} total transaksi</span>
           </div>
-        @endif
+          <div class="payment-stat-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="1" x2="12" y2="23"></line>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+          </div>
+        </div>
+
+        <div class="payment-stat-card">
+          <div class="payment-stat-info">
+            <span class="payment-stat-label">Hari Ini</span>
+            <span class="payment-stat-value">Rp {{ number_format($stats['today'] ?? 0, 0, ',', '.') }}</span>
+            <span class="payment-stat-sub">{{ number_format($stats['today_count'] ?? 0) }} transaksi selesai</span>
+          </div>
+          <div class="payment-stat-icon blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 14 14"></polyline>
+            </svg>
+          </div>
+        </div>
+
+        <div class="payment-stat-card">
+          <div class="payment-stat-info">
+            <span class="payment-stat-label">Bulan Ini</span>
+            <span class="payment-stat-value">Rp {{ number_format($stats['month'] ?? 0, 0, ',', '.') }}</span>
+            <span class="payment-stat-sub">{{ number_format($stats['month_count'] ?? 0) }} transaksi selesai</span>
+          </div>
+          <div class="payment-stat-icon yellow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+        </div>
+
+        <div class="payment-stat-card">
+          <div class="payment-stat-info">
+            <span class="payment-stat-label">Total Transaksi</span>
+            <span class="payment-stat-value">{{ number_format($stats['all_count'] ?? 0) }}</span>
+            <span class="payment-stat-sub">Struk tercatat di sistem</span>
+          </div>
+          <div class="payment-stat-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter Row: Tabs & Sortir -->
+      <div class="payment-filter-row">
+        <div class="filter-left-group">
+          <span class="filter-sort-label">Filter:</span>
+          <div class="filter-tabs">
+            <a href="{{ route('admin.pos.transactions', array_merge(request()->query(), ['filter' => 'semua', 'page' => 1])) }}"
+               class="filter-tab {{ request('filter', 'semua') === 'semua' ? 'active' : '' }}">
+              Semua Transaksi
+            </a>
+            <a href="{{ route('admin.pos.transactions', array_merge(request()->query(), ['filter' => 'hari_ini', 'page' => 1])) }}"
+               class="filter-tab {{ request('filter') === 'hari_ini' ? 'active' : '' }}">
+              Hari Ini
+            </a>
+            <a href="{{ route('admin.pos.transactions', array_merge(request()->query(), ['filter' => 'bulan_ini', 'page' => 1])) }}"
+               class="filter-tab {{ request('filter') === 'bulan_ini' ? 'active' : '' }}">
+              Bulan Ini
+            </a>
+          </div>
+        </div>
+
+        <!-- Rentang Tanggal & Sortir Dropdown -->
+        <form method="GET" action="{{ route('admin.pos.transactions') }}" class="filter-right-group">
+          @if(request('search'))
+            <input type="hidden" name="search" value="{{ request('search') }}">
+          @endif
+          @if(request('filter'))
+            <input type="hidden" name="filter" value="{{ request('filter') }}">
+          @endif
+          @if(request('show_all'))
+            <input type="hidden" name="show_all" value="{{ request('show_all') }}">
+          @endif
+
+          {{-- Rentang Tanggal --}}
+          <div class="date-range-filter-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="sort-icon-svg" style="color: #244173;">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <input type="date" name="start_date" value="{{ request('start_date') }}" onchange="this.form.submit()" title="Dari Tanggal">
+            <span class="date-sep">s/d</span>
+            <input type="date" name="end_date" value="{{ request('end_date') }}" onchange="this.form.submit()" title="Sampai Tanggal">
+            @if(request('start_date') || request('end_date'))
+              <a href="{{ route('admin.pos.transactions', array_merge(request()->except(['start_date', 'end_date']), ['page' => 1])) }}" class="btn-date-reset" title="Hapus Filter Tanggal">&times;</a>
+            @endif
+          </div>
+
+          <span class="filter-sort-label">
+            Sortir:
+          </span>
+          <select name="sort" onchange="this.form.submit()" class="payment-sort-select">
+            <option value="terbaru" {{ request('sort') === 'terbaru' || !request('sort') ? 'selected' : '' }}>Waktu Terbaru</option>
+            <option value="terlama" {{ request('sort') === 'terlama' ? 'selected' : '' }}>Waktu Terlama</option>
+            <option value="nominal_tinggi" {{ request('sort') === 'nominal_tinggi' ? 'selected' : '' }}>Nominal Tertinggi</option>
+            <option value="nominal_rendah" {{ request('sort') === 'nominal_rendah' ? 'selected' : '' }}>Nominal Terendah</option>
+          </select>
+        </form>
+      </div>
+
+      <!-- Data Table Card -->
+      <div class="payment-table-card">
+        <div class="table-responsive-wrapper">
+          <table class="payment-table">
+            <thead>
+              <tr>
+                <th>Kode Transaksi</th>
+                <th>Waktu</th>
+                <th>Kasir</th>
+                <th>Pelanggan</th>
+                <th>Item Terjual</th>
+                <th>Total Tagihan</th>
+                <th>Metode</th>
+                <th style="text-align: right; padding-right: 20px;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              @forelse($transactions as $t)
+                @php
+                  $cashierName = $t->cashier->name ?? 'Admin Kasir';
+                  $customerName = $t->customer_name ?: 'Pelanggan Langsung';
+                  $customerInitial = strtoupper(substr($customerName, 0, 1));
+                  $methodUpper = strtoupper($t->payment_method ?? 'TUNAI');
+                @endphp
+                <tr>
+                  <td>
+                    <span class="col-id-text">{{ $t->transaction_code }}</span>
+                  </td>
+                  <td>
+                    <span class="col-date-text">
+                      {{ $t->created_at ? $t->created_at->format('d/m/Y H:i') : '-' }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="user-name-text" style="font-size: 13px;">{{ $cashierName }}</div>
+                  </td>
+                  <td>
+                    <div class="payment-user-cell">
+                      <div class="payment-user-avatar">
+                        {{ $customerInitial }}
+                      </div>
+                      <div class="payment-user-meta">
+                        <div class="user-name-text">{{ $customerName }}</div>
+                        <div class="user-email-text">In-Store Customer</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="badge-item-pill">
+                      {{ $t->items->sum('quantity') }} pcs
+                    </div>
+                    <div class="badge-item-sub">
+                      {{ $t->items->count() }} jenis produk
+                    </div>
+                  </td>
+                  <td>
+                    <span class="col-price-text">Rp {{ number_format($t->total_amount, 0, ',', '.') }}</span>
+                  </td>
+                  <td>
+                    <span class="payment-status-badge status-sukses">
+                      <span class="badge-dot"></span>
+                      {{ $methodUpper }}
+                    </span>
+                  </td>
+                  <td style="text-align: right; padding-right: 20px;">
+                    <div class="payment-actions-wrap">
+                      <a href="{{ route('admin.pos.show', $t->id) }}" class="btn-action-receipt" title="Lihat Struk Transaksi">
+                        Lihat Struk
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+              @empty
+                <tr>
+                  <td colspan="8" class="payment-empty-row">
+                    Belum ada riwayat transaksi kasir yang sesuai dengan filter atau kata kunci pencarian.
+                  </td>
+                </tr>
+              @endforelse
+            </tbody>
+          </table>
+        </div>
+
+        {{-- Footer Paginasi 10 Per Halaman Standar (Konsisten dengan Pesanan & Pembayaran) --}}
+        <div class="payment-footer-row">
+          <div class="footer-info-left">
+            <a href="{{ request()->fullUrlWithQuery(['show_all' => 'true', 'page' => 1]) }}" class="btn-pill-all {{ request('show_all') === 'true' ? 'active' : '' }}">ALL</a>
+            <a href="{{ request()->fullUrlWithQuery(['show_all' => null, 'page' => 1]) }}" class="link-show-less">Show Less</a>
+            <span class="footer-sep">|</span>
+            <span class="footer-count-text">
+              Menampilkan {{ $transactions->count() }} transaksi dari {{ $transactions->total() }}
+            </span>
+          </div>
+
+          @if(request('show_all') !== 'true' && $transactions->hasPages())
+            <div class="pagination-pages" aria-label="Navigasi halaman">
+              @if($transactions->onFirstPage())
+                <span class="pag-btn disabled">&lt;</span>
+              @else
+                <a href="{{ $transactions->previousPageUrl() }}" class="pag-btn" aria-label="Halaman sebelumnya">&lt;</a>
+              @endif
+
+              @foreach($transactions->getUrlRange(1, $transactions->lastPage()) as $page => $url)
+                <a href="{{ $url }}" class="pag-btn {{ $page == $transactions->currentPage() ? 'active' : '' }}">{{ $page }}</a>
+              @endforeach
+
+              @if($transactions->hasMorePages())
+                <a href="{{ $transactions->nextPageUrl() }}" class="pag-btn" aria-label="Halaman berikutnya">&gt;</a>
+              @else
+                <span class="pag-btn disabled">&gt;</span>
+              @endif
+            </div>
+          @endif
+        </div>
       </div>
     </main>
   </div>

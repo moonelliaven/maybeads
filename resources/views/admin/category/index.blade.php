@@ -47,31 +47,18 @@
       </div>
 
       <div class="header-right">
-        {{-- Notifikasi --}}
-        <div class="dropdown" data-dropdown>
-          <button type="button" class="notification-btn"
-                  aria-label="Notifikasi" aria-haspopup="true" aria-expanded="false"
-                  data-dropdown-trigger>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-            <span class="notification-badge" data-notif-badge>1</span>
-          </button>
-          <div class="dropdown-menu dropdown-menu-wide" role="menu" hidden>
-            <div class="dropdown-head">
-              <strong>Notifikasi</strong>
-              <button type="button" class="link-btn" data-mark-read>Tandai dibaca</button>
-            </div>
-            <a href="/admin/orders?status=pending" class="notif-item" role="menuitem">
-              <span class="status-dot orange"></span>
-              <span>
-                <span class="notif-title">Ada pesanan menunggu diproses</span>
-                <span class="notif-sub">Periksa dan konfirmasi pesanan pending</span>
-              </span>
-            </a>
-          </div>
-        </div>
+        @php
+          $sidebarPendingOrders = \App\Models\Order::whereRaw('LOWER(order_status) = ?', ['pending'])->count();
+        @endphp
+        <a href="{{ route('admin.notifications') }}" class="notification-btn" aria-label="Notifikasi" title="Notifikasi">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          @if($sidebarPendingOrders > 0)
+            <span class="notification-badge">{{ $sidebarPendingOrders }}</span>
+          @endif
+        </a>
       </div>
     </header>
 
@@ -85,19 +72,19 @@
         <span class="breadcrumb-current">Kategori</span>
       </nav>
 
-      {{-- Success Alert (SweetAlert2) --}}
+      {{-- Success Alert (SweetAlert2 - Top Center No Backdrop) --}}
       @if (session('success'))
         <script>
           document.addEventListener('DOMContentLoaded', function() {
             if (typeof Swal !== 'undefined') {
               Swal.fire({
-                toast: true,
-                position: 'top-end',
+                position: 'top',
+                backdrop: false,
                 icon: 'success',
-                title: @json(session('success')),
+                title: 'Berhasil!',
+                text: @json(session('success')),
                 showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true,
+                timer: 2500,
                 customClass: { popup: 'admin-swal-popup' }
               });
             }
@@ -110,6 +97,8 @@
           document.addEventListener('DOMContentLoaded', function() {
             if (typeof Swal !== 'undefined') {
               Swal.fire({
+                position: 'top',
+                backdrop: false,
                 icon: 'error',
                 title: 'Gagal!',
                 text: @json(session('error')),
@@ -162,7 +151,6 @@
               <th style="width: 80px;">Gambar</th>
               <th>Kategori</th>
               <th>Total Produk</th>
-              <th>Stok</th>
               <th style="text-align: right; padding-right: 24px;">Aksi</th>
             </tr>
           </thead>
@@ -171,8 +159,14 @@
               <tr data-id="{{ $cat['id'] }}">
                 <td class="col-id">{{ $cat['id'] }}</td>
                 <td class="col-img">
-                  @if(!empty($cat['image']))
-                    <img src="{{ str_starts_with($cat['image'], 'http') ? $cat['image'] : asset('storage/' . $cat['image']) }}" alt="{{ $cat['category_name'] }}" style="width: 44px; height: 44px; border-radius: 8px; object-fit: cover; border: 1px solid #e2e8f0; display: block;">
+                  @php
+                    $catImg = $cat['image'] ?? null;
+                    if ($catImg && !str_starts_with($catImg, 'http') && !str_starts_with($catImg, '/')) {
+                        $catImg = asset('storage/' . $catImg);
+                    }
+                  @endphp
+                  @if(!empty($catImg))
+                    <img src="{{ $catImg }}" alt="{{ $cat['category_name'] }}" style="width: 44px; height: 44px; border-radius: 8px; object-fit: cover; border: 1px solid #e2e8f0; display: block;" onerror="this.src='{{ asset('images/logo.svg') }}'">
                   @else
                     <div style="width: 44px; height: 44px; border-radius: 8px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #94a3b8;">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 20px; height: 20px;">
@@ -185,7 +179,6 @@
                 </td>
                 <td class="col-name" style="font-weight: 600;">{{ $cat['category_name'] }}</td>
                 <td class="col-count">{{ $cat['products_count'] }} Produk</td>
-                <td class="col-stock"><span style="font-weight: 600; color: #0f172a;">{{ $cat['products_stock'] }}</span> pcs</td>
                 <td class="col-action">
                   <div class="action-btns">
                     <a href="{{ route('admin.category.show', $cat['id']) }}" class="btn-detail">Detail</a>

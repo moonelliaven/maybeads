@@ -132,15 +132,18 @@
       </div>
 
       <div class="header-right">
-        <div class="dropdown" data-dropdown>
-          <button type="button" class="notification-btn" aria-label="Notifikasi">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-            <span class="notification-badge">{{ $stats['siap_kirim'] ?? 1 }}</span>
-          </button>
-        </div>
+        @php
+          $sidebarPendingOrders = \App\Models\Order::whereRaw('LOWER(order_status) = ?', ['pending'])->count();
+        @endphp
+        <a href="{{ route('admin.notifications') }}" class="notification-btn" aria-label="Notifikasi" title="Notifikasi">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          @if($sidebarPendingOrders > 0)
+            <span class="notification-badge">{{ $sidebarPendingOrders }}</span>
+          @endif
+        </a>
       </div>
     </header>
 
@@ -159,6 +162,37 @@
           <h1 class="order-page-title" style="margin-bottom: 4px;">Data Pengantaran</h1>
           <p style="font-size: 13.5px; color: #64748b;">Pantauan pengiriman pesanan ke rumah pelanggan (J&T, JNE, Gojek, dan Kurir Lokal).</p>
         </div>
+      </div>
+
+      {{-- Delivery Service Status Toggle Box --}}
+      <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 14px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.03); flex-wrap: wrap; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div style="width: 42px; height: 42px; border-radius: 10px; background: {{ ($isDeliveryEnabled ?? true) ? '#dcfce7' : '#fee2e2' }}; color: {{ ($isDeliveryEnabled ?? true) ? '#16a34a' : '#dc2626' }}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 22px; height: 22px;">
+              <rect x="1" y="3" width="15" height="13"></rect>
+              <polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon>
+              <circle cx="5.5" cy="18.5" r="2.5"></circle>
+              <circle cx="18.5" cy="18.5" r="2.5"></circle>
+            </svg>
+          </div>
+          <div>
+            <div style="font-size: 14px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+              Status Metode Pengantaran:
+              <span style="font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 6px; background: {{ ($isDeliveryEnabled ?? true) ? '#dcfce7' : '#fee2e2' }}; color: {{ ($isDeliveryEnabled ?? true) ? '#15803d' : '#b91c1c' }};">
+                {{ ($isDeliveryEnabled ?? true) ? 'AKTIF' : 'NON-AKTIF' }}
+              </span>
+            </div>
+            <div style="font-size: 12.5px; color: #64748b; margin-top: 2px;">
+              {{ ($isDeliveryEnabled ?? true) ? 'Layanan pengantaran aktif dan dapat dipilih oleh pelanggan saat checkout.' : 'Layanan pengantaran dinonaktifkan. Opsi pengantaran otomatis disable pada menu proses order user.' }}
+            </div>
+          </div>
+        </div>
+        <form method="POST" action="{{ route('admin.delivery.toggle') }}" style="margin: 0;">
+          @csrf
+          <button type="submit" style="display: inline-flex; align-items: center; gap: 8px; padding: 9px 20px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; background: {{ ($isDeliveryEnabled ?? true) ? '#dc2626' : '#16a34a' }}; color: #ffffff; transition: all 0.15s ease;">
+            {{ ($isDeliveryEnabled ?? true) ? 'Matikan Layanan' : 'Aktifkan Layanan' }}
+          </button>
+        </form>
       </div>
 
       {{-- Flash Message --}}
@@ -319,6 +353,23 @@
             @endforelse
           </tbody>
         </table>
+
+        {{-- Pagination Bar --}}
+        <div class="pagination-bar" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-top: 1px solid #e2e8f0; flex-wrap: wrap; gap: 12px; background: #ffffff;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <a href="{{ request()->fullUrlWithQuery(['show_all' => 'true']) }}" style="padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; text-decoration: none; border: 1px solid #cbd5e1; {{ request('show_all') === 'true' ? 'background: #2563eb; color: #fff; border-color: #2563eb;' : 'background: #f8fafc; color: #475569;' }}">ALL</a>
+            <a href="{{ request()->fullUrlWithQuery(['show_all' => null]) }}" style="padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; text-decoration: none; border: 1px solid #cbd5e1; {{ request('show_all') !== 'true' ? 'background: #2563eb; color: #fff; border-color: #2563eb;' : 'background: #f8fafc; color: #475569;' }}">Show Less</a>
+            <span style="font-size: 12.5px; color: #64748b; margin-left: 8px;">
+              Menampilkan {{ $deliveries->count() }} pengantaran dari {{ $totalDeliveries ?? $deliveries->total() }}
+            </span>
+          </div>
+
+          @if(request('show_all') !== 'true' && $deliveries->hasPages())
+            <div class="pagination-wrap">
+              {{ $deliveries->links() }}
+            </div>
+          @endif
+        </div>
       </div>
     </main>
   </div>

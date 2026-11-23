@@ -257,13 +257,19 @@
     }
   })();
 
-  // Navigasi Kembali Cepat untuk User
+  // Navigasi Kembali Cepat untuk User (hanya untuk tombol back eksplisit, bukan link ke home/dashboard)
   (function() {
     document.addEventListener('click', function(e) {
-      var backBtn = e.target.closest('.btn-back, .btn-back-link, .btn-back-to-home, .back-home-link, [data-action="back"]');
-      if (backBtn && window.history.length > 1 && document.referrer && document.referrer.includes(window.location.host)) {
-        e.preventDefault();
-        window.history.back();
+      var backBtn = e.target.closest('.btn-back, .btn-back-link, [data-action="back"]');
+      if (backBtn && !backBtn.closest('.btn-back-to-home, .back-home-link')) {
+        var href = backBtn.getAttribute('href') || '';
+        if (href.includes('/dashboard') || href === '/' || href.includes('route=dashboard')) {
+          return;
+        }
+        if (window.history.length > 1 && document.referrer && document.referrer.includes(window.location.host)) {
+          e.preventDefault();
+          window.history.back();
+        }
       }
     });
   })();
